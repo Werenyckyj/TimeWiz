@@ -13,5 +13,5 @@ public class Role : Entity
     public required RoleTypes Privilege { get; set; }
 
     // Collections
-    public required ICollection<User> Users { get; set; }
+    public required ICollection<User> Users { get; set; } = new List<User>();
 }

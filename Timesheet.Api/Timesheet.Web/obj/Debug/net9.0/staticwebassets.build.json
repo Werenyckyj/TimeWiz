@@ -1,0 +1,12 @@
+{
+  "Version": 1,
+  "Hash": "E3VLuZvCmU6KRILX2jNGQBrladF0pJUsJuWM8ow0uxI=",
+  "Source": "Timesheet.Web",
+  "BasePath": "_content/Timesheet.Web",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": [],
+  "Endpoints": []
+}

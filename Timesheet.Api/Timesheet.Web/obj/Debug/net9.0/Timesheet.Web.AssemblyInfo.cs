@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Timesheet.Web")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+22fff24b5770ed07c7fe2eecab05ee47f6abbe40")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+353fd9cd1fe4776b6228d3dce43e8b45a37d7e81")]
 [assembly: System.Reflection.AssemblyProductAttribute("Timesheet.Web")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Timesheet.Web")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

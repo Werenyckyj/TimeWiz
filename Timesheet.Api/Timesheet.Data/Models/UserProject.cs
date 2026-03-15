@@ -10,7 +10,7 @@ public class UserProject : Entity
 {
     // Properties
     [Required]
-    public required RoleTypes ProjectRole { get; set; } = RoleTypes.InternalEmployee;
+    public required RoleTypes ProjectRole { get; set; } = RoleTypes.Employee;
 
     // Foreign keys
     public int UserId { get; set; }

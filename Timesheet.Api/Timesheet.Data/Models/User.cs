@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Timesheet.Data.Models;
 
 [Index(nameof(Username), IsUnique = true)]
+[Index(nameof(Email), IsUnique = true)]
 public class User : Entity
 {
     // Properties
