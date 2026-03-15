@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "dgSpecHash": "MT+Gfkl2igs=",
+  "success": true,
+  "projectFilePath": "/home/werenvoj/Documents/CVUT/timesheet-app/Timesheet.Api/Timesheet.Web/Timesheet.Web.csproj",
+  "expectedPackageFiles": [
+    "/home/werenvoj/.nuget/packages/microsoft.aspnetcore.openapi/9.0.8/microsoft.aspnetcore.openapi.9.0.8.nupkg.sha512",
+    "/home/werenvoj/.nuget/packages/microsoft.openapi/1.6.17/microsoft.openapi.1.6.17.nupkg.sha512",
+    "/home/werenvoj/.nuget/packages/microsoft.aspnetcore.app.ref/9.0.8/microsoft.aspnetcore.app.ref.9.0.8.nupkg.sha512"
+  ],
+  "logs": []
+}

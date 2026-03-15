@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "1y8bed3DLgE=",
+  "success": true,
+  "projectFilePath": "/home/werenvoj/Documents/CVUT/timesheet-app/Timesheet.Api/Timesheet.Testing/Timesheet.Testing.csproj",
+  "expectedPackageFiles": [
+    "/home/werenvoj/.nuget/packages/microsoft.aspnetcore.app.ref/9.0.8/microsoft.aspnetcore.app.ref.9.0.8.nupkg.sha512"
+  ],
+  "logs": []
+}
