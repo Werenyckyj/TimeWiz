@@ -35,3 +35,5 @@ packages/
 Thumbs.db
 
 .env
+Timesheet.Api/Timesheet.Web/obj/Debug/net9.0/Timesheet.Web.AssemblyInfo.cs
+Timesheet.Api/Timesheet.Web/obj/Debug/net9.0/Timesheet.Web.AssemblyInfoInputs.cache
