@@ -1,5 +1,11 @@
 using Microsoft.EntityFrameworkCore;
+using Timesheet.Core;
+using Timesheet.Core.MappingProfiles;
+using Timesheet.Core.Repositories;
 using Timesheet.Data;
+using DotNetEnv;
+
+Env.TraversePath().Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +21,11 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString));
 
 builder.Services.AddControllers();
+
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddAutoMapper(cfg => cfg.AddMaps(typeof(ITRepository<>).Assembly));
+
+builder.Services.AddScoped(typeof(ITRepository<>), typeof(TRepository<>));
 
 var app = builder.Build();
 
