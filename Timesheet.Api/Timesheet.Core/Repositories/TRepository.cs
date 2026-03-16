@@ -4,55 +4,56 @@ using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace Timesheet.Core.Repositories;
 
-public class TRepository<T> : ITRepository<T> where T : class
+public class TRepository<TEntity> : ITRepository<TEntity> where TEntity : class
 {
     protected readonly AppDbContext _context;
-    protected readonly DbSet<T> _dbSet;
+    protected readonly DbSet<TEntity> _dbSet;
 
     public TRepository(AppDbContext context)
     {
         _context = context;
-        _dbSet = _context.Set<T>();
+        _dbSet = _context.Set<TEntity>();
     }
 
-    public IQueryable<T> GetAll()
+    public IQueryable<TEntity> GetAll()
     {
         return _dbSet;
     }
 
-    public T? GetById(int id)
+    public TEntity? GetById(int id)
     {
         return _dbSet.Find(id);
     }
 
-    public EntityEntry<T> Add(T entity)
+    public EntityEntry<TEntity> Add(TEntity entity)
     {
         return _dbSet.Add(entity);
     }
 
-    public EntityEntry<T> Update(T entity)
+    public EntityEntry<TEntity> Update(TEntity entity)
     {
         return _dbSet.Update(entity);
     }
 
     public bool DeleteById(int id)
     {
-        var entity = GetById(id);
+        var entity = _dbSet.Find(id);
         if (entity == null) return false;
 
         _dbSet.Remove(entity);
         return true;
     }
 
-    public bool Delete(T entity)
+    public void Delete(TEntity entity)
     {
-        if (entity == null) return false;
-
+        if (_context.Entry(entity).State == EntityState.Detached)
+        {
+            _dbSet.Attach(entity);
+        }
         _dbSet.Remove(entity);
-        return true;
     }
 
-    public IEnumerable<T> Where(Func<T, bool> function)
+    public IEnumerable<TEntity> Where(Func<TEntity, bool> function)
     {
         return _dbSet.Where(i => function(i)).AsEnumerable();
     }
