@@ -37,3 +37,7 @@ Thumbs.db
 .env
 Timesheet.Api/Timesheet.Web/obj/Debug/net9.0/Timesheet.Web.AssemblyInfo.cs
 Timesheet.Api/Timesheet.Web/obj/Debug/net9.0/Timesheet.Web.AssemblyInfoInputs.cache
+Timesheet.Api/Timesheet.Data/obj/Debug/net9.0/Timesheet.Data.AssemblyInfo.cs
+Timesheet.Api/Timesheet.Data/obj/Debug/net9.0/Timesheet.Data.AssemblyInfoInputs.cache
+Timesheet.Api/Timesheet.Testing/obj/Debug/net9.0/Timesheet.Testing.AssemblyInfo.cs
+Timesheet.Api/Timesheet.Testing/obj/Debug/net9.0/Timesheet.Testing.AssemblyInfoInputs.cache

@@ -59,9 +59,9 @@ public class GenericController<T, TRequest, TResponse>(ILogger logger, ITReposit
 
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public virtual IActionResult FindAll([FromQuery] Func<T, bool> filter)
+    public virtual IActionResult GetAll()
     {
-        var entities = _tRepository.Where(filter).AsEnumerable();
+        var entities = _tRepository.GetAll().AsEnumerable();
         var responses = _mapper.Map<IEnumerable<TResponse>>(entities).ToList();
         return Ok(new { responses.Count, data = responses });
     }
