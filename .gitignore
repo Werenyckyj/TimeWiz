@@ -11,6 +11,7 @@ out/
 *.exe
 *.pdb
 *.log
+*.cache
 
 # Ignore user-specific files
 *.user
