@@ -13,8 +13,9 @@ public class UnitOfWork(AppDbContext _context) : IUnitOfWork
     public TRepository<TsApproval> TsApprovalRepository { get; init; } = new TRepository<TsApproval>(_context);
     public TRepository<TsEntry> TsEntryRepository { get; init; } = new TRepository<TsEntry>(_context);
     public TRepository<TsWeek> TsWeekRepository { get; init; } = new TRepository<TsWeek>(_context);
-    public TRepository<User> UserRepository { get; init; } = new TRepository<User>(_context);
+    public UserRepository UserRepository { get; init; } = new UserRepository(_context);
     public TRepository<UserProject> UserProjectepository { get; init; } = new TRepository<UserProject>(_context);
+    public TRepository<TokenInfo> TokenInfoRepository { get; init; } = new TRepository<TokenInfo>(_context);
 
     public void SaveChanges()
     {

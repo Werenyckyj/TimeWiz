@@ -6,23 +6,30 @@ namespace Timesheet.Core.Services.Auth;
 public interface IAuthService
 {
     /// <summary>
+    /// Registers a new user based on the provided registration details.
+    /// </summary>
+    /// <param name="dto"></param>
+    /// <returns></returns>
+    string Register(RegisterWDto dto);
+
+    /// <summary>
     /// Authenticates a user based on the provided credentials.
     /// </summary>
     /// <param name="dto"></param>
     /// <returns></returns>
-    LogInWDto Authenticate(LogInRDto dto);
+    LogInRDto Authenticate(LogInWDto dto);
 
     /// <summary>
     /// Refreshes the access token using the provided refresh token.
     /// </summary>
     /// <param name="refreshToken"></param>
     /// <returns></returns>
-    TokenDto RefreshToken(string refreshToken);
+    TokenDto RefreshToken(string accessToken, string refreshToken);
 
     /// <summary>
     /// Revokes the provided refresh token, effectively logging the user out.
     /// </summary>
     /// <param name="refreshToken"></param>
     /// <returns></returns>
-    RevokeTokenDto RevokeToken(string refreshToken);
+    bool RevokeToken(string accessToken, string refreshToken);
 }

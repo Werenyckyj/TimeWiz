@@ -23,10 +23,7 @@ public class User : Entity
     public required string Email { get; set; }
     [Required]
     [MaxLength(128)]
-    public required byte[] PasswordHash { get; set; }
-    [Required]
-    [MaxLength(128)]
-    public required byte[] PasswordSalt { get; set; }
+    public required string PasswordHash { get; set; }
 
     // Foreign keys
     public int RoleId { get; set; }

@@ -2,7 +2,7 @@ using System;
 
 namespace Timesheet.Data.Dtos.Auth;
 
-public class LogInWDto
+public class LogInWDto : LogInDtoBase
 {
     public TokenDto? Token { get; set; }
     public bool IsAthorized { get; set; }

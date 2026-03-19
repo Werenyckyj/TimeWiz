@@ -56,6 +56,12 @@ public interface ITRepository<TEntity> where TEntity : class
     public IEnumerable<TEntity> Where(Func<TEntity, bool> function);
 
     /// <summary>
+    /// Counts the number of entities of type TEntity in the repository.
+    /// </summary>
+    /// <returns></returns>
+    public int Count();
+
+    /// <summary>
     /// Saves changes made to the repository.
     /// </summary>
     public void SaveChanges();

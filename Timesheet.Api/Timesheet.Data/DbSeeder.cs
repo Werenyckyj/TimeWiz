@@ -4,6 +4,7 @@ using Timesheet.Data.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Identity;
+using Timesheet.Core;
 
 namespace Timesheet.Data;
 
@@ -15,14 +16,16 @@ public class DbSeeder
 
         using var scope = app.Services.CreateScope();
         var logger = scope.ServiceProvider.GetRequiredService<ILogger<DbSeeder>>();
+        var unitOfWork = scope.ServiceProvider.GetRequiredService<UnitOfWork>();
 
         try
         {
-            var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
-            var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<Role>>();
 
-            if (userManager.Users.Any() == false)
+            if (unitOfWork.UserRepository.Count() == 0)
             {
+                var role = unitOfWork.RoleRepository.GetById(1);
+                var company = unitOfWork.CompanyRepository.GetById(1);
+
                 var user = new User
                 {
                     Username = "admin",
@@ -31,32 +34,29 @@ public class DbSeeder
                     Email = "admin@gmail.com",
                     RoleId = 1,
                     CompanyId = 1,
-                    PasswordHash = [],
-                    PasswordSalt = [],
-                    Role = null!,
-                    Company = null!,
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin123!"),
+                    Role = role,
+                    Company = company,
                     TsWeeks = new List<TsWeek>(),
                     UserProjects = new List<UserProject>(),
                     PasswordResetTokens = new List<PasswordResetToken>(),
                     TokenInfos = new List<TokenInfo>()
                 };
 
-                var result = await userManager.CreateAsync(user, "Admin123!");
-                if (result.Succeeded == false)
+                var result = unitOfWork.UserRepository.Add(user);
+                if (result == null)
                 {
-                    var errors = result.Errors.Select(e => e.Description);
                     logger.LogError(
-                        $"Failed to create admin user. Errors: {string.Join(", ", errors)}"
+                        $"Failed to create admin user."
                     );
                     return;
                 }
 
-                var addToRoleResult = await userManager.AddToRoleAsync(user, "Admin");
-                if (addToRoleResult.Succeeded == false)
+                var addToRoleResult = unitOfWork.UserRepository.Add(user);
+                if (addToRoleResult == null)
                 {
-                    var errors = addToRoleResult.Errors.Select(e => e.Description);
                     logger.LogError(
-                        $"Failed to add admin user to Admin role. Errors: {string.Join(", ", errors)}"
+                        $"Failed to add admin user to Admin role."
                     );
                     return;
                 }

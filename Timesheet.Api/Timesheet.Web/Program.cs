@@ -56,6 +56,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddAutoMapper(cfg => cfg.AddMaps(typeof(ITRepository<>).Assembly));
 
 builder.Services.AddScoped(typeof(ITRepository<>), typeof(TRepository<>));
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET") ?? throw new InvalidOperationException("Chybí JWT_SECRET v .env");
 

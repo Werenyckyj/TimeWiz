@@ -2,7 +2,7 @@ using System;
 
 namespace Timesheet.Data.Dtos.Auth;
 
-public class LogInRDto : LogInDto
+public class LogInRDto : LogInDtoBase
 {
 
 }

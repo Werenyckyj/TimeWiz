@@ -58,6 +58,11 @@ public class TRepository<TEntity> : ITRepository<TEntity> where TEntity : class
         return _dbSet.Where(i => function(i)).AsEnumerable();
     }
 
+    public int Count()
+    {
+        return _dbSet.Count();
+    }
+
     public void SaveChanges()
     {
         _context.SaveChanges();
