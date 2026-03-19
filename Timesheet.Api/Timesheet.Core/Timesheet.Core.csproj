@@ -18,6 +18,8 @@
 
   <ItemGroup>
     <Folder Include="MappingProfiles/" />
+    <Folder Include="Services/" />
+    <Folder Include="Services/Auth/" />
   </ItemGroup>
 
 </Project>
