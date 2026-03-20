@@ -8,6 +8,14 @@ Debug/
 Release/
 out/
 *.dll
+*.Web.dll
+*.Web.pdb
+*.Data.dll
+*.Data.pdb
+*.Core.dll
+*.Core.pdb
+*.Core.assets.cache
+*.nuget.cache
 *.exe
 *.pdb
 *.log

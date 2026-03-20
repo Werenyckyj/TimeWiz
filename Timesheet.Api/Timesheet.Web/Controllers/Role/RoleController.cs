@@ -11,7 +11,7 @@ namespace Timesheet.Web.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Produces("application/json")]
-public class RoleController : GenericController<Role, RoleRDto, RoleWDto>
+public class RoleController : GenericController<Role, RoleWDto, RoleRDto>
 {
     public RoleController(ILogger<RoleController> logger, ITRepository<Role> tRepository, IMapper mapper) : base(logger, tRepository, mapper)
     {
