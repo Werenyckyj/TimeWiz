@@ -2,7 +2,7 @@ using System;
 
 namespace Timesheet.Data.Dtos;
 
-public class UserWDto : UserDtoBase
+public class ProjectWDto : ProjectDtoBase
 {
 
 }

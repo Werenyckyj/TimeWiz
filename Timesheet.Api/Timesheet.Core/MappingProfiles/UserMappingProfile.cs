@@ -1,7 +1,7 @@
 using System;
 using AutoMapper;
+using Timesheet.Data.Dtos;
 using Timesheet.Data.Models;
-using Timesheet.Data.Dtos.User;
 
 namespace Timesheet.Core.MappingProfiles;
 

@@ -1,6 +1,6 @@
 using System;
 
-namespace Timesheet.Data.Dtos.User;
+namespace Timesheet.Data.Dtos;
 
 public class UserDtoBase
 {

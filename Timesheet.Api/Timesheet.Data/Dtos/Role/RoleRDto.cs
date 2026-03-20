@@ -2,7 +2,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using Timesheet.Data.Interfaces;
 
-namespace Timesheet.Data.Dtos.Role;
+namespace Timesheet.Data.Dtos;
 
 public class RoleRDto : RoleDtoBase, IEntity
 {

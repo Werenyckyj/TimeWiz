@@ -1,6 +1,6 @@
 using System;
 using AutoMapper;
-using Timesheet.Data.Dtos.Role;
+using Timesheet.Data.Dtos;
 using Timesheet.Data.Models;
 
 namespace Timesheet.Core.MappingProfiles;

@@ -16,7 +16,7 @@ public class AuthService(UnitOfWork unitOfWork, IMapper mapper, ILogger<AuthServ
     private readonly IMapper _mapper = mapper;
     private readonly ILogger<AuthService> _logger = logger;
     private readonly ITokenService _tokenService = tokenService;
-    public LogInRDto Authenticate(LogInWDto dto)
+    public LogInRDto? Authenticate(LogInWDto dto)
     {
         try
         {
@@ -82,7 +82,7 @@ public class AuthService(UnitOfWork unitOfWork, IMapper mapper, ILogger<AuthServ
 
     }
 
-    public TokenDto RefreshToken(string accessToken, string refreshToken)
+    public TokenDto? RefreshToken(string accessToken, string refreshToken)
     {
         try
         {

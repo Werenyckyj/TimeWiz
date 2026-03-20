@@ -1,11 +1,13 @@
 using Microsoft.AspNetCore.Mvc;
 using AutoMapper;
 using Timesheet.Core;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Timesheet.Web.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 [Produces("application/json")]
 public class GenericController<T, TRequest, TResponse>(ILogger logger, ITRepository<T> tRepository, IMapper mapper) : ControllerBase where T : class where TRequest : class where TResponse : class
 {
