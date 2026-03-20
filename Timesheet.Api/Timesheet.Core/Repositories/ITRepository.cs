@@ -65,4 +65,10 @@ public interface ITRepository<TEntity> where TEntity : class
     /// Saves changes made to the repository.
     /// </summary>
     public void SaveChanges();
+
+    /// <summary>
+    /// Provides an IQueryable of entities of type TEntity for advanced querying scenarios.
+    /// </summary>
+    /// <returns></returns>
+    public IQueryable<TEntity> Query();
 }

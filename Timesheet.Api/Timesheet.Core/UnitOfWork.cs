@@ -14,8 +14,8 @@ public class UnitOfWork(AppDbContext _context) : IUnitOfWork
     public TRepository<TsEntry> TsEntryRepository { get; init; } = new TRepository<TsEntry>(_context);
     public TRepository<TsWeek> TsWeekRepository { get; init; } = new TRepository<TsWeek>(_context);
     public UserRepository UserRepository { get; init; } = new UserRepository(_context);
-    public TRepository<UserProject> UserProjectepository { get; init; } = new TRepository<UserProject>(_context);
-    public TRepository<TokenInfo> TokenInfoRepository { get; init; } = new TRepository<TokenInfo>(_context);
+    public TRepository<UserProject> UserProjectRepository { get; init; } = new TRepository<UserProject>(_context);
+    public TokenRepository TokenInfoRepository { get; init; } = new TokenRepository(_context);
 
     public void SaveChanges()
     {

@@ -6,11 +6,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Identity;
 using Timesheet.Core;
 
-namespace Timesheet.Data;
+namespace Timesheet.Web;
 
 public class DbSeeder
 {
-    public static async Task SeedData(WebApplication app)
+    public static void SeedData(WebApplication app)
     {
 
 
@@ -23,8 +23,8 @@ public class DbSeeder
 
             if (unitOfWork.UserRepository.Count() == 0)
             {
-                var role = unitOfWork.RoleRepository.GetById(1);
-                var company = unitOfWork.CompanyRepository.GetById(1);
+                var role = unitOfWork.RoleRepository.GetById(1)!;
+                var company = unitOfWork.CompanyRepository.GetById(1)!;
 
                 var user = new User
                 {
@@ -60,6 +60,7 @@ public class DbSeeder
                     );
                     return;
                 }
+                unitOfWork.SaveChanges();
             }
         }
         catch (Exception ex)

@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <Folder Include="MappingProfiles/" />
+    <Folder Include="Repositories/Token/" />
     <Folder Include="Repositories/User/" />
     <Folder Include="Services/" />
     <Folder Include="Services/Auth/" />

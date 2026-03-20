@@ -67,4 +67,9 @@ public class TRepository<TEntity> : ITRepository<TEntity> where TEntity : class
     {
         _context.SaveChanges();
     }
+
+    public IQueryable<TEntity> Query()
+    {
+        return _dbSet;
+    }
 }
