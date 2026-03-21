@@ -33,6 +33,7 @@
     <Folder Include="Controllers/Auth/" />
     <Folder Include="Controllers/Project/" />
     <Folder Include="Controllers/Role/" />
+    <Folder Include="Controllers/Timesheet/" />
     <Folder Include="Controllers/User/" />
   </ItemGroup>
 

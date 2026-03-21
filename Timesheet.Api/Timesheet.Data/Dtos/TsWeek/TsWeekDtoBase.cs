@@ -10,5 +10,8 @@ public class TsWeekDtoBase
     public required int Year { get; set; }
     [Required]
     public required int WeekNumber { get; set; }
+    [Required]
+    public required int UserId { get; set; }
+
     public ICollection<TsEntry> TsEntries { get; set; } = [];
 }

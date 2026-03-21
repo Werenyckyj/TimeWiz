@@ -37,10 +37,16 @@ public class GenericController<T, TRequest, TResponse>(ILogger logger, ITReposit
         return Ok(_mapper.Map<TResponse>(createdEntity.Entity));
     }
 
-    [HttpPut]
+    [HttpPut("{id:int}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public virtual IActionResult Update([FromBody] TRequest request)
+    public virtual IActionResult Update(int id, [FromBody] TRequest request)
     {
+        var entity = _tRepository.GetById(id);
+        if (entity == null)
+        {
+            return NotFound();
+        }
+
         var updatedEntity = _tRepository.Update(_mapper.Map<T>(request));
         _tRepository.SaveChanges();
         return Ok(_mapper.Map<TResponse>(updatedEntity.Entity));

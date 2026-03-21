@@ -21,7 +21,7 @@ public class AuthService(UnitOfWork unitOfWork, IMapper mapper, ILogger<AuthServ
         try
         {
             var user = _unitOfWork.UserRepository.GetByUsername(dto.Username);
-            if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
+            if (user == null || user.IsActive == false || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
             {
                 _logger.LogWarning($"Authentication failed for username: {dto.Username}");
                 return null;
