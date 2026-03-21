@@ -82,4 +82,17 @@ public class ProjectController(ILogger<ProjectController> logger, ITRepository<P
         var response = _mapper.Map<List<UserRDto>>(users);
         return Ok(response);
     }
+
+    [HttpGet("{id:int}/pending-timesheets")]
+    [ProducesResponseType(typeof(List<TsWeekRDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public IActionResult GetProjectPendingTimesheets(int id)
+    {
+        var project = _unitOfWork.ProjectRepository.GetById(id);
+        if (project == null) return NotFound($"Project with ID {id} not found.");
+
+        var pendingTimesheets = project.TsWeeks.Where(t => t.Approval.Action == TsApprovalStatus.Pending).ToList();
+        var response = _mapper.Map<List<TsWeekRDto>>(pendingTimesheets);
+        return Ok(response);
+    }
 }

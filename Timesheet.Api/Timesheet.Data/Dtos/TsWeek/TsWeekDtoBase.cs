@@ -14,4 +14,5 @@ public class TsWeekDtoBase
     public required int UserId { get; set; }
 
     public ICollection<TsEntry> TsEntries { get; set; } = [];
+    public string Comment { get; set; } = string.Empty;
 }
