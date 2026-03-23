@@ -1,0 +1,98 @@
+using System;
+using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Timesheet.Core;
+using Timesheet.Data.Dtos;
+using Timesheet.Data.Enums;
+using Timesheet.Data.Models;
+
+namespace Timesheet.Web.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+[Produces("application/json")]
+[Authorize(Roles = "Manager, Admin")]
+public class ProjectController(ILogger<ProjectController> logger, ITRepository<Project> tRepository, IMapper mapper, UnitOfWork unitOfWork) : GenericController<Project, ProjectWDto, ProjectRDto>(logger, tRepository, mapper)
+{
+    private readonly UnitOfWork _unitOfWork = unitOfWork;
+
+    [HttpPost("{id:int}/assign")]
+    [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public IActionResult AssignUserToProject(int id, [FromBody] int userId)
+    {
+        var project = _unitOfWork.ProjectRepository.GetById(id);
+        if (project == null) return NotFound($"Project with ID {id} not found.");
+
+        var user = _unitOfWork.UserRepository.GetById(userId);
+        if (user == null) return NotFound($"User with ID {userId} not found.");
+
+        if (project.UserProjects.Any(u => u.UserId == userId))
+        {
+            return BadRequest($"User with ID {userId} is already assigned to project with ID {id}.");
+        }
+
+        var userProject = new UserProject
+        {
+            UserId = userId,
+            ProjectId = id,
+            User = user,
+            Project = project,
+            ProjectRole = RoleTypes.Employee
+        };
+        _unitOfWork.UserProjectRepository.Add(userProject);
+        _unitOfWork.SaveChanges();
+
+        return Ok($"User with ID {userId} assigned to project with ID {id}.");
+    }
+
+    [HttpPost("{id:int}/unassign")]
+    [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public IActionResult UnassignUserFromProject(int id, [FromBody] int userId)
+    {
+        var project = _unitOfWork.ProjectRepository.GetById(id);
+        if (project == null) return NotFound($"Project with ID {id} not found.");
+
+        var user = _unitOfWork.UserRepository.GetById(userId);
+        if (user == null) return NotFound($"User with ID {userId} not found.");
+
+        var userProject = project.UserProjects.FirstOrDefault(u => u.UserId == userId);
+        if (userProject == null)
+        {
+            return BadRequest($"User with ID {userId} is not assigned to project with ID {id}.");
+        }
+
+        _unitOfWork.UserProjectRepository.Delete(userProject);
+        _unitOfWork.SaveChanges();
+
+        return Ok($"User with ID {userId} unassigned from project with ID {id}.");
+    }
+
+    [HttpGet("{id:int}/users")]
+    [ProducesResponseType(typeof(List<UserRDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public IActionResult GetProjectUsers(int id)
+    {
+        var project = _unitOfWork.ProjectRepository.GetById(id);
+        if (project == null) return NotFound($"Project with ID {id} not found.");
+
+        var users = project.UserProjects.Select(up => up.User).ToList();
+        var response = _mapper.Map<List<UserRDto>>(users);
+        return Ok(response);
+    }
+
+    [HttpGet("{id:int}/pending-timesheets")]
+    [ProducesResponseType(typeof(List<TsWeekRDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public IActionResult GetProjectPendingTimesheets(int id)
+    {
+        var project = _unitOfWork.ProjectRepository.GetById(id);
+        if (project == null) return NotFound($"Project with ID {id} not found.");
+
+        var pendingTimesheets = project.TsWeeks.Where(t => t.Approval.Action == TsApprovalStatus.Pending).ToList();
+        var response = _mapper.Map<List<TsWeekRDto>>(pendingTimesheets);
+        return Ok(response);
+    }
+}

@@ -20,6 +20,7 @@ public class TsWeek : Entity
 
     public int ProjectId { get; set; }
     public required Project Project { get; set; }
+    public required TsApproval Approval { get; set; }
 
     // Collections
     public required ICollection<TsEntry> TsEntries { get; set; }

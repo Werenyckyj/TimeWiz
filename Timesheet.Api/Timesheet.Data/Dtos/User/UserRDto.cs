@@ -1,8 +1,8 @@
-using System;
+using Timesheet.Data.Dtos;
 using Timesheet.Data.Interfaces;
 using Timesheet.Data.Models;
 
-namespace Timesheet.Data.Dtos.User;
+namespace Timesheet.Data.Dtos;
 
 public class UserRDto : UserDtoBase, IEntity
 {

@@ -8,6 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Folder Include="Dtos/Project/" />
+    <Folder Include="Dtos/TsWeek/" />
     <Folder Include="Dtos/User/" />
     <Folder Include="Enums/" />
     <Folder Include="Interfaces/" />

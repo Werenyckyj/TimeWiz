@@ -16,12 +16,12 @@ public class AuthService(UnitOfWork unitOfWork, IMapper mapper, ILogger<AuthServ
     private readonly IMapper _mapper = mapper;
     private readonly ILogger<AuthService> _logger = logger;
     private readonly ITokenService _tokenService = tokenService;
-    public LogInRDto Authenticate(LogInWDto dto)
+    public LogInRDto? Authenticate(LogInWDto dto)
     {
         try
         {
             var user = _unitOfWork.UserRepository.GetByUsername(dto.Username);
-            if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
+            if (user == null || user.IsActive == false || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
             {
                 _logger.LogWarning($"Authentication failed for username: {dto.Username}");
                 return null;
@@ -82,7 +82,7 @@ public class AuthService(UnitOfWork unitOfWork, IMapper mapper, ILogger<AuthServ
 
     }
 
-    public TokenDto RefreshToken(string accessToken, string refreshToken)
+    public TokenDto? RefreshToken(string accessToken, string refreshToken)
     {
         try
         {

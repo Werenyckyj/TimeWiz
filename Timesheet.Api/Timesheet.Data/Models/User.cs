@@ -24,6 +24,7 @@ public class User : Entity
     [Required]
     [MaxLength(128)]
     public required string PasswordHash { get; set; }
+    public bool IsActive { get; set; } = true;
 
     // Foreign keys
     public int RoleId { get; set; }

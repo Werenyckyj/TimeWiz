@@ -1,7 +1,7 @@
 using System;
 using Timesheet.Data.Interfaces;
 
-namespace Timesheet.Data.Dtos.Role;
+namespace Timesheet.Data.Dtos;
 
 public class RoleWDto : RoleDtoBase
 {

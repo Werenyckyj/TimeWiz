@@ -17,14 +17,14 @@ public interface IAuthService
     /// </summary>
     /// <param name="dto"></param>
     /// <returns></returns>
-    LogInRDto Authenticate(LogInWDto dto);
+    LogInRDto? Authenticate(LogInWDto dto);
 
     /// <summary>
     /// Refreshes the access token using the provided refresh token.
     /// </summary>
     /// <param name="refreshToken"></param>
     /// <returns></returns>
-    TokenDto RefreshToken(string accessToken, string refreshToken);
+    TokenDto? RefreshToken(string accessToken, string refreshToken);
 
     /// <summary>
     /// Revokes the provided refresh token, effectively logging the user out.
