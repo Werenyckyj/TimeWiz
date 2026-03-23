@@ -1,6 +1,7 @@
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Text;
 using AutoMapper;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.Extensions.Logging;
@@ -168,7 +169,8 @@ public class AuthService(UnitOfWork unitOfWork, IMapper mapper, ILogger<AuthServ
             TsWeeks = new List<TsWeek>(),
             UserProjects = new List<UserProject>(),
             PasswordResetTokens = new List<PasswordResetToken>(),
-            TokenInfos = new List<TokenInfo>()
+            TokenInfos = new List<TokenInfo>(),
+            TsApprovals = new List<TsApproval>()
         };
         var createdUser = _unitOfWork.UserRepository.Add(newUser);
         if (createdUser == null)
@@ -198,5 +200,63 @@ public class AuthService(UnitOfWork unitOfWork, IMapper mapper, ILogger<AuthServ
 
         _logger.LogInformation($"Refresh token revoked successfully (UserId: {refToken.UserId})");
         return true;
+    }
+
+    public PasswordResetToken ForgotPassword(string email)
+    {
+        var user = _unitOfWork.UserRepository.Where(u => u.Email == email).FirstOrDefault();
+        if (user == null)
+            return null!;
+
+        var resetToken = GeneratePasswordResetToken();
+
+        var newToken = new PasswordResetToken
+        {
+            UserId = user.Id,
+            Token = Encoding.UTF8.GetBytes(resetToken),
+            Expiration = DateTime.UtcNow.AddHours(1),
+            IsUsed = false,
+            User = user
+        };
+        _unitOfWork.PasswordResetTokenRepository.Add(newToken);
+        _unitOfWork.SaveChanges();
+
+        return newToken;
+    }
+
+    public bool ResetPassword(ResetPasswordDto dto, out string message)
+    {
+        var user = _unitOfWork.UserRepository.Where(u => u.Email == dto.Email).FirstOrDefault();
+        if (user == null)
+        {
+            message = "User not found.";
+            return false;
+        }
+
+        var tokenBytes = Encoding.UTF8.GetBytes(dto.Token);
+        var token = _unitOfWork.PasswordResetTokenRepository.Query()
+            .FirstOrDefault(t => t.UserId == user.Id && t.Token.SequenceEqual(tokenBytes) && !t.IsUsed && t.Expiration > DateTime.UtcNow);
+
+        if (token == null)
+        {
+            message = "Invalid or expired token.";
+            return false;
+        }
+
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+        token.IsUsed = true;
+
+        _unitOfWork.UserRepository.Update(user);
+        _unitOfWork.PasswordResetTokenRepository.Update(token);
+        _unitOfWork.SaveChanges();
+
+        message = "Password has been reset successfully.";
+        return true;
+    }
+
+    private static string GeneratePasswordResetToken()
+    {
+        var resetToken = Guid.NewGuid().ToString();
+        return resetToken;
     }
 }
