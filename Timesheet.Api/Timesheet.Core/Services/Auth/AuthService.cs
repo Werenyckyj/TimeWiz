@@ -169,8 +169,7 @@ public class AuthService(UnitOfWork unitOfWork, IMapper mapper, ILogger<AuthServ
             TsWeeks = new List<TsWeek>(),
             UserProjects = new List<UserProject>(),
             PasswordResetTokens = new List<PasswordResetToken>(),
-            TokenInfos = new List<TokenInfo>(),
-            TsApprovals = new List<TsApproval>()
+            TokenInfos = new List<TokenInfo>()
         };
         var createdUser = _unitOfWork.UserRepository.Add(newUser);
         if (createdUser == null)

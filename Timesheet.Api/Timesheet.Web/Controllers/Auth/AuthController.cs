@@ -70,7 +70,7 @@ public class AuthController(IAuthService authService, IMapper mapper, UnitOfWork
         if (result == null)
             return Ok("Password reset link has been sent."); // Avoid revealing user existence
 
-        var resetLink = $"{Request.Scheme}://{Request.Host}/reset-password?token={result.Token}&email={result.User.Email}";
+        var resetLink = $"{Request.Scheme}://{Environment.GetEnvironmentVariable("FRONTEND_URL")}/reset-password?token={Encoding.UTF8.GetString(result.Token)}&email={result.User.Email}";
 
         var subject = "Password Reset Request";
         var body = $"Dear {result.User.Name},\n\n" +
