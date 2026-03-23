@@ -21,4 +21,7 @@ public class TsApproval : Entity
 
     public int UserId { get; set; }
     public required User User { get; set; }
+
+    // Collections
+    public required IEnumerable<User> Managers { get; set; }
 }
