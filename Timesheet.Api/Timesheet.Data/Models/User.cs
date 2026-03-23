@@ -38,5 +38,4 @@ public class User : Entity
     public required ICollection<UserProject> UserProjects { get; set; }
     public required ICollection<PasswordResetToken> PasswordResetTokens { get; set; }
     public required ICollection<TokenInfo> TokenInfos { get; set; }
-    public required ICollection<TsApproval> TsApprovals { get; set; }
 }

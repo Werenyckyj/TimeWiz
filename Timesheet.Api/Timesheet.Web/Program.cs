@@ -11,6 +11,7 @@ using Timesheet.Web;
 using Timesheet.Core.Services.Auth;
 using Microsoft.OpenApi.Models;
 using Timesheet.Web.Swagger;
+using Timesheet.Core.Services.Mail;
 
 Env.TraversePath().Load();
 
@@ -58,6 +59,7 @@ builder.Services.AddScoped<UnitOfWork>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<UserRepository>();
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IMailService, MailService>();
 
 var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET") ?? throw new InvalidOperationException("Chybí JWT_SECRET v .env");
 
