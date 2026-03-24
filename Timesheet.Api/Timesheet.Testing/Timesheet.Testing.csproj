@@ -28,6 +28,9 @@
 
   <ItemGroup>
     <Folder Include="Unit/" />
+    <Folder Include="Unit/Repositories/" />
+    <Folder Include="Unit/Repositories/Token/" />
+    <Folder Include="Unit/Repositories/User/" />
     <Folder Include="Unit/Services/" />
   </ItemGroup>
 

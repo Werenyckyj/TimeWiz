@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace Timesheet.Core;
@@ -53,7 +54,7 @@ public interface ITRepository<TEntity> where TEntity : class
     /// <typeparam name="TEntity">The type of entities to find.</typeparam>
     /// <param name="function">A function that defines the condition to match.</param>
     /// <returns>An IEnumerable of entities of type TEntity that match the specified condition.</returns>
-    public IEnumerable<TEntity> Where(Func<TEntity, bool> function);
+    public IEnumerable<TEntity> Where(Expression<Func<TEntity, bool>> function);
 
     /// <summary>
     /// Counts the number of entities of type TEntity in the repository.
