@@ -44,14 +44,24 @@ public class TokenService(IConfiguration config, ILogger<TokenService> logger) :
 
     public int GetUserIdFromAccessToken(string accessToken)
     {
-        var tokenHandler = new JwtSecurityTokenHandler();
-        var jwtToken = tokenHandler.ReadJwtToken(accessToken);
-        var userIdClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
-        _logger.LogInformation($"User ID extracted from access token: {userIdClaim?.Value}");
-        return userIdClaim != null ? int.Parse(userIdClaim.Value) : 0;
+        try
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var jwtToken = tokenHandler.ReadJwtToken(accessToken);
+            var userIdClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier ||
+                                                                c.Type == "nameid" ||
+                                                                c.Type == JwtRegisteredClaimNames.Sub);
+            _logger.LogInformation($"User ID extracted from access token: {userIdClaim?.Value}");
+            return userIdClaim != null ? int.Parse(userIdClaim.Value) : 0;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error extracting user ID from access token.");
+            return 0;
+        }
     }
 
-    public ClaimsPrincipal GetPrincipalFromExpiredToken(string token)
+    public ClaimsPrincipal? GetPrincipalFromExpiredToken(string token)
     {
         var tokenValidationParameters = new TokenValidationParameters
         {
@@ -64,17 +74,25 @@ public class TokenService(IConfiguration config, ILogger<TokenService> logger) :
             ClockSkew = TimeSpan.Zero,
         };
 
-        var tokenHandler = new JwtSecurityTokenHandler();
-        var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out var securityToken);
-        var jwtSecurityToken = securityToken as JwtSecurityToken;
-        if (securityToken == null ||
-            !jwtSecurityToken!.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
+        try
         {
-            _logger.LogWarning("Invalid token format or signing algorithm.");
-            throw new SecurityTokenException("Invalid token");
-        }
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out var securityToken);
+            var jwtSecurityToken = securityToken as JwtSecurityToken;
+            if (securityToken == null ||
+                !jwtSecurityToken!.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
+            {
+                _logger.LogWarning("Invalid token format or signing algorithm.");
+                return null;
+            }
 
-        _logger.LogInformation("Claims principal extracted from expired token successfully.");
-        return principal;
+            _logger.LogInformation("Claims principal extracted from expired token successfully.");
+            return principal;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error validating expired token.");
+            return null;
+        }
     }
 }
