@@ -28,6 +28,9 @@ public class TimesheetController(ILogger<TimesheetController> logger, ITReposito
         var user = _unitOfWork.UserRepository.GetById(dto.UserId);
         if (user == null) return NotFound($"User with ID {dto.UserId} not found.");
 
+        var project = _unitOfWork.ProjectRepository.GetById(dto.ProjectId);
+        if (project == null) return NotFound($"Project with ID {dto.ProjectId} not found.");
+
         var existingTsWeek = _unitOfWork.TsWeekRepository
             .Where(t => t.UserId == dto.UserId && t.Year == dto.Year && t.WeekNumber == dto.WeekNumber)
             .FirstOrDefault();
@@ -75,6 +78,9 @@ public class TimesheetController(ILogger<TimesheetController> logger, ITReposito
 
         var user = _unitOfWork.UserRepository.GetById(dto.UserId);
         if (user == null) return NotFound($"User with ID {dto.UserId} not found.");
+
+        var project = _unitOfWork.ProjectRepository.GetById(dto.ProjectId);
+        if (project == null) return NotFound($"Project with ID {dto.ProjectId} not found.");
 
         var isNewlySubmitted = existingTsWeek.Status != TsWeekStatus.Submitted && dto.Status == TsWeekStatus.Submitted;
         var isStatusChanged = existingTsWeek.Status != TsWeekStatus.Rejected && (dto.Status == TsWeekStatus.Rejected || dto.Status == TsWeekStatus.Approved);

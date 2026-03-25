@@ -46,8 +46,9 @@ public class GenericController<T, TRequest, TResponse>(ILogger logger, ITReposit
         {
             return NotFound();
         }
+        _mapper.Map(request, entity);
 
-        var updatedEntity = _tRepository.Update(_mapper.Map<T>(request));
+        var updatedEntity = _tRepository.Update(entity);
         _tRepository.SaveChanges();
         return Ok(_mapper.Map<TResponse>(updatedEntity.Entity));
     }

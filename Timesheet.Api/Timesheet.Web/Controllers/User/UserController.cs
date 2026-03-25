@@ -39,15 +39,16 @@ public class UserController(ILogger<UserController> logger, ITRepository<User> t
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Authorize(Roles = "Admin, Manager")]
-    public IActionResult GetUserProjectTimesheets(int id, [FromBody] int projectId, [FromQuery] int page = 1, [FromQuery] int pageSize = 3, [FromQuery] int? year = null, [FromQuery] int? week = null)
+    public IActionResult GetUserProjectTimesheets(int id, [FromQuery] int projectId, [FromQuery] int page = 1, [FromQuery] int pageSize = 3, [FromQuery] int? year = null, [FromQuery] int? week = null)
     {
         if (_unitOfWork.UserRepository.GetById(id) is null)
-        {
             return NotFound();
-        }
+
+        if (_unitOfWork.ProjectRepository.GetById(projectId) is null)
+            return NotFound();
 
         var query = _unitOfWork.TsWeekRepository.Query()
-        .Where(ts => ts.UserId == id);
+        .Where(ts => ts.UserId == id && ts.ProjectId == projectId);
 
         if (year.HasValue) query = query.Where(ts => ts.Year == year.Value);
         if (week.HasValue) query = query.Where(ts => ts.WeekNumber == week.Value);

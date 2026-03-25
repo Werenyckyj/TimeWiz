@@ -24,29 +24,6 @@ public abstract class TestBase : IDisposable
         _unitOfWork = new UnitOfWork(_context);
     }
 
-    protected void SimulateLogin(ControllerBase controller, int userId, string username, string role)
-    {
-        var claims = new List<Claim>
-        {
-            new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
-            new Claim(ClaimTypes.Name, username),
-            new Claim(ClaimTypes.Role, role)
-        };
-
-        var identity = new ClaimsIdentity(claims, "TestAuthType");
-        var claimsPrincipal = new ClaimsPrincipal(identity);
-
-        var httpContext = new DefaultHttpContext
-        {
-            User = claimsPrincipal
-        };
-
-        controller.ControllerContext = new ControllerContext
-        {
-            HttpContext = httpContext
-        };
-    }
-
     public void Dispose()
     {
         _context.Database.EnsureDeleted();
