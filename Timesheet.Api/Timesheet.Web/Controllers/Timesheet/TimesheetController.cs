@@ -28,12 +28,21 @@ public class TimesheetController(ILogger<TimesheetController> logger, ITReposito
         var user = _unitOfWork.UserRepository.GetById(dto.UserId);
         if (user == null) return NotFound($"User with ID {dto.UserId} not found.");
 
+        var project = _unitOfWork.ProjectRepository.GetById(dto.ProjectId);
+        if (project == null) return NotFound($"Project with ID {dto.ProjectId} not found.");
+
+        var userProject = _unitOfWork.UserProjectRepository
+            .Where(up => up.UserId == dto.UserId && up.ProjectId == dto.ProjectId)
+            .FirstOrDefault();
+        if (userProject == null) return BadRequest($"User with ID {dto.UserId} is not assigned to Project with ID {dto.ProjectId}.");
+
         var existingTsWeek = _unitOfWork.TsWeekRepository
             .Where(t => t.UserId == dto.UserId && t.Year == dto.Year && t.WeekNumber == dto.WeekNumber)
             .FirstOrDefault();
 
         if (existingTsWeek != null)
         {
+            _logger.LogWarning($"Attempt to create duplicate timesheet for User ID {dto.UserId}, Year {dto.Year}, Week {dto.WeekNumber}.");
             return BadRequest($"Timesheet for User ID {dto.UserId}, Year {dto.Year}, Week {dto.WeekNumber} already exists.");
         }
 
@@ -52,6 +61,7 @@ public class TimesheetController(ILogger<TimesheetController> logger, ITReposito
             };
             _unitOfWork.TsEntryRepository.Add(entry);
         }
+        _logger.LogInformation($"Created timesheet with ID {week.Entity.Id} for User ID {dto.UserId}, Year {dto.Year}, Week {dto.WeekNumber}, with {dto.DaysInWeek} entries.");
         _unitOfWork.SaveChanges();
 
         var responseDto = _mapper.Map<TsWeekRDto>(tsWeek);
@@ -75,6 +85,9 @@ public class TimesheetController(ILogger<TimesheetController> logger, ITReposito
 
         var user = _unitOfWork.UserRepository.GetById(dto.UserId);
         if (user == null) return NotFound($"User with ID {dto.UserId} not found.");
+
+        var project = _unitOfWork.ProjectRepository.GetById(dto.ProjectId);
+        if (project == null) return NotFound($"Project with ID {dto.ProjectId} not found.");
 
         var isNewlySubmitted = existingTsWeek.Status != TsWeekStatus.Submitted && dto.Status == TsWeekStatus.Submitted;
         var isStatusChanged = existingTsWeek.Status != TsWeekStatus.Rejected && (dto.Status == TsWeekStatus.Rejected || dto.Status == TsWeekStatus.Approved);

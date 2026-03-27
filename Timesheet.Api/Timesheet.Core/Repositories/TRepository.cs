@@ -1,6 +1,7 @@
 using Timesheet.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using System.Linq.Expressions;
 
 namespace Timesheet.Core.Repositories;
 
@@ -53,9 +54,9 @@ public class TRepository<TEntity> : ITRepository<TEntity> where TEntity : class
         _dbSet.Remove(entity);
     }
 
-    public IEnumerable<TEntity> Where(Func<TEntity, bool> function)
+    public IEnumerable<TEntity> Where(Expression<Func<TEntity, bool>> function)
     {
-        return _dbSet.Where(i => function(i)).AsEnumerable();
+        return _dbSet.Where(function).AsEnumerable();
     }
 
     public int Count()

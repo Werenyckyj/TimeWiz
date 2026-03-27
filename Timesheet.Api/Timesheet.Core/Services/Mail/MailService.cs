@@ -14,7 +14,7 @@ public partial class MailService : IMailService, IDisposable
     private readonly string smtpPassword = Environment.GetEnvironmentVariable("SMTP_PASSWORD")!;
     private readonly SmtpClient _smtpClient;
     private readonly ILogger<MailService> _logger = LoggerFactory.Create(builder => builder.AddConsole()).CreateLogger<MailService>();
-    [GeneratedRegex(@"^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$", RegexOptions.Compiled)]
+    [GeneratedRegex(@"^[\w-\.]+@([\w-]+\.)+[\w-]{2,8}$", RegexOptions.Compiled)]
     private static partial Regex EmailRegex();
 
     public MailService()
@@ -26,8 +26,13 @@ public partial class MailService : IMailService, IDisposable
             _logger.LogError("SMTP_USER or SMTP_PASSWORD environment variables are not set.");
             throw new InvalidOperationException("SMTP_USER and SMTP_PASSWORD must be set in environment variables.");
         }
-        _smtpClient.Connect(smtpHost, smtpPort, MailKit.Security.SecureSocketOptions.StartTls);
-        _smtpClient.Authenticate(smtpUser, smtpPassword);
+
+        _smtpClient.Connect(smtpHost, smtpPort, MailKit.Security.SecureSocketOptions.Auto);
+
+        if (_smtpClient.Capabilities.HasFlag(SmtpCapabilities.Authentication))
+        {
+            _smtpClient.Authenticate(smtpUser, smtpPassword);
+        }
     }
 
     public void Dispose()

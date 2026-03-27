@@ -6,6 +6,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.Extensions.Logging;
 using Timesheet.Data;
+using Timesheet.Data.Dtos;
 using Timesheet.Data.Dtos.Auth;
 using Timesheet.Data.Models;
 
@@ -77,7 +78,7 @@ public class AuthService(UnitOfWork unitOfWork, IMapper mapper, ILogger<AuthServ
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"An error occurred during authentication for username: {dto.Username}");
+            _logger.LogError(ex, $"An error occurred during authentication for username: {dto.Username}, Error: {ex.Message}");
             return null;
         }
 
@@ -88,6 +89,11 @@ public class AuthService(UnitOfWork unitOfWork, IMapper mapper, ILogger<AuthServ
         try
         {
             var principal = _tokenService.GetPrincipalFromExpiredToken(accessToken);
+            if (principal == null)
+            {
+                _logger.LogWarning("Invalid access token provided for refresh.");
+                return null;
+            }
             var username = principal.Identity!.Name;
 
             var user = _unitOfWork.UserRepository.GetByUsername(username!);
@@ -132,36 +138,36 @@ public class AuthService(UnitOfWork unitOfWork, IMapper mapper, ILogger<AuthServ
         }
     }
 
-    public string Register(RegisterWDto dto)
+    public UserRDto Register(RegisterWDto dto)
     {
         var existingUser = _unitOfWork.UserRepository.GetByUsername(dto.Username);
         if (existingUser != null)
         {
             _logger.LogWarning($"User already exists with username: {dto.Username}");
-            return "User already exists.";
+            return null!;
         }
 
         var role = _unitOfWork.RoleRepository.GetById(dto.RoleId);
         if (role == null)
         {
             _logger.LogWarning($"Role not found with ID: {dto.RoleId}");
-            return "Role not found.";
+            return null!;
         }
 
         var company = _unitOfWork.CompanyRepository.GetById(dto.CompanyId);
         if (company == null)
         {
             _logger.LogWarning($"Company not found with ID: {dto.CompanyId}");
-            return "Company not found.";
+            return null!;
         }
 
         var newUser = new User
         {
             Username = dto.Username,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
-            Name = string.Empty,
-            Surname = string.Empty,
-            Email = string.Empty,
+            Name = dto.Name,
+            Surname = dto.Surname,
+            Email = dto.Email,
             Role = role,
             RoleId = dto.RoleId,
             Company = company,
@@ -175,12 +181,12 @@ public class AuthService(UnitOfWork unitOfWork, IMapper mapper, ILogger<AuthServ
         if (createdUser == null)
         {
             _logger.LogError($"Failed to create user with username: {dto.Username}");
-            return "Failed to create user.";
+            return null!;
         }
 
         _unitOfWork.SaveChanges();
         _logger.LogInformation($"User created successfully with username: {dto.Username}");
-        return "true";
+        return _mapper.Map<UserRDto>(createdUser.Entity);
     }
 
     public bool RevokeToken(string accessToken, string refreshToken)
@@ -203,9 +209,12 @@ public class AuthService(UnitOfWork unitOfWork, IMapper mapper, ILogger<AuthServ
 
     public PasswordResetToken ForgotPassword(string email)
     {
-        var user = _unitOfWork.UserRepository.Where(u => u.Email == email).FirstOrDefault();
+        var user = _unitOfWork.UserRepository.Query().FirstOrDefault(u => u.Email == email);
         if (user == null)
+        {
+            _logger.LogWarning($"Password reset requested for non-existent email: {email}");
             return null!;
+        }
 
         var resetToken = GeneratePasswordResetToken();
 
@@ -220,15 +229,17 @@ public class AuthService(UnitOfWork unitOfWork, IMapper mapper, ILogger<AuthServ
         _unitOfWork.PasswordResetTokenRepository.Add(newToken);
         _unitOfWork.SaveChanges();
 
+        _logger.LogInformation($"Password reset token generated for email: {email}");
         return newToken;
     }
 
     public bool ResetPassword(ResetPasswordDto dto, out string message)
     {
-        var user = _unitOfWork.UserRepository.Where(u => u.Email == dto.Email).FirstOrDefault();
+        var user = _unitOfWork.UserRepository.Query().FirstOrDefault(u => u.Email == dto.Email);
         if (user == null)
         {
             message = "User not found.";
+            _logger.LogWarning($"Password reset attempted for non-existent email: {dto.Email}");
             return false;
         }
 
@@ -239,6 +250,7 @@ public class AuthService(UnitOfWork unitOfWork, IMapper mapper, ILogger<AuthServ
         if (token == null)
         {
             message = "Invalid or expired token.";
+            _logger.LogWarning($"Invalid or expired password reset token used for email: {dto.Email}");
             return false;
         }
 
@@ -250,6 +262,7 @@ public class AuthService(UnitOfWork unitOfWork, IMapper mapper, ILogger<AuthServ
         _unitOfWork.SaveChanges();
 
         message = "Password has been reset successfully.";
+        _logger.LogInformation($"Password reset successfully for email: {dto.Email}");
         return true;
     }
 

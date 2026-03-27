@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using Timesheet.Data.Models;
 using Timesheet.Core.Services.Mail;
 using System.Threading.Tasks;
+using Timesheet.Data.Dtos;
 
 namespace Timesheet.Web.Controllers.Auth;
 
@@ -24,12 +25,12 @@ public class AuthController(IAuthService authService, IMapper mapper, UnitOfWork
 
     [HttpPost("register")]
     [Authorize(Roles = "Admin")]
-    [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(UserRDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public IActionResult Register([FromBody] RegisterWDto dto)
     {
         var result = _authService.Register(dto);
-        return result == "true" ? Ok(true) : BadRequest(result);
+        return result == null ? BadRequest("Failed to create user.") : Ok(result);
     }
 
     [HttpPost("login")]

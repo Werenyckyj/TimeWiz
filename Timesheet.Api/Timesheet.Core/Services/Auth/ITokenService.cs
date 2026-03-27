@@ -31,5 +31,5 @@ public interface ITokenService
     /// </summary>
     /// <param name="token"></param>
     /// <returns></returns>
-    public ClaimsPrincipal GetPrincipalFromExpiredToken(string token);
+    public ClaimsPrincipal? GetPrincipalFromExpiredToken(string token);
 }

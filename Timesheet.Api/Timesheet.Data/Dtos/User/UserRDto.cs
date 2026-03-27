@@ -7,6 +7,5 @@ namespace Timesheet.Data.Dtos;
 public class UserRDto : UserDtoBase, IEntity
 {
     public required int Id { get; set; }
-    public required ICollection<TsWeek> TsWeeks { get; set; }
-    public required ICollection<UserProject> UserProjects { get; set; }
+    public required ICollection<UserProjectRDto> UserProjects { get; set; }
 }

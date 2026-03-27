@@ -2,6 +2,7 @@ using System;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Timesheet.Core;
 using Timesheet.Data.Dtos;
 using Timesheet.Data.Enums;
@@ -22,13 +23,15 @@ public class ProjectController(ILogger<ProjectController> logger, ITRepository<P
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public IActionResult AssignUserToProject(int id, [FromBody] int userId)
     {
-        var project = _unitOfWork.ProjectRepository.GetById(id);
+        var project = _unitOfWork.ProjectRepository.Query()
+        .Include(p => p.UserProjects)
+        .FirstOrDefault(p => p.Id == id);
         if (project == null) return NotFound($"Project with ID {id} not found.");
 
         var user = _unitOfWork.UserRepository.GetById(userId);
         if (user == null) return NotFound($"User with ID {userId} not found.");
 
-        if (project.UserProjects.Any(u => u.UserId == userId))
+        if (project.UserProjects?.Any(u => u.UserId == userId) == true)
         {
             return BadRequest($"User with ID {userId} is already assigned to project with ID {id}.");
         }
@@ -52,7 +55,9 @@ public class ProjectController(ILogger<ProjectController> logger, ITRepository<P
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public IActionResult UnassignUserFromProject(int id, [FromBody] int userId)
     {
-        var project = _unitOfWork.ProjectRepository.GetById(id);
+        var project = _unitOfWork.ProjectRepository.Query()
+        .Include(p => p.UserProjects)
+        .FirstOrDefault(p => p.Id == id);
         if (project == null) return NotFound($"Project with ID {id} not found.");
 
         var user = _unitOfWork.UserRepository.GetById(userId);
@@ -75,7 +80,11 @@ public class ProjectController(ILogger<ProjectController> logger, ITRepository<P
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public IActionResult GetProjectUsers(int id)
     {
-        var project = _unitOfWork.ProjectRepository.GetById(id);
+        var project = _unitOfWork.ProjectRepository
+        .Query()
+        .Include(p => p.UserProjects)
+        .ThenInclude(up => up.User)
+        .FirstOrDefault(p => p.Id == id);
         if (project == null) return NotFound($"Project with ID {id} not found.");
 
         var users = project.UserProjects.Select(up => up.User).ToList();
@@ -88,7 +97,11 @@ public class ProjectController(ILogger<ProjectController> logger, ITRepository<P
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public IActionResult GetProjectPendingTimesheets(int id)
     {
-        var project = _unitOfWork.ProjectRepository.GetById(id);
+        var project = _unitOfWork.ProjectRepository
+        .Query()
+        .Include(p => p.TsWeeks)
+        .ThenInclude(t => t.Approval)
+        .FirstOrDefault(p => p.Id == id);
         if (project == null) return NotFound($"Project with ID {id} not found.");
 
         var pendingTimesheets = project.TsWeeks.Where(t => t.Approval.Action == TsApprovalStatus.Pending).ToList();
