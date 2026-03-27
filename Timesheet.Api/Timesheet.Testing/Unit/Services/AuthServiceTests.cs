@@ -4,7 +4,9 @@ using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Timesheet.Core.Services.Auth;
+using Timesheet.Data.Dtos;
 using Timesheet.Data.Dtos.Auth;
+using Timesheet.Data.Models;
 
 namespace Timesheet.Testing.Unit.Services;
 
@@ -39,8 +41,14 @@ public class AuthServiceTests : TestBase
                 }
                 return null;
             });
+        var mapperConfig = new MapperConfiguration(cfg =>
+        {
+            cfg.CreateMap<User, UserRDto>();
 
-        _authService = new AuthService(_unitOfWork, new Mock<IMapper>().Object, loggerMock.Object, tokenServiceMock.Object);
+        });
+        var realMapper = mapperConfig.CreateMapper();
+
+        _authService = new AuthService(_unitOfWork, realMapper, loggerMock.Object, tokenServiceMock.Object);
     }
 
     [Fact]
@@ -53,8 +61,8 @@ public class AuthServiceTests : TestBase
         var result = _authService.Register(registerDto);
 
         // Assert
-        Assert.NotEmpty(result);
-        Assert.Equal("true", result);
+        Assert.NotNull(result);
+        Assert.Equal(1, result.Id);
     }
 
     [Fact]
@@ -88,10 +96,9 @@ public class AuthServiceTests : TestBase
         var result2 = _authService.Register(registerDto2);
 
         // Assert
-        Assert.NotEmpty(result1);
-        Assert.Equal("true", result1);
-        Assert.NotEmpty(result2);
-        Assert.Equal("User already exists.", result2);
+        Assert.NotNull(result1);
+        Assert.Equal(1, result1.Id);
+        Assert.Null(result2);
     }
 
     [Fact]
@@ -113,8 +120,7 @@ public class AuthServiceTests : TestBase
         var result1 = _authService.Register(testUser);
 
         // Assert
-        Assert.NotEmpty(result1);
-        Assert.Equal("Role not found.", result1);
+        Assert.Null(result1);
     }
 
     [Fact]
@@ -136,8 +142,7 @@ public class AuthServiceTests : TestBase
         var result1 = _authService.Register(testUser);
 
         // Assert
-        Assert.NotEmpty(result1);
-        Assert.Equal("Company not found.", result1);
+        Assert.Null(result1);
     }
 
     [Fact]

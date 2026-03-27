@@ -6,6 +6,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.Extensions.Logging;
 using Timesheet.Data;
+using Timesheet.Data.Dtos;
 using Timesheet.Data.Dtos.Auth;
 using Timesheet.Data.Models;
 
@@ -77,7 +78,7 @@ public class AuthService(UnitOfWork unitOfWork, IMapper mapper, ILogger<AuthServ
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"An error occurred during authentication for username: {dto.Username}");
+            _logger.LogError(ex, $"An error occurred during authentication for username: {dto.Username}, Error: {ex.Message}");
             return null;
         }
 
@@ -137,27 +138,27 @@ public class AuthService(UnitOfWork unitOfWork, IMapper mapper, ILogger<AuthServ
         }
     }
 
-    public string Register(RegisterWDto dto)
+    public UserRDto Register(RegisterWDto dto)
     {
         var existingUser = _unitOfWork.UserRepository.GetByUsername(dto.Username);
         if (existingUser != null)
         {
             _logger.LogWarning($"User already exists with username: {dto.Username}");
-            return "User already exists.";
+            return null!;
         }
 
         var role = _unitOfWork.RoleRepository.GetById(dto.RoleId);
         if (role == null)
         {
             _logger.LogWarning($"Role not found with ID: {dto.RoleId}");
-            return "Role not found.";
+            return null!;
         }
 
         var company = _unitOfWork.CompanyRepository.GetById(dto.CompanyId);
         if (company == null)
         {
             _logger.LogWarning($"Company not found with ID: {dto.CompanyId}");
-            return "Company not found.";
+            return null!;
         }
 
         var newUser = new User
@@ -180,12 +181,12 @@ public class AuthService(UnitOfWork unitOfWork, IMapper mapper, ILogger<AuthServ
         if (createdUser == null)
         {
             _logger.LogError($"Failed to create user with username: {dto.Username}");
-            return "Failed to create user.";
+            return null!;
         }
 
         _unitOfWork.SaveChanges();
         _logger.LogInformation($"User created successfully with username: {dto.Username}");
-        return "true";
+        return _mapper.Map<UserRDto>(createdUser.Entity);
     }
 
     public bool RevokeToken(string accessToken, string refreshToken)

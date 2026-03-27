@@ -2,8 +2,10 @@ using System;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Timesheet.Core;
 using Timesheet.Data.Dtos;
+using Timesheet.Data.Dtos.Page;
 using Timesheet.Data.Models;
 
 namespace Timesheet.Web.Controllers;
@@ -28,8 +30,10 @@ public class UserController(ILogger<UserController> logger, ITRepository<User> t
         }
 
         var timesheets = _unitOfWork.TsWeekRepository
-        .Where(t => t.UserId == id && t.Year == year && t.WeekNumber == week)
-        .ToList();
+            .Query()
+            .Include(t => t.TsEntries)
+            .Where(t => t.UserId == id && t.Year == year && t.WeekNumber == week)
+            .ToList();
 
         var response = _mapper.Map<List<TsWeekRDto>>(timesheets);
         return Ok(response);
@@ -48,6 +52,7 @@ public class UserController(ILogger<UserController> logger, ITRepository<User> t
             return NotFound();
 
         var query = _unitOfWork.TsWeekRepository.Query()
+        .Include(t => t.TsEntries)
         .Where(ts => ts.UserId == id && ts.ProjectId == projectId);
 
         if (year.HasValue) query = query.Where(ts => ts.Year == year.Value);
@@ -66,13 +71,13 @@ public class UserController(ILogger<UserController> logger, ITRepository<User> t
 
         var response = _mapper.Map<IEnumerable<TsWeekRDto>>(timesheets);
 
-        return Ok(new
+        return Ok(new PaginatedResponse<TsWeekRDto>
         {
             TotalRecords = totalRecords,
             Page = page,
             PageSize = pageSize,
             TotalPages = (int)Math.Ceiling(totalRecords / (double)pageSize),
-            Data = response
+            Data = [.. response]
         });
     }
 
@@ -88,6 +93,8 @@ public class UserController(ILogger<UserController> logger, ITRepository<User> t
         }
 
         var projects = _unitOfWork.UserProjectRepository
+        .Query()
+        .Include(up => up.Project)
         .Where(up => up.UserId == id)
         .Select(up => up.Project)
         .ToList();

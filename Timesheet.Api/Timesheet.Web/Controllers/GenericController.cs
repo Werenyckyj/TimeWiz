@@ -22,6 +22,7 @@ public class GenericController<T, TRequest, TResponse>(ILogger logger, ITReposit
         var entity = _tRepository.GetById(id);
         if (entity == null)
         {
+            _logger.LogWarning($"Entity of type {typeof(T).Name} with ID {id} not found.");
             return NotFound();
         }
         var response = _mapper.Map<TResponse>(entity);
@@ -29,7 +30,7 @@ public class GenericController<T, TRequest, TResponse>(ILogger logger, ITReposit
     }
 
     [HttpPost]
-    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public virtual IActionResult Create([FromBody] TRequest request)
     {
         var createdEntity = _tRepository.Add(_mapper.Map<T>(request));
@@ -44,6 +45,7 @@ public class GenericController<T, TRequest, TResponse>(ILogger logger, ITReposit
         var entity = _tRepository.GetById(id);
         if (entity == null)
         {
+            _logger.LogWarning($"Entity of type {typeof(T).Name} with ID {id} not found.");
             return NotFound();
         }
         _mapper.Map(request, entity);
@@ -60,6 +62,7 @@ public class GenericController<T, TRequest, TResponse>(ILogger logger, ITReposit
         var success = _tRepository.DeleteById(id);
         if (!success)
         {
+            _logger.LogWarning($"Entity of type {typeof(T).Name} with ID {id} not found.");
             return NotFound();
         }
         _tRepository.SaveChanges();

@@ -19,7 +19,7 @@ public class GenericControllerTests : TestBase
             {
                 cfg.CreateMap<RoleWDto, Role>();
                 cfg.CreateMap<Role, RoleRDto>();
-            }, NullLoggerFactory.Instance);
+            });
         var realMapper = mapperProfile.CreateMapper();
 
         _controller = new GenericController<Role, RoleWDto, RoleRDto>(new Mock<ILogger<GenericController<Role, RoleWDto, RoleRDto>>>().Object, _unitOfWork.RoleRepository, realMapper);

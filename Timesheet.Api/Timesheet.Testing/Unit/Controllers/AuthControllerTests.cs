@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Timesheet.Core.Services.Auth;
 using Timesheet.Core.Services.Mail;
+using Timesheet.Data.Dtos;
 using Timesheet.Data.Dtos.Auth;
 using Timesheet.Data.Models;
 using Timesheet.Web.Controllers.Auth;
@@ -20,7 +21,17 @@ public class AuthControllerTests : TestBase
     public AuthControllerTests()
     {
         var authServiceMock = new Mock<IAuthService>();
-        authServiceMock.Setup(s => s.Register(It.Is<RegisterWDto>(dto => dto.Username == "newuser" && dto.Password == "Password123!" && dto.Name == "John" && dto.Surname == "Doe" && dto.Email == "john.doe@example.com" && dto.RoleId == 1 && dto.CompanyId == 1))).Returns("true");
+        authServiceMock.Setup(s => s.Register(It.Is<RegisterWDto>(dto => dto.Username == "newuser" && dto.Password == "Password123!" && dto.Name == "John" && dto.Surname == "Doe" && dto.Email == "john.doe@example.com" && dto.RoleId == 1 && dto.CompanyId == 1))).Returns(
+            new UserRDto
+            {
+                Id = 1,
+                Username = "newuser",
+                Name = "John",
+                Surname = "Doe",
+                Email = "john.doe@example.com",
+                UserProjects = [],
+            }
+        );
         var logInRDto = new LogInRDto { Username = "existinguser", Token = new TokenDto { AccessToken = "fake-jwt-token", RefreshToken = "fake-refresh-token", ExpirationTime = DateTime.UtcNow.AddHours(1), UserId = 1 } };
         authServiceMock.Setup(s => s.Authenticate(It.Is<LogInWDto>(dto => dto.Username == "existinguser" && dto.Password == "Password123!"))).Returns(logInRDto);
         var tokenDto = new TokenDto
@@ -86,7 +97,7 @@ public class AuthControllerTests : TestBase
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
-        Assert.True(okResult.Value is true);
+        Assert.True(okResult.Value is UserRDto);
     }
 
     [Fact]

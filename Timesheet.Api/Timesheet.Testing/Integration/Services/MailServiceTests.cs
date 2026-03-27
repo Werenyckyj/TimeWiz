@@ -6,6 +6,7 @@ using Timesheet.Core.Services.Mail;
 
 namespace Timesheet.Testing.Integration.Services;
 
+[Collection("Sequential Config Tests")]
 public class MailServiceTests : IDisposable
 {
     private const int TestPort = 9000;

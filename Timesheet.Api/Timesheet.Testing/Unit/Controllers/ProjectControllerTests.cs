@@ -24,7 +24,8 @@ public class ProjectControllerTests : TestBase
                 cfg.CreateMap<UserWDto, User>();
                 cfg.CreateMap<User, UserRDto>();
                 cfg.CreateMap<TsWeek, TsWeekRDto>();
-            }, NullLoggerFactory.Instance);
+                cfg.CreateMap<UserProject, UserProjectRDto>();
+            });
         var realMapper = mapperProfile.CreateMapper();
         var project = new Project
         {
@@ -32,8 +33,8 @@ public class ProjectControllerTests : TestBase
             Name = "Test Project",
             Code = "TP",
             IsActive = true,
-            TsWeeks = new List<TsWeek>(),
-            UserProjects = new List<UserProject>()
+            TsWeeks = [],
+            UserProjects = []
         };
         var user = new User
         {
@@ -45,10 +46,10 @@ public class ProjectControllerTests : TestBase
             PasswordHash = "hash",
             Role = new Role { Id = 99, Name = "Employee", Privilege = RoleTypes.Employee, Users = [] },
             Company = new Company { Id = 99, Name = "Test Company", Employees = [], CIN = "12345678" },
-            TsWeeks = new List<TsWeek>(),
-            UserProjects = new List<UserProject>(),
-            PasswordResetTokens = new List<PasswordResetToken>(),
-            TokenInfos = new List<TokenInfo>()
+            TsWeeks = [],
+            UserProjects = [],
+            PasswordResetTokens = [],
+            TokenInfos = []
         };
         _unitOfWork.ProjectRepository.Add(project);
         _unitOfWork.UserRepository.Add(user);
@@ -218,9 +219,9 @@ public class ProjectControllerTests : TestBase
                 ActionTime = DateTime.UtcNow,
                 TsWeek = null!,
                 User = _unitOfWork.UserRepository.GetById(99)!,
-                Managers = new List<User>()
+                Managers = []
             },
-            TsEntries = new List<TsEntry>()
+            TsEntries = []
         };
         _unitOfWork.TsWeekRepository.Add(tsWeek);
         _unitOfWork.SaveChanges();

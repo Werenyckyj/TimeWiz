@@ -22,7 +22,7 @@ public class UserControllerTests : TestBase
                 cfg.CreateMap<User, UserRDto>();
                 cfg.CreateMap<TsWeek, TsWeekRDto>();
                 cfg.CreateMap<Project, ProjectRDto>();
-            }, NullLoggerFactory.Instance);
+            });
         var realMapper = mapperProfile.CreateMapper();
         var user = new User
         {

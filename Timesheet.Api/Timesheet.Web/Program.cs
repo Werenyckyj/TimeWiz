@@ -25,8 +25,11 @@ var pass = Environment.GetEnvironmentVariable("DB_PASSWORD");
 
 var connectionString = $"Host={host};Port={port};Database={db};Username={user};Password={pass}";
 
-builder.Services.AddDbContext<AppDbContext>(options =>
+if (builder.Environment.EnvironmentName != "Testing")
+{
+    builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString));
+}
 
 builder.Services.AddAuthorization(options =>
 {
@@ -84,10 +87,13 @@ builder.Services.AddAuthentication(options =>
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
+if (app.Environment.EnvironmentName != "Testing")
 {
-    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    dbContext.Database.Migrate();
+    using (var scope = app.Services.CreateScope())
+    {
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        dbContext.Database.Migrate();
+    }
 }
 
 if (app.Environment.IsDevelopment())
@@ -107,3 +113,5 @@ DbSeeder.SeedData(app);
 
 
 app.Run();
+
+public partial class Program { }

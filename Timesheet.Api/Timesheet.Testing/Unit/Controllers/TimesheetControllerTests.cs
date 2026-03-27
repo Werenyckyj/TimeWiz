@@ -21,7 +21,10 @@ public class TimesheetControllerTests : TestBase
             {
                 cfg.CreateMap<TsWeekWDto, TsWeek>();
                 cfg.CreateMap<TsWeek, TsWeekRDto>();
-            }, NullLoggerFactory.Instance);
+                cfg.CreateMap<TsEntryWDto, TsEntry>();
+                cfg.CreateMap<TsEntry, TsEntryRDto>();
+                cfg.CreateMap<Project, ProjectRDto>();
+            });
         var realMapper = mapperProfile.CreateMapper();
         var project = new Project
         {
@@ -47,6 +50,16 @@ public class TimesheetControllerTests : TestBase
             PasswordResetTokens = new List<PasswordResetToken>(),
             TokenInfos = new List<TokenInfo>()
         };
+        var userProject = new UserProject
+        {
+            UserId = 99,
+            ProjectId = 1,
+            User = user,
+            Project = project,
+            ProjectRole = RoleTypes.Employee
+        };
+
+        project.UserProjects.Add(userProject);
         _unitOfWork.ProjectRepository.Add(project);
         _unitOfWork.UserRepository.Add(user);
         _unitOfWork.SaveChanges();
@@ -132,6 +145,7 @@ public class TimesheetControllerTests : TestBase
     public void Create_ReturnsBadRequestResult_WhenTimesheetAlreadyExists()
     {
         // Arrange
+
         var newTsWeek = new TsWeekWDto
         {
             UserId = 99,

@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.0" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.0" />
@@ -28,7 +29,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Integration/" />
     <Folder Include="Integration/Services/" />
     <Folder Include="Unit/" />
     <Folder Include="Unit/Controllers/" />

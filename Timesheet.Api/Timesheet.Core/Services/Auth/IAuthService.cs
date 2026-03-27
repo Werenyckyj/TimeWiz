@@ -1,4 +1,5 @@
 using System;
+using Timesheet.Data.Dtos;
 using Timesheet.Data.Dtos.Auth;
 using Timesheet.Data.Models;
 
@@ -11,7 +12,7 @@ public interface IAuthService
     /// </summary>
     /// <param name="dto"></param>
     /// <returns></returns>
-    string Register(RegisterWDto dto);
+    UserRDto? Register(RegisterWDto dto);
 
     /// <summary>
     /// Authenticates a user based on the provided credentials.

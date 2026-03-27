@@ -6,5 +6,7 @@ namespace Timesheet.Data.Dtos;
 public class TsWeekRDto : TsWeekDtoBase, IEntity
 {
     public required int Id { get; set; }
-    public required Project Project { get; set; }
+    public required ProjectRDto Project { get; set; }
+    public ICollection<TsEntryRDto> TsEntries { get; set; } = [];
+
 }

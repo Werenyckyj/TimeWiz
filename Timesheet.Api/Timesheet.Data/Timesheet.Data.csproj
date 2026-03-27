@@ -8,9 +8,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Folder Include="Dtos/Company/" />
+    <Folder Include="Dtos/Page/" />
     <Folder Include="Dtos/Project/" />
     <Folder Include="Dtos/TsWeek/" />
     <Folder Include="Dtos/User/" />
+    <Folder Include="Dtos/UserProject/" />
     <Folder Include="Enums/" />
     <Folder Include="Interfaces/" />
     <Folder Include="Migrations/" />
