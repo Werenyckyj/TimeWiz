@@ -1,18 +1,22 @@
 import { useState } from 'react';
 import { AuthRepository } from '../services/AuthRepository';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 
 export default function Login() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [message, setMessage] = useState('');
 
+    const navigate = useNavigate();
+    const { login } = useAuth();
+
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
             const data = await AuthRepository.login({ username, password });
-
-            localStorage.setItem('accessToken', data.token.accessToken);
-            setMessage('✅ Successfully logged in!');
+            login(data.token.accessToken);
+            navigate('/dashboard');
 
         } catch (error: unknown) {
             const errorMessage = (error as { response?: { data?: string } }).response?.data || 'Login failed';
