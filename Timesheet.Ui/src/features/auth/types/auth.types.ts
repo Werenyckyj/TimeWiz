@@ -13,3 +13,8 @@ export interface LoginResponse {
         userId: number;
     };
 }
+
+export interface RevokeRequest {
+    accessToken: string;
+    refreshToken: string;
+}

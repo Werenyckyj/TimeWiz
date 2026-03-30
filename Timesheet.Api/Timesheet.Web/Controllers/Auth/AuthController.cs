@@ -43,7 +43,6 @@ public class AuthController(IAuthService authService, IMapper mapper, UnitOfWork
     }
 
     [HttpPost("refresh")]
-    [Authorize(Roles = "Admin, Manager, Employee, External")]
     [ProducesResponseType(typeof(TokenDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public IActionResult Refresh([FromBody] RefreshTokenWDto dto)

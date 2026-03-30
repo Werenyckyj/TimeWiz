@@ -17,12 +17,17 @@ public class TokenService(IConfiguration config, ILogger<TokenService> logger) :
     public string GenerateAccessToken(IEnumerable<Claim> claims)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
-        var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JWT:Secret"]!));
+
+        var secret = Environment.GetEnvironmentVariable("JWT_SECRET") ?? throw new InvalidOperationException("Chybí JWT_SECRET v .env");
+        var issuer = Environment.GetEnvironmentVariable("JWT_ISSUER");
+        var audience = Environment.GetEnvironmentVariable("JWT_AUDIENCE");
+
+        var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
 
         var newTokenDescriptor = new SecurityTokenDescriptor
         {
-            Issuer = _config["JWT:ValidIssuer"],
-            Audience = _config["JWT:ValidAudience"],
+            Issuer = issuer,
+            Audience = audience,
             Subject = new ClaimsIdentity(claims),
             Expires = DateTime.Now.AddHours(1),
             SigningCredentials = new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
@@ -63,13 +68,17 @@ public class TokenService(IConfiguration config, ILogger<TokenService> logger) :
 
     public ClaimsPrincipal? GetPrincipalFromExpiredToken(string token)
     {
+        var secret = Environment.GetEnvironmentVariable("JWT_SECRET") ?? throw new InvalidOperationException("Chybí JWT_SECRET v .env");
+        var issuer = Environment.GetEnvironmentVariable("JWT_ISSUER");
+        var audience = Environment.GetEnvironmentVariable("JWT_AUDIENCE");
+
         var tokenValidationParameters = new TokenValidationParameters
         {
             ValidateAudience = false,
             ValidateIssuer = false,
-            ValidAudience = _config["JWT:ValidAudience"],
-            ValidIssuer = _config["JWT:ValidIssuer"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JWT:Secret"]!)),
+            ValidAudience = audience,
+            ValidIssuer = issuer,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret)),
             ValidateLifetime = false,
             ClockSkew = TimeSpan.Zero,
         };
