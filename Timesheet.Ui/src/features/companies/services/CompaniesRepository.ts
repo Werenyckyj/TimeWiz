@@ -9,7 +9,11 @@ export const CompaniesRepository = {
     editCompany: async (company: Company): Promise<void> => {
         await api.put(`/company/${company.id}`, company);
     },
-    deleteCompany: async (companyId: string): Promise<void> => {
+    deleteCompany: async (companyId: number): Promise<void> => {
         await api.delete(`/company/${companyId}`);
+    },
+    addCompany: async (company: Omit<Company, "id">): Promise<Company> => {
+        const response = await api.post<Company>("/company", company);
+        return response.data;
     }
 };

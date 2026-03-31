@@ -1,10 +1,10 @@
 import { useState, type ReactNode } from "react";
 import { CompaniesContext } from "./CompaniesContext";
-import { CompaniesRepository } from "../services/CompaniesRepository"; // Uprav si cestu, pokud máš repozitář jinde
-import type { Company } from "../types/companies.type";
+import { CompaniesRepository } from "../services/CompaniesRepository";
+import type { Company, Companies } from "../types/companies.type";
 
 export const CompaniesProvider = ({ children }: { children: ReactNode }) => {
-    const [companies, setCompanies] = useState<Company[]>([]);
+    const [companies, setCompanies] = useState<Companies>({ data: [] } as unknown as Companies);
 
     const getCompanies = async () => {
         const data = await CompaniesRepository.getCompanies();
@@ -13,16 +13,48 @@ export const CompaniesProvider = ({ children }: { children: ReactNode }) => {
 
     const editCompany = async (company: Company) => {
         await CompaniesRepository.editCompany(company);
-        setCompanies(prev => prev.map(c => c.id === company.id ? company : c));
+        setCompanies(prev => {
+            if (!prev || !Array.isArray(prev.data)) return prev;
+            return {
+                ...prev,
+                data: prev.data.map(c => c.id === company.id ? company : c)
+            };
+        });
     };
 
-    const deleteCompany = async (companyId: string) => {
+    const deleteCompany = async (companyId: number) => {
         await CompaniesRepository.deleteCompany(companyId);
-        setCompanies(prev => prev.filter(c => c.id !== companyId));
+        setCompanies(prev => {
+            if (!prev || !Array.isArray(prev.data)) return prev;
+            return {
+                ...prev,
+                data: prev.data.filter(c => c.id !== companyId)
+            };
+        });
+    };
+
+    const addCompany = async (company: Omit<Company, "id">) => {
+        const newCompany = await CompaniesRepository.addCompany(company);
+
+        setCompanies(prev => {
+            if (!prev || !Array.isArray(prev.data)) return prev;
+            return {
+                ...prev,
+                data: [...prev.data, newCompany]
+            };
+        });
+
+        return newCompany;
     };
 
     return (
-        <CompaniesContext.Provider value={{ companies, getCompanies, editCompany, deleteCompany }}>
+        <CompaniesContext.Provider value={{
+            companies,
+            getCompanies,
+            editCompany,
+            deleteCompany,
+            addCompany
+        }}>
             {children}
         </CompaniesContext.Provider>
     );
