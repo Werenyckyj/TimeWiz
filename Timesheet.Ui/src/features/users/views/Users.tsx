@@ -18,6 +18,8 @@ export default function Users() {
         { header: "Name", accessor: "name", type: "text", maxLength: 100 },
         { header: "Surname", accessor: "surname", type: "text", maxLength: 100 },
         { header: "Email", accessor: "email", type: "text", maxLength: 100 },
+        { header: "Is Active", accessor: "isActive", type: "readonly", renderCell: (row) => row.isActive ? "✔️" : "❌" },
+        { header: "Role", accessor: "role", type: "readonly", renderCell: (row) => row.role ? row.role.name : "No role" },
     ];
 
     const handleAdd = async (draft: Partial<User>) => {

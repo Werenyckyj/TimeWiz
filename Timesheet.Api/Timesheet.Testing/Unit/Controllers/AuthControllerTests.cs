@@ -30,6 +30,13 @@ public class AuthControllerTests : TestBase
                 Surname = "Doe",
                 Email = "john.doe@example.com",
                 UserProjects = [],
+                IsActive = true,
+                Role = new RoleRDto
+                {
+                    Id = 1,
+                    Name = "User",
+                    Privilege = Data.Enums.RoleTypes.Employee
+                }
             }
         );
         var logInRDto = new LogInRDto { Username = "existinguser", Token = new TokenDto { AccessToken = "fake-jwt-token", RefreshToken = "fake-refresh-token", ExpirationTime = DateTime.UtcNow.AddHours(1), UserId = 1 } };

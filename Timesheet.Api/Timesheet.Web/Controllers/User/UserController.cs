@@ -18,6 +18,19 @@ public class UserController(ILogger<UserController> logger, ITRepository<User> t
 {
     private readonly UnitOfWork _unitOfWork = unitOfWork;
 
+    [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public override IActionResult GetAll()
+    {
+        var entities = _tRepository.GetAll()
+                                .Include(u => u.Role)
+                                .Include(u => u.UserProjects)
+                                .AsEnumerable();
+
+        var responses = _mapper.Map<IEnumerable<UserRDto>>(entities).ToList();
+        return Ok(new { count = responses.Count, data = responses });
+    }
+
     [HttpGet("{id:int}/timesheets")]
     [ProducesResponseType(typeof(List<TsWeekRDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
