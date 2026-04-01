@@ -1,4 +1,4 @@
-import type { Role } from "../../../shared/types/role.type";
+import type { Role } from "../../roles/types/role.type";
 
 export interface Users {
     count: number;
@@ -13,5 +13,26 @@ export interface User {
     email: string;
     isActive: boolean
     role: Role;
-    // list of projects
+    roleId?: number | null;
+    // project list
+}
+
+export interface EditUser {
+    id: number;
+    name: string;
+    surname: string;
+    username: string;
+    email: string;
+    isActive: boolean
+    roleId: number | null;
+}
+
+export interface AddUser {
+    name: string;
+    surname: string;
+    username: string;
+    email: string;
+    password: string;
+    roleId: number | null;
+    companyId: number | null;
 }

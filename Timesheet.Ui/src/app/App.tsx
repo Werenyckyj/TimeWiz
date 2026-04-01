@@ -9,6 +9,8 @@ import Companies from '../features/companies/views/Companies';
 import { CompaniesProvider } from '../features/companies/store/CompaniesProvider';
 import Users from '../features/users/views/Users';
 import { UsersProvider } from '../features/users/store/UsersProvider';
+import { ProjectsProvider } from '../features/projects/store/ProjectsProvider';
+import Projects from '../features/projects/views/Projects';
 
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
     const { isAuthenticated } = useAuth();
@@ -40,7 +42,7 @@ function App() {
                         <Route path="/timesheets" element={<Timesheets />} />
                         <Route path="/reports" element={<h2>Reporty</h2>} />
                         <Route path="/approvals" element={<h2>Schvalování</h2>} />
-                        <Route path="/projects" element={<h2>Projekty</h2>} />
+                        <Route path="/projects" element={<ProjectsProvider><Projects /></ProjectsProvider>} />
                         <Route path="/users" element={<UsersProvider><Users /></UsersProvider>} />
                         <Route path="/companies" element={<CompaniesProvider><Companies /></CompaniesProvider>} />
                     </Route>

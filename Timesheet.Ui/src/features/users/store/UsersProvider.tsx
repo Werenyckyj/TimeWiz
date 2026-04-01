@@ -1,7 +1,7 @@
 import { type ReactNode, useCallback, useState } from "react";
 import { UsersContext } from "./UsersContext";
 import { UsersRepository } from "../services/UsersRepository";
-import type { User, Users } from "../types/users.type";
+import type { AddUser, EditUser, Users } from "../types/users.type";
 
 export const UsersProvider = ({ children }: { children: ReactNode }) => {
     const [users, setUsers] = useState<Users>({ data: [] } as unknown as Users);
@@ -11,13 +11,13 @@ export const UsersProvider = ({ children }: { children: ReactNode }) => {
         setUsers(data);
     }, []);
 
-    const editUser = async (user: User) => {
-        await UsersRepository.editUser(user);
+    const editUser = async (user: EditUser) => {
+        const updated = await UsersRepository.editUser(user);
         setUsers(prev => {
             if (!prev || !Array.isArray(prev.data)) return prev;
             return {
                 ...prev,
-                data: prev.data.map(u => u.id === user.id ? user : u)
+                data: prev.data.map(u => u.id === updated.id ? updated : u)
             };
         });
     };
@@ -33,7 +33,7 @@ export const UsersProvider = ({ children }: { children: ReactNode }) => {
         });
     };
 
-    const addUser = async (user: Omit<User, "id">) => {
+    const addUser = async (user: AddUser) => {
         const newUser = await UsersRepository.addUser(user);
 
         setUsers(prev => {

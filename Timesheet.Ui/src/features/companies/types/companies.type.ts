@@ -9,5 +9,5 @@ export interface Company {
     id: number;
     name: string;
     cin: string;
-    users?: User[]
+    employees?: User[]
 }

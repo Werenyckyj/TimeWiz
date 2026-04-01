@@ -12,8 +12,11 @@ using Timesheet.Core.Services.Auth;
 using Microsoft.OpenApi.Models;
 using Timesheet.Web.Swagger;
 using Timesheet.Core.Services.Mail;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 
 Env.TraversePath().Load();
+
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,7 +31,10 @@ var connectionString = $"Host={host};Port={port};Database={db};Username={user};P
 if (builder.Environment.EnvironmentName != "Testing")
 {
     builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(connectionString));
+    {
+        options.UseNpgsql(connectionString);
+        options.ConfigureWarnings(warnings => warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
+    });
 }
 
 builder.Services.AddAuthorization(options =>
