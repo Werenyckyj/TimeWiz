@@ -1,5 +1,6 @@
 import type { Company } from "../../companies/types/companies.type";
 import type { Role } from "../../roles/types/role.type";
+import type { UserProject } from "../../../shared/types/userProject.type";
 
 export interface Users {
     count: number;
@@ -17,7 +18,7 @@ export interface User {
     roleId?: number | null;
     company: Company;
     companyId?: number | null;
-    // project list
+    projectMemberships?: UserProject[];
 }
 
 export interface EditUser {

@@ -16,6 +16,7 @@ export default function Projects() {
     const [selectedProject, setSelectedProject] = useState<Project | null>(null);
     const [allUsers, setAllUsers] = useState<User[]>([]);
     const [projectMembers, setProjectMembers] = useState<User[]>([]);
+    const [projectManagers, setProjectManagers] = useState<User[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
 
     useEffect(() => {
@@ -79,6 +80,8 @@ export default function Projects() {
             }
             const members = await ProjectMembersRepository.getProjectUsers(project.id);
             setProjectMembers(members);
+            const managers = await ProjectMembersRepository.getProjectManagers(project.id);
+            setProjectManagers(managers);
         } catch (error) {
             console.error("Nepodařilo se načíst uživatele pro projekt", error);
         }
@@ -89,7 +92,9 @@ export default function Projects() {
 
         try {
             if (isCurrentlyMember) {
+                await ProjectMembersRepository.setAsProjectEmployee(selectedProject.id, user.id);
                 await ProjectMembersRepository.removeUserFromProject(selectedProject.id, user.id);
+                setProjectManagers(prev => prev.filter(u => u.id !== user.id));
                 setProjectMembers(prev => prev.filter(u => u.id !== user.id));
             } else {
                 await ProjectMembersRepository.addUserToProject(selectedProject.id, user.id);
@@ -97,6 +102,23 @@ export default function Projects() {
             }
         } catch (error) {
             alert("Error updating project members.");
+            console.error(error);
+        }
+    };
+
+    const toggleManager = async (user: User, isCurrentlyManager: boolean) => {
+        if (!selectedProject) return;
+
+        try {
+            if (isCurrentlyManager) {
+                await ProjectMembersRepository.setAsProjectEmployee(selectedProject.id, user.id);
+                setProjectManagers(prev => prev.filter(u => u.id !== user.id));
+            } else {
+                await ProjectMembersRepository.setAsProjectManager(selectedProject.id, user.id);
+                setProjectManagers(prev => [...prev, user]);
+            }
+        } catch (error) {
+            alert("Error updating project managers.");
             console.error(error);
         }
     };
@@ -175,6 +197,7 @@ export default function Projects() {
                         ) : (
                             filteredUsers.map(user => {
                                 const isMember = projectMembers.some(pm => pm.id === user.id);
+                                const isManager = projectManagers.some(pm => pm.id === user.id);
 
                                 return (
                                     <div key={user.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', borderBottom: '1px solid #e2e8f0', backgroundColor: isMember ? '#f0fdf4' : 'transparent' }}>
@@ -183,22 +206,41 @@ export default function Projects() {
                                             <span style={{ fontWeight: 500, color: '#1e293b' }}>{user.name} {user.surname}</span>
                                             <span style={{ fontSize: '0.85rem', color: '#64748b' }}>{user.email}</span>
                                         </div>
-
-                                        <button
-                                            onClick={() => toggleMember(user, isMember)}
-                                            style={{
-                                                padding: '6px 12px',
-                                                borderRadius: '4px',
-                                                cursor: 'pointer',
-                                                fontWeight: 500,
-                                                fontSize: '0.85rem',
-                                                border: isMember ? '1px solid #fca5a5' : '1px solid #cbd5e1',
-                                                backgroundColor: isMember ? '#fef2f2' : '#ffffff',
-                                                color: isMember ? '#ef4444' : '#334155'
-                                            }}
-                                        >
-                                            {isMember ? "Remove" : "Add"}
-                                        </button>
+                                        <div>
+                                            {isMember && (
+                                                <button
+                                                    onClick={() => toggleManager(user, isManager)}
+                                                    style={{
+                                                        padding: '6px 12px',
+                                                        borderRadius: '4px',
+                                                        cursor: 'pointer',
+                                                        fontWeight: 500,
+                                                        fontSize: '0.85rem',
+                                                        border: isManager ? '1px solid #fbbf24' : '1px solid #cbd5e1',
+                                                        backgroundColor: isManager ? '#fffbeb' : '#ffffff',
+                                                        color: isManager ? '#b45309' : '#334155',
+                                                        marginRight: '8px'
+                                                    }}
+                                                >
+                                                    {isManager ? "Make Employee" : "Make Manager"}
+                                                </button>
+                                            )}
+                                            <button
+                                                onClick={() => toggleMember(user, isMember)}
+                                                style={{
+                                                    padding: '6px 12px',
+                                                    borderRadius: '4px',
+                                                    cursor: 'pointer',
+                                                    fontWeight: 500,
+                                                    fontSize: '0.85rem',
+                                                    border: isMember ? '1px solid #fca5a5' : '1px solid #cbd5e1',
+                                                    backgroundColor: isMember ? '#fef2f2' : '#ffffff',
+                                                    color: isMember ? '#ef4444' : '#334155'
+                                                }}
+                                            >
+                                                {isMember ? "Remove" : "Add"}
+                                            </button>
+                                        </div>
                                     </div>
                                 );
                             })
@@ -206,7 +248,7 @@ export default function Projects() {
                     </div>
 
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px', color: '#64748b', fontSize: '0.9rem' }}>
-                        <span>Total assigned: <strong>{projectMembers.length}</strong></span>
+                        <span>Total assigned: <strong>{projectMembers.length}</strong>, Managers: <strong>{projectManagers.length}</strong></span>
                         <button onClick={() => setIsMembersModalOpen(false)} style={{ padding: '8px 16px', backgroundColor: '#e2e8f0', border: 'none', borderRadius: '4px', cursor: 'pointer', color: '#334155', fontWeight: 500 }}>
                             Done
                         </button>
