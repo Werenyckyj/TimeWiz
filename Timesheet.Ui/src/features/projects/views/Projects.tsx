@@ -6,6 +6,7 @@ import { UsersRepository } from "../../users/services/UsersRepository";
 import { ProjectMembersRepository } from "../services/ProjectMembersRepository";
 import type { User } from "../../users/types/users.type";
 import { Modal } from "../../../shared/components/Modal";
+import { useAuth } from "../../auth/hooks/useAuth";
 
 export default function Projects() {
     const { projects, getProjects, editProject, deleteProject, addProject } = useProjects();
@@ -18,6 +19,7 @@ export default function Projects() {
     const [projectMembers, setProjectMembers] = useState<User[]>([]);
     const [projectManagers, setProjectManagers] = useState<User[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
+    const { user } = useAuth();
 
     useEffect(() => {
         getProjects().catch(error => console.error("Failed to load projects", error));
@@ -38,7 +40,9 @@ export default function Projects() {
 
     const handleAdd = async (draft: Partial<Project>) => {
         try {
-            await addProject(draft as Omit<Project, "id">);
+            const newProject = await addProject(draft as Omit<Project, "id">);
+            await ProjectMembersRepository.addUserToProject(newProject.id as number, Number(user?.nameid));
+            await ProjectMembersRepository.setAsProjectManager(newProject.id as number, Number(user?.nameid));
             setMessage("Project successfully added.");
         } catch (error) {
             setMessage("Error adding project." + (error instanceof Error ? ` Detail: ${error.message}` : ""));
