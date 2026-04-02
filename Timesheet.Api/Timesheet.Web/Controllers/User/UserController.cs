@@ -25,6 +25,7 @@ public class UserController(ILogger<UserController> logger, ITRepository<User> t
         var entities = _tRepository.GetAll()
                                 .Include(u => u.Role)
                                 .Include(u => u.UserProjects)
+                                .Include(u => u.Company)
                                 .AsEnumerable();
 
         var responses = _mapper.Map<IEnumerable<UserRDto>>(entities).ToList();

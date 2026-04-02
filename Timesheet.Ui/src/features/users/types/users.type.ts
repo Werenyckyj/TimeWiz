@@ -1,3 +1,4 @@
+import type { Company } from "../../companies/types/companies.type";
 import type { Role } from "../../roles/types/role.type";
 
 export interface Users {
@@ -14,6 +15,8 @@ export interface User {
     isActive: boolean
     role: Role;
     roleId?: number | null;
+    company: Company;
+    companyId?: number | null;
     // project list
 }
 
@@ -25,6 +28,7 @@ export interface EditUser {
     email: string;
     isActive: boolean
     roleId: number | null;
+    companyId: number | null;
 }
 
 export interface AddUser {

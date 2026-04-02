@@ -13,6 +13,7 @@ using Microsoft.OpenApi.Models;
 using Timesheet.Web.Swagger;
 using Timesheet.Core.Services.Mail;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using System.Security.Claims;
 
 Env.TraversePath().Load();
 
@@ -100,6 +101,27 @@ builder.Services.AddAuthentication(options =>
         ValidIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER"),
         ValidAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE"),
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret))
+    };
+
+    options.Events = new JwtBearerEvents
+    {
+        OnTokenValidated = async context =>
+        {
+            var dbContext = context.HttpContext.RequestServices.GetRequiredService<AppDbContext>();
+
+            var userIdClaim = context.Principal!.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var roleClaim = context.Principal.FindFirst(ClaimTypes.Role)?.Value;
+
+            if (int.TryParse(userIdClaim, out int userId))
+            {
+                var userFromDb = await dbContext.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Id == userId);
+
+                if (userFromDb == null || !userFromDb.IsActive || userFromDb.Role?.Name != roleClaim)
+                {
+                    context.Fail("Perrmission denied: User is inactive or role has been changed.");
+                }
+            }
+        }
     };
 });
 

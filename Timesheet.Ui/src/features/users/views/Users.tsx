@@ -36,15 +36,14 @@ export default function Users() {
                 setRoleOptions(options);
 
                 const fetchedCompanies = await CompaniesRepository.getCompanies();
-                const companiesArray = Array.isArray(fetchedCompanies) ? fetchedCompanies : fetchedCompanies?.data || [];
-                const oOptions = companiesArray.map(company => ({
+                const oOptions = fetchedCompanies.data.map(company => ({
                     value: company.id,
                     label: company.name
                 }));
                 setOrganizationOptions(oOptions);
 
             } catch (error) {
-                console.error("Nepodařilo se načíst role", error);
+                console.error("Nepodařilo se načíst role nebo organizace", error);
             }
         };
 
@@ -54,9 +53,12 @@ export default function Users() {
     const columns: ColumnDef<User>[] = [
         { header: "Name", accessor: "name", type: "text", maxLength: 100 },
         { header: "Surname", accessor: "surname", type: "text", maxLength: 100 },
+        { header: "Username", accessor: "username", type: "text", maxLength: 100 },
         { header: "Email", accessor: "email", type: "text", maxLength: 100 },
         { header: "Is Active", accessor: "isActive", type: "checkbox", renderCell: (row) => row.isActive ? "✔️" : "❌" },
-        { header: "Role", accessor: "roleId", type: "select", options: roleOptions, renderCell: (row) => row.role ? row.role.name : "No role" },];
+        { header: "Role", accessor: "roleId", type: "select", options: roleOptions, renderCell: (row) => row.role ? row.role.name : "No role" },
+        { header: "Organization", accessor: "companyId", type: "select", options: organizationOptions, renderCell: (row) => row.company ? row.company.name : "No organization" },
+    ];
 
     const handleEdit = async (draft: User) => {
         try {
@@ -67,7 +69,8 @@ export default function Users() {
                 username: draft.username,
                 email: draft.email,
                 isActive: draft.isActive,
-                roleId: draft.role ? Number(draft.role.id) : 0
+                roleId: draft.roleId ? Number(draft.roleId) : 0,
+                companyId: draft.companyId ? Number(draft.companyId) : 0
             });
 
             await getUsers();
@@ -92,6 +95,12 @@ export default function Users() {
         }
     };
 
+    const tableData = displayedUsers.map(user => ({
+        ...user,
+        roleId: user.role ? user.role.id : user.roleId,
+        companyId: user.company ? user.company.id : user.companyId
+    }));
+
     const handleFormSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -99,7 +108,7 @@ export default function Users() {
             const payload = {
                 ...formData,
                 roleId: formData.roleId ? Number(formData.roleId) : 0,
-                companyId: formData.companyId ? Number(formData.companyId) : null
+                companyId: formData.companyId ? Number(formData.companyId) : 0
             };
 
             await addUser(payload);
@@ -151,7 +160,7 @@ export default function Users() {
                 columns={columns}
                 isAdding={false}
                 setIsAdding={setIsAdding}
-                data={displayedUsers}
+                data={tableData}
                 onAdd={async () => { }}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
