@@ -1,4 +1,5 @@
 using System;
+using Timesheet.Data.Enums;
 
 namespace Timesheet.Data.Dtos;
 
@@ -8,4 +9,5 @@ public class UserDtoBase
     public required string Surname { get; set; }
     public required string Email { get; set; }
     public required string Username { get; set; }
+    public required bool IsActive { get; set; }
 }

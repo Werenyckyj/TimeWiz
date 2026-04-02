@@ -12,9 +12,10 @@ export default function Companies() {
     useEffect(() => {
         getCompanies().catch(error => console.error("Failed to load companies", error));
     }, [getCompanies]);
+
     const columns: ColumnDef<Company>[] = [
         { header: "Name", accessor: "name", type: "text", maxLength: 100 },
-        { header: "Workers", accessor: "users", type: "readonly", renderCell: (row) => row.users && row.users.length > 0 ? row.users.length : "No workers" },
+        { header: "Workers", accessor: "employees", type: "readonly", renderCell: (row) => row.employees && row.employees.length > 0 ? row.employees.length : "No workers" },
         { header: "CIN", accessor: "cin", type: "text", maxLength: 20 },
     ];
 
@@ -37,7 +38,7 @@ export default function Companies() {
     };
 
     const handleDelete = async (id: string | number) => {
-        if (!window.confirm("Opravdu smazat?")) return;
+        if (!window.confirm("Are you sure you want to delete this company?")) return;
         try {
             await deleteCompany(id as number);
             setMessage("Společnost smazána.");

@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useState, type ReactNode, useCallback } from "react";
 import { CompaniesContext } from "./CompaniesContext";
 import { CompaniesRepository } from "../services/CompaniesRepository";
 import type { Company, Companies } from "../types/companies.type";
@@ -6,10 +6,10 @@ import type { Company, Companies } from "../types/companies.type";
 export const CompaniesProvider = ({ children }: { children: ReactNode }) => {
     const [companies, setCompanies] = useState<Companies>({ data: [] } as unknown as Companies);
 
-    const getCompanies = async () => {
+    const getCompanies = useCallback(async () => {
         const data = await CompaniesRepository.getCompanies();
         setCompanies(data);
-    };
+    }, []);
 
     const editCompany = async (company: Company) => {
         await CompaniesRepository.editCompany(company);
