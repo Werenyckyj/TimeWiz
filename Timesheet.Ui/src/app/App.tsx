@@ -11,6 +11,8 @@ import { UsersProvider } from '../features/users/store/UsersProvider';
 import { ProjectsProvider } from '../features/projects/store/ProjectsProvider';
 import Projects from '../features/projects/views/Projects';
 import { ProtectedRoute } from '../shared/components/ProtectedRoute';
+import { TimesheetProvider } from '../features/timesheets/stroe/TimesheetProvider';
+import Approval from '../features/timesheets/views/Approval';
 
 const Dashboard = () => {
     const { user } = useAuth();
@@ -37,11 +39,11 @@ function App() {
                     >
                         <Route element={<ProtectedRoute allowedRoles={['Admin', 'Manager', 'Employee', 'External']} />} >
                             <Route path="/dashboard" element={<Dashboard />} />
-                            <Route path="/timesheets" element={<Timesheets />} />
+                            <Route path="/timesheets" element={<ProjectsProvider><TimesheetProvider><Timesheets /></TimesheetProvider></ProjectsProvider>} />
                             <Route path="/reports" element={<h2>Reporty</h2>} />
                         </Route>
                         <Route element={<ProtectedRoute allowedRoles={['Admin', 'Manager']} />} >
-                            <Route path="/approvals" element={<h2>Schvalování</h2>} />
+                            <Route path="/approvals" element={<ProjectsProvider><TimesheetProvider><Approval /></TimesheetProvider></ProjectsProvider>} />
                             <Route path="/projects" element={<ProjectsProvider><Projects /></ProjectsProvider>} />
                         </Route>
                         <Route element={<ProtectedRoute allowedRoles={['Admin']} />} >

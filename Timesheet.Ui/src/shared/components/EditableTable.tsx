@@ -8,6 +8,7 @@ export interface ColumnDef<T> {
     width?: string;
     maxLength?: number;
     options?: SelectOptions[];
+    isRequired?: boolean;
 }
 
 export interface SelectOptions {
@@ -167,6 +168,7 @@ export function EditableTable<T extends { id: string | number }>({
                                                 />
                                             ) : col.type === 'select' ? (
                                                 <select
+                                                    required={col.isRequired}
                                                     value={(draft[col.accessor] as string | number) || ""}
                                                     onChange={e => handleDraftChange(col.accessor, e.target.value as T[typeof col.accessor])}
                                                     style={{ width: '100%', padding: '6px', boxSizing: 'border-box' }}
@@ -180,6 +182,7 @@ export function EditableTable<T extends { id: string | number }>({
                                                 </select>
                                             ) : (
                                                 <input
+                                                    required={col.isRequired}
                                                     type={col.type || "text"}
                                                     value={
                                                         col.type === 'date' && draft[col.accessor]

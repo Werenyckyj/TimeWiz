@@ -11,6 +11,11 @@ export const ProjectsProvider = ({ children }: { children: ReactNode }) => {
         setProjects(data);
     }, []);
 
+    const getUserProjects = useCallback(async (userId: number) => {
+        const data = await ProjectsRepository.getUserProjects(userId);
+        setProjects({ data } as unknown as Projects);
+    }, []);
+
     const editProject = async (project: Project) => {
         const updated = await ProjectsRepository.editProject(project);
         setProjects(prev => {
@@ -53,7 +58,8 @@ export const ProjectsProvider = ({ children }: { children: ReactNode }) => {
             getProjects,
             editProject,
             deleteProject,
-            addProject
+            addProject,
+            getUserProjects,
         }}>
             {children}
         </ProjectsContext.Provider>
