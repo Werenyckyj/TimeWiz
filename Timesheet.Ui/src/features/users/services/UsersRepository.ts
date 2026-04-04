@@ -16,5 +16,9 @@ export const UsersRepository = {
     addUser: async (user: AddUser): Promise<User> => {
         const response = await api.post<User>("/auth/register", user);
         return response.data;
+    },
+    getUser: async (id: number): Promise<User> => {
+        const response = await api.get(`/user/${id}`);
+        return response.data.data || response.data;
     }
 };

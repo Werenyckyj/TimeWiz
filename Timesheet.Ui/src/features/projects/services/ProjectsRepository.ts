@@ -16,5 +16,9 @@ export const ProjectsRepository = {
     addProject: async (project: Omit<Project, 'id'>): Promise<Project> => {
         const response = await api.post<Project>('/project', project);
         return response.data;
+    },
+    getUserProjects: async (userId: number): Promise<Project[]> => {
+        const response = await api.get(`/user/${userId}/projects`);
+        return response.data;
     }
 };

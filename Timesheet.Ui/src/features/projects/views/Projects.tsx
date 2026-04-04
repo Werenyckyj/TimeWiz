@@ -31,8 +31,8 @@ export default function Projects() {
     };
 
     const columns: ColumnDef<Project>[] = [
-        { header: "Code", accessor: "code", type: "text", maxLength: 100 },
-        { header: "Name", accessor: "name", type: "text", maxLength: 100 },
+        { header: "Code", accessor: "code", isRequired: true, type: "text", maxLength: 100 },
+        { header: "Name", accessor: "name", isRequired: true, type: "text", maxLength: 100 },
         { header: "Is Active", accessor: "isActive", type: "checkbox", renderCell: (row) => row.isActive ? "✔️" : "❌" },
         { header: "Valid From", accessor: "validFrom", type: "date", renderCell: (row) => formatDate(row.validFrom) },
         { header: "Valid To", accessor: "validTo", type: "date", renderCell: (row) => formatDate(row.validTo) },
@@ -40,9 +40,14 @@ export default function Projects() {
 
     const handleAdd = async (draft: Partial<Project>) => {
         try {
-            const newProject = await addProject(draft as Omit<Project, "id">);
-            await ProjectMembersRepository.addUserToProject(newProject.id as number, Number(user?.nameid));
-            await ProjectMembersRepository.setAsProjectManager(newProject.id as number, Number(user?.nameid));
+            if (draft.validFrom && draft.validTo && draft.validFrom > draft.validTo) { setMessage("Error: 'Valid From' date cannot be later than 'Valid To' date."); return; }
+            else if (!draft.code || !draft.name) { setMessage("Error: 'Code' and 'Name' are required fields."); return; }
+            else {
+                if (draft.isActive === null || draft.isActive === undefined) { draft.isActive = false; }
+                const newProject = await addProject(draft as Omit<Project, "id">);
+                await ProjectMembersRepository.addUserToProject(newProject.id as number, Number(user?.nameid));
+                await ProjectMembersRepository.setAsProjectManager(newProject.id as number, Number(user?.nameid));
+            }
             setMessage("Project successfully added.");
         } catch (error) {
             setMessage("Error adding project." + (error instanceof Error ? ` Detail: ${error.message}` : ""));
@@ -51,8 +56,13 @@ export default function Projects() {
 
     const handleEdit = async (draft: Project) => {
         try {
-            await editProject(draft);
-            setMessage("Project successfully updated.");
+            if (draft.validFrom > draft.validTo) { setMessage("Error: 'Valid From' date cannot be later than 'Valid To' date."); return; }
+            else if (!draft.code || !draft.name) { setMessage("Error: 'Code' and 'Name' are required fields."); return; }
+            else {
+                if (draft.isActive === null || draft.isActive === undefined) { draft.isActive = false; }
+                await editProject(draft);
+                setMessage("Project successfully updated.");
+            }
         } catch (error) {
             setMessage("Error updating project." + (error instanceof Error ? ` Detail: ${error.message}` : ""));
         }
@@ -162,7 +172,7 @@ export default function Projects() {
                 </div>
             </div>
             {message && (
-                <div style={{ marginBottom: '1rem', padding: '10px', backgroundColor: message.includes("Error") ? '#f8d7da' : '#d4edda', color: '#721c24', borderRadius: '4px' }}>
+                <div style={{ marginBottom: '1rem', padding: '10px', backgroundColor: message.includes("Error") ? '#f8d7da' : '#d4edda', color: message.includes("Error") ? '#721c24' : '#155724', borderRadius: '4px' }}>
                     {message}
                 </div>
             )}
