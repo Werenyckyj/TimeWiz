@@ -46,6 +46,7 @@ public class UserController(ILogger<UserController> logger, ITRepository<User> t
         var timesheets = _unitOfWork.TsWeekRepository
             .Query()
             .Include(t => t.TsEntries)
+            .Include(t => t.Project)
             .Where(t => t.UserId == id && t.Year == year && t.WeekNumber == week)
             .ToList();
 

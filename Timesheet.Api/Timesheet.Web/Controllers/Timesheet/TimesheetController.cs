@@ -2,6 +2,7 @@ using System;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Timesheet.Core;
 using Timesheet.Core.Services.Mail;
 using Timesheet.Data.Dtos;
@@ -18,6 +19,20 @@ public class TimesheetController(ILogger<TimesheetController> logger, ITReposito
 {
     private readonly UnitOfWork _unitOfWork = unitOfWork;
     private readonly IMailService _mailService = mailService;
+
+    [HttpGet]
+    [ProducesResponseType(typeof(IEnumerable<TsWeekRDto>), StatusCodes.Status200OK)]
+    public override IActionResult GetAll()
+    {
+        var entities = _tRepository.GetAll()
+                                .Include(t => t.Project)
+                                .Include(t => t.User)
+                                .Include(t => t.TsEntries)
+                                .AsEnumerable();
+
+        var responses = _mapper.Map<IEnumerable<TsWeekRDto>>(entities).ToList();
+        return Ok(new { count = responses.Count, data = responses });
+    }
 
     [HttpPost]
     [ProducesResponseType(typeof(TsWeekRDto), StatusCodes.Status201Created)]
@@ -37,7 +52,7 @@ public class TimesheetController(ILogger<TimesheetController> logger, ITReposito
         if (userProject == null) return BadRequest($"User with ID {dto.UserId} is not assigned to Project with ID {dto.ProjectId}.");
 
         var existingTsWeek = _unitOfWork.TsWeekRepository
-            .Where(t => t.UserId == dto.UserId && t.Year == dto.Year && t.WeekNumber == dto.WeekNumber)
+            .Where(t => t.UserId == dto.UserId && t.Year == dto.Year && t.WeekNumber == dto.WeekNumber && t.ProjectId == dto.ProjectId)
             .FirstOrDefault();
 
         if (existingTsWeek != null)
@@ -64,7 +79,7 @@ public class TimesheetController(ILogger<TimesheetController> logger, ITReposito
         _logger.LogInformation($"Created timesheet with ID {week.Entity.Id} for User ID {dto.UserId}, Year {dto.Year}, Week {dto.WeekNumber}, with {dto.DaysInWeek} entries.");
         _unitOfWork.SaveChanges();
 
-        var responseDto = _mapper.Map<TsWeekRDto>(tsWeek);
+        var responseDto = _mapper.Map<TsWeekRDto>(week.Entity);
         return CreatedAtAction(nameof(GetById), new { id = tsWeek.Id }, responseDto);
     }
 
@@ -80,7 +95,11 @@ public class TimesheetController(ILogger<TimesheetController> logger, ITReposito
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UpdateAsync(int id, [FromBody] TsWeekWDto dto)
     {
-        var existingTsWeek = _unitOfWork.TsWeekRepository.GetById(id);
+        var existingTsWeek = _unitOfWork.TsWeekRepository.Query()
+            .Include(t => t.Approval)
+            .Include(t => t.TsEntries)
+            .FirstOrDefault(t => t.Id == id);
+
         if (existingTsWeek == null) return NotFound($"Timesheet with ID {id} not found.");
 
         var user = _unitOfWork.UserRepository.GetById(dto.UserId);
@@ -92,9 +111,23 @@ public class TimesheetController(ILogger<TimesheetController> logger, ITReposito
         var isNewlySubmitted = existingTsWeek.Status != TsWeekStatus.Submitted && dto.Status == TsWeekStatus.Submitted;
         var isStatusChanged = existingTsWeek.Status != TsWeekStatus.Rejected && (dto.Status == TsWeekStatus.Rejected || dto.Status == TsWeekStatus.Approved);
 
-        _mapper.Map(dto, existingTsWeek);
+        existingTsWeek.Status = dto.Status;
+        existingTsWeek.Comment = dto.Comment;
+
+        foreach (var incomingEntry in dto.TsEntries)
+        {
+            var existingEntry = existingTsWeek.TsEntries.FirstOrDefault(e => e.WorkDate.Date == incomingEntry.WorkDate.Date);
+
+            if (existingEntry != null)
+            {
+                existingEntry.Hours = incomingEntry.Hours;
+            }
+        }
+
         var updatedTsWeek = _unitOfWork.TsWeekRepository.Update(existingTsWeek);
+
         if (!ManageApproval(isNewlySubmitted, isStatusChanged, existingTsWeek, dto)) return NotFound("User not found when managing approval.");
+
         _unitOfWork.SaveChanges();
 
         if (isNewlySubmitted) await SendMailToManager(existingTsWeek);

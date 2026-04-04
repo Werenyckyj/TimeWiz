@@ -5,6 +5,13 @@ import { useProjects } from "../../projects/hooks/useProjects";
 import type { TsWeek } from "../types/tsWeek.type";
 import type { Project, Projects } from "../../projects/types/projects.type";
 
+const toLocalDateString = (date: Date) => {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+};
+
 const getISOWeekInfo = (date: Date) => {
     const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
     const dayNum = d.getUTCDay() || 7;
@@ -47,6 +54,7 @@ export default function TimesheetEntry() {
 
     const { year, week } = getISOWeekInfo(currentDate);
     const days = useMemo(() => getDaysOfWeek(year, week), [year, week]);
+    const [attemptedSyncs, setAttemptedSyncs] = useState<Set<string>>(new Set());
 
     useEffect(() => {
         if (!user?.nameid) return;
@@ -62,15 +70,18 @@ export default function TimesheetEntry() {
             console.log("Syncing missing rows - timesheets:", rawTimesheets, "projects:", rawProjects);
 
 
-            const isCurrentWeekLoaded = rawTimesheets.length === 0 || (rawTimesheets[0].year === year && rawTimesheets[0].weekNumber === week);
-            if (!isCurrentWeekLoaded) return;
-
             const existingProjectIds = rawTimesheets.map((ts: TsWeek) => ts.project?.id);
-            const missingProjects = rawProjects.filter((p: Project) => !existingProjectIds.includes(p.id));
+
+            const missingProjects = rawProjects.filter((p: Project) =>
+                !existingProjectIds.includes(p.id) &&
+                !attemptedSyncs.has(`${year}-${week}-${p.id}`)
+            );
 
             if (missingProjects.length > 0) {
                 let anyAdded = false;
                 for (const p of missingProjects) {
+                    setAttemptedSyncs(prev => new Set(prev).add(`${year}-${week}-${p.id}`));
+
                     try {
                         await addTimesheet({
                             projectId: p.id,
@@ -95,7 +106,7 @@ export default function TimesheetEntry() {
         };
 
         syncMissingRows();
-    }, [timesheets, projects, user?.nameid, year, week, addTimesheet, getTimesheets, days]);
+    }, [timesheets, projects, user?.nameid, year, week, addTimesheet, getTimesheets, days, attemptedSyncs]);
 
     if (timesheets !== prevTimesheets || week !== prevWeek) {
         setPrevTimesheets(timesheets);
@@ -122,7 +133,7 @@ export default function TimesheetEntry() {
         setDrafts(prev => prev.map(ts => {
             if (ts.id !== tsId) return ts;
             const newEntries = [...(ts.tsEntries || [])];
-            const existingIdx = newEntries.findIndex(e => new Date(e.workDate).toISOString().split('T')[0] === dateIso);
+            const existingIdx = newEntries.findIndex(e => toLocalDateString(new Date(e.workDate)) === dateIso);
 
             if (existingIdx >= 0) {
                 newEntries[existingIdx].hours = hours;
@@ -178,9 +189,9 @@ export default function TimesheetEntry() {
     };
 
     const colSums = days.map(d => {
-        const dateIso = d.toISOString().split('T')[0];
+        const dateIso = toLocalDateString(d);
         return drafts.reduce((acc, ts) => {
-            const entry = ts.tsEntries?.find(e => new Date(e.workDate).toISOString().split('T')[0] === dateIso);
+            const entry = ts.tsEntries?.find(e => toLocalDateString(new Date(e.workDate)) === dateIso);
             return acc + (entry?.hours || 0);
         }, 0);
     });
@@ -255,18 +266,19 @@ export default function TimesheetEntry() {
                                         </td>
 
                                         {days.map((d, i) => {
-                                            const dateIso = d.toISOString().split('T')[0];
-                                            const entry = ts.tsEntries?.find(e => new Date(e.workDate).toISOString().split('T')[0] === dateIso);
+                                            const dateIso = toLocalDateString(d);
+                                            const entry = ts.tsEntries?.find(e => toLocalDateString(new Date(e.workDate)) === dateIso);
                                             const val = entry?.hours || "";
 
                                             return (
                                                 <td key={i} style={{ padding: '8px' }}>
                                                     <input
-                                                        type="number"
+                                                        type="text"
                                                         min="0" max="24" step="0.5"
                                                         value={val}
                                                         onChange={(e) => handleHoursChange(ts.id, dateIso, e.target.value)}
                                                         disabled={isLocked}
+                                                        maxLength={3}
                                                         style={{
                                                             width: '100%', padding: '6px', textAlign: 'center', boxSizing: 'border-box',
                                                             border: '1px solid #cbd5e1', borderRadius: '4px',
