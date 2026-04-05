@@ -21,11 +21,8 @@ export const TimesheetProvider = ({ children }: { children: ReactNode }) => {
     const editTimesheet = async (timesheetId: number, tsWeek: EditTsWeek) => {
         const updated = await TimesheetRepository.editTimesheet(timesheetId, tsWeek);
         setTimesheets(prev => {
-            if (!prev || !Array.isArray(prev)) return prev;
-            return {
-                ...prev,
-                data: prev.map(t => t.id === updated.id ? updated : t)
-            }
+            if (!Array.isArray(prev)) return prev;
+            return prev.map(t => t.id === updated.id ? updated : t)
         });
     };
 
@@ -33,11 +30,8 @@ export const TimesheetProvider = ({ children }: { children: ReactNode }) => {
         const newTimesheet = await TimesheetRepository.addTimesheet(tsWeek);
 
         setTimesheets(prev => {
-            if (!prev || !Array.isArray(prev)) return prev;
-            return {
-                ...prev,
-                data: [...prev, newTimesheet]
-            }
+            if (!Array.isArray(prev)) return [newTimesheet];
+            return [...prev, newTimesheet]
         });
     };
 

@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { useAuth } from "../../auth/hooks/useAuth";
 import { useTimesheet } from "../hooks/useTimesheet";
 import { useProjects } from "../../projects/hooks/useProjects";
@@ -54,13 +54,14 @@ export default function TimesheetEntry() {
 
     const { year, week } = getISOWeekInfo(currentDate);
     const days = useMemo(() => getDaysOfWeek(year, week), [year, week]);
-    const [attemptedSyncs, setAttemptedSyncs] = useState<Set<string>>(new Set());
 
     useEffect(() => {
         if (!user?.nameid) return;
         getTimesheets(Number(user.nameid), year, week).catch(err => console.error(err));
         getUserProjects(Number(user.nameid)).catch(err => console.error(err));
     }, [user?.nameid, year, week, getTimesheets, getUserProjects]);
+
+    const syncLock = useRef<Set<string>>(new Set());
 
     useEffect(() => {
         const syncMissingRows = async () => {
@@ -74,13 +75,13 @@ export default function TimesheetEntry() {
 
             const missingProjects = rawProjects.filter((p: Project) =>
                 !existingProjectIds.includes(p.id) &&
-                !attemptedSyncs.has(`${year}-${week}-${p.id}`)
+                !syncLock.current.has(`${year}-${week}-${p.id}`)
             );
 
             if (missingProjects.length > 0) {
                 let anyAdded = false;
                 for (const p of missingProjects) {
-                    setAttemptedSyncs(prev => new Set(prev).add(`${year}-${week}-${p.id}`));
+                    syncLock.current.add(`${year}-${week}-${p.id}`);
 
                     try {
                         await addTimesheet({
@@ -106,7 +107,7 @@ export default function TimesheetEntry() {
         };
 
         syncMissingRows();
-    }, [timesheets, projects, user?.nameid, year, week, addTimesheet, getTimesheets, days, attemptedSyncs]);
+    }, [timesheets, projects, user?.nameid, year, week, addTimesheet, getTimesheets, days]);
 
     if (timesheets !== prevTimesheets || week !== prevWeek) {
         setPrevTimesheets(timesheets);
@@ -268,13 +269,23 @@ export default function TimesheetEntry() {
                                         {days.map((d, i) => {
                                             const dateIso = toLocalDateString(d);
                                             const entry = ts.tsEntries?.find(e => toLocalDateString(new Date(e.workDate)) === dateIso);
-                                            const val = entry?.hours || "";
+                                            const val = entry?.hours || 0;
 
                                             return (
                                                 <td key={i} style={{ padding: '8px' }}>
                                                     <input
                                                         type="text"
                                                         min="0" max="24" step="0.5"
+                                                        onFocus={(e) => {
+                                                            if (val === 0) {
+                                                                e.target.value = '';
+                                                            }
+                                                        }}
+                                                        onBlur={(e) => {
+                                                            if (val === 0) {
+                                                                e.target.value = '0'
+                                                            }
+                                                        }}
                                                         value={val}
                                                         onChange={(e) => handleHoursChange(ts.id, dateIso, e.target.value)}
                                                         disabled={isLocked}
