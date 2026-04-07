@@ -13,6 +13,7 @@ public class TsWeek : Entity
     public required int WeekNumber { get; set; }
     [Required]
     public required TsWeekStatus Status { get; set; } = TsWeekStatus.Draft;
+    public string Comment { get; set; } = string.Empty;
 
     // Foreign keys
     public int UserId { get; set; }

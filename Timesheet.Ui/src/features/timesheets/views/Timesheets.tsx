@@ -1,9 +1,16 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { useAuth } from "../../auth/hooks/useAuth";
 import { useTimesheet } from "../hooks/useTimesheet";
 import { useProjects } from "../../projects/hooks/useProjects";
 import type { TsWeek } from "../types/tsWeek.type";
 import type { Project, Projects } from "../../projects/types/projects.type";
+
+const toLocalDateString = (date: Date) => {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+};
 
 const getISOWeekInfo = (date: Date) => {
     const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
@@ -33,7 +40,7 @@ const getDaysOfWeek = (year: number, week: number): Date[] => {
     return days;
 };
 
-export default function TimesheetEntry() {
+export default function Timesheet() {
     const { user } = useAuth();
     const { timesheets, getTimesheets, editTimesheet, addTimesheet } = useTimesheet();
     const { projects, getUserProjects } = useProjects();
@@ -54,23 +61,26 @@ export default function TimesheetEntry() {
         getUserProjects(Number(user.nameid)).catch(err => console.error(err));
     }, [user?.nameid, year, week, getTimesheets, getUserProjects]);
 
+    const syncLock = useRef<Set<string>>(new Set());
+
     useEffect(() => {
         const syncMissingRows = async () => {
             if (!user?.nameid) return;
             const rawTimesheets = Array.isArray((timesheets as TsWeek[])) ? (timesheets as TsWeek[]) : (Array.isArray(timesheets) ? timesheets : []);
             const rawProjects = Array.isArray((projects as Projects)?.data) ? (projects as Projects).data : (Array.isArray(projects) ? projects : []);
-            console.log("Syncing missing rows - timesheets:", rawTimesheets, "projects:", rawProjects);
-
-
-            const isCurrentWeekLoaded = rawTimesheets.length === 0 || (rawTimesheets[0].year === year && rawTimesheets[0].weekNumber === week);
-            if (!isCurrentWeekLoaded) return;
 
             const existingProjectIds = rawTimesheets.map((ts: TsWeek) => ts.project?.id);
-            const missingProjects = rawProjects.filter((p: Project) => !existingProjectIds.includes(p.id));
+
+            const missingProjects = rawProjects.filter((p: Project) =>
+                !existingProjectIds.includes(p.id) &&
+                !syncLock.current.has(`${year}-${week}-${p.id}`)
+            );
 
             if (missingProjects.length > 0) {
                 let anyAdded = false;
                 for (const p of missingProjects) {
+                    syncLock.current.add(`${year}-${week}-${p.id}`);
+
                     try {
                         await addTimesheet({
                             projectId: p.id,
@@ -81,7 +91,7 @@ export default function TimesheetEntry() {
                             status: "Draft",
                             tsEntries: [],
                             daysInWeek: 7,
-                            startDate: days[0],
+                            startDate: toLocalDateString(days[0]) as string,
                         });
                         anyAdded = true;
                     } catch (error) {
@@ -122,7 +132,7 @@ export default function TimesheetEntry() {
         setDrafts(prev => prev.map(ts => {
             if (ts.id !== tsId) return ts;
             const newEntries = [...(ts.tsEntries || [])];
-            const existingIdx = newEntries.findIndex(e => new Date(e.workDate).toISOString().split('T')[0] === dateIso);
+            const existingIdx = newEntries.findIndex(e => toLocalDateString(new Date(e.workDate)) === dateIso);
 
             if (existingIdx >= 0) {
                 newEntries[existingIdx].hours = hours;
@@ -147,7 +157,9 @@ export default function TimesheetEntry() {
                     status: ts.status,
                     tsEntries: ts.tsEntries,
                     daysInWeek: ts.tsEntries.length,
-                    startDate: ts.tsEntries.length > 0 ? new Date(ts.tsEntries[0].workDate) : new Date(ts.year, 0, 1)
+                    startDate: ts.tsEntries.length > 0
+                        ? toLocalDateString(new Date(ts.tsEntries[0].workDate))
+                        : toLocalDateString(new Date(ts.year, 0, 1))
                 });
             }
             setMessage("All draft timesheets saved successfully.");
@@ -168,7 +180,9 @@ export default function TimesheetEntry() {
                 status: "Submitted",
                 tsEntries: ts.tsEntries,
                 daysInWeek: ts.tsEntries.length,
-                startDate: ts.tsEntries.length > 0 ? new Date(ts.tsEntries[0].workDate) : new Date(ts.year, 0, 1)
+                startDate: ts.tsEntries.length > 0
+                    ? toLocalDateString(new Date(ts.tsEntries[0].workDate))
+                    : toLocalDateString(new Date(ts.year, 0, 1))
             });
             setMessage(`Timesheet for ${ts.project.name} was submitted for approval.`);
             await getTimesheets(Number(user?.nameid), year, week);
@@ -178,16 +192,16 @@ export default function TimesheetEntry() {
     };
 
     const colSums = days.map(d => {
-        const dateIso = d.toISOString().split('T')[0];
+        const dateIso = toLocalDateString(d);
         return drafts.reduce((acc, ts) => {
-            const entry = ts.tsEntries?.find(e => new Date(e.workDate).toISOString().split('T')[0] === dateIso);
+            const entry = ts.tsEntries?.find(e => toLocalDateString(new Date(e.workDate)) === dateIso);
             return acc + (entry?.hours || 0);
         }, 0);
     });
     const grandTotal = colSums.reduce((acc, val) => acc + val, 0);
 
     return (
-        <div style={{ padding: '2rem', fontFamily: 'sans-serif', maxWidth: '1200px', margin: '0 auto' }}>
+        <div style={{ padding: '2rem', fontFamily: 'sans-serif', margin: '0 auto' }}>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
                 <button
@@ -238,7 +252,7 @@ export default function TimesheetEntry() {
                             </tr>
                         ) : (
                             drafts.map(ts => {
-                                const isLocked = ts.status === "Pending" || ts.status === "Approved";
+                                const isLocked = ts.status === "Submitted" || ts.status === "Approved";
                                 const isRejected = ts.status === "Rejected";
                                 const rowSum = ts.tsEntries?.reduce((acc, e) => acc + (e.hours || 0), 0) || 0;
 
@@ -255,18 +269,29 @@ export default function TimesheetEntry() {
                                         </td>
 
                                         {days.map((d, i) => {
-                                            const dateIso = d.toISOString().split('T')[0];
-                                            const entry = ts.tsEntries?.find(e => new Date(e.workDate).toISOString().split('T')[0] === dateIso);
-                                            const val = entry?.hours || "";
+                                            const dateIso = toLocalDateString(d);
+                                            const entry = ts.tsEntries?.find(e => toLocalDateString(new Date(e.workDate)) === dateIso);
+                                            const val = entry?.hours || 0;
 
                                             return (
                                                 <td key={i} style={{ padding: '8px' }}>
                                                     <input
-                                                        type="number"
+                                                        type="text"
                                                         min="0" max="24" step="0.5"
+                                                        onFocus={(e) => {
+                                                            if (val === 0) {
+                                                                e.target.value = '';
+                                                            }
+                                                        }}
+                                                        onBlur={(e) => {
+                                                            if (val === 0) {
+                                                                e.target.value = '0'
+                                                            }
+                                                        }}
                                                         value={val}
                                                         onChange={(e) => handleHoursChange(ts.id, dateIso, e.target.value)}
                                                         disabled={isLocked}
+                                                        maxLength={3}
                                                         style={{
                                                             width: '100%', padding: '6px', textAlign: 'center', boxSizing: 'border-box',
                                                             border: '1px solid #cbd5e1', borderRadius: '4px',

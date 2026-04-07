@@ -16,7 +16,7 @@ export interface EditTsWeek {
     projectId: number,
     userId: number,
     daysInWeek: number,
-    startDate: Date,
+    startDate: string,
     year: number,
     weekNumber: number,
     comment: string,

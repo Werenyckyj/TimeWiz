@@ -7,6 +7,13 @@ import { UsersRepository } from "../../users/services/UsersRepository";
 import { useProjects } from "../../projects/hooks/useProjects";
 import { Modal } from "../../../shared/components/Modal";
 
+const toLocalDateString = (date: Date) => {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+};
+
 const getDaysOfWeek = (year: number, week: number): Date[] => {
     const simple = new Date(year, 0, 1 + (week - 1) * 7);
     const dow = simple.getDay();
@@ -98,7 +105,9 @@ export default function Approval() {
                 status: newStatus,
                 tsEntries: tsWeek.tsEntries,
                 daysInWeek: tsWeek.tsEntries.length,
-                startDate: tsWeek.tsEntries.length > 0 ? new Date(tsWeek.tsEntries[0].workDate) : new Date(tsWeek.year, 0, 1)
+                startDate: tsWeek.tsEntries.length > 0
+                    ? toLocalDateString(new Date(tsWeek.tsEntries[0].workDate))
+                    : toLocalDateString(new Date(tsWeek.year, 0, 1))
             });
             setMessage(`Timesheet successfully ${newStatus.toLowerCase()}.`);
 
@@ -121,15 +130,16 @@ export default function Approval() {
 
     const renderDayCell = useCallback((tsWeek: TsWeek, dayIndex: number) => {
         const days = getDaysOfWeek(tsWeek.year, tsWeek.weekNumber);
-        const targetDate = days[dayIndex].toISOString().split('T')[0];
+        const targetDate = toLocalDateString(days[dayIndex]);
 
         const entryArray = Array.isArray(tsWeek.tsEntries) ? tsWeek.tsEntries : [];
         const entry = entryArray.find(e => {
-            const entryDate = new Date(e.workDate).toISOString().split('T')[0];
+            const entryDate = toLocalDateString(new Date(e.workDate));
             return entryDate === targetDate;
         });
 
-        if (!entry || entry.hours === 0) return <span style={{ color: '#94a3b8' }}>—</span>;
+        if (!entry) return <span style={{ color: '#94a3b8' }}>—</span>;
+        else if (entry.hours === 0) return <span style={{ color: '#94a3b8' }}>0h</span>;
 
         return (
             <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -155,13 +165,22 @@ export default function Approval() {
             type: "readonly",
             renderCell: (row) => <span style={{ color: '#64748b' }}>W{row.weekNumber} / {row.year}</span>
         },
-        { header: "Mon", accessor: "id", renderCell: (row) => renderDayCell(row, 0) },
-        { header: "Tue", accessor: "id", renderCell: (row) => renderDayCell(row, 1) },
-        { header: "Wed", accessor: "id", renderCell: (row) => renderDayCell(row, 2) },
-        { header: "Thu", accessor: "id", renderCell: (row) => renderDayCell(row, 3) },
-        { header: "Fri", accessor: "id", renderCell: (row) => renderDayCell(row, 4) },
-        { header: "Sat", accessor: "id", renderCell: (row) => renderDayCell(row, 5) },
-        { header: "Sun", accessor: "id", renderCell: (row) => renderDayCell(row, 6) },
+        ...(() => {
+            const reference = pending[0];
+            const days = reference ? getDaysOfWeek(reference.year, reference.weekNumber) : [];
+            const formatDate = (date?: Date) =>
+                date ? date.toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit" }).replace(/\//g, "-") : "--/--";
+
+            return [
+                { header: `${formatDate(days[0])} (Mon)`, accessor: "id", renderCell: (row: TsWeek) => renderDayCell(row, 0) },
+                { header: `${formatDate(days[1])} (Tue)`, accessor: "id", renderCell: (row: TsWeek) => renderDayCell(row, 1) },
+                { header: `${formatDate(days[2])} (Wed)`, accessor: "id", renderCell: (row: TsWeek) => renderDayCell(row, 2) },
+                { header: `${formatDate(days[3])} (Thu)`, accessor: "id", renderCell: (row: TsWeek) => renderDayCell(row, 3) },
+                { header: `${formatDate(days[4])} (Fri)`, accessor: "id", renderCell: (row: TsWeek) => renderDayCell(row, 4) },
+                { header: `${formatDate(days[5])} (Sat)`, accessor: "id", renderCell: (row: TsWeek) => renderDayCell(row, 5) },
+                { header: `${formatDate(days[6])} (Sun)`, accessor: "id", renderCell: (row: TsWeek) => renderDayCell(row, 6) },
+            ] as ColumnDef<TsWeek>[];
+        })(),
         {
             header: "Total",
             accessor: "id",
@@ -170,11 +189,36 @@ export default function Approval() {
                 const sum = arr.reduce((acc, curr) => acc + (curr.hours || 0), 0);
                 return <strong style={{ color: '#0f172a' }}>{sum}h</strong>;
             }
+        },
+        {
+            header: "Action",
+            accessor: "id",
+            width: "200px",
+            renderCell: (row) => (
+                <div style={{ display: 'flex', gap: '8px' }}>
+                    <button
+                        onClick={() => handleStatusChange(row, "Approved")}
+                        style={{ padding: '6px 12px', backgroundColor: '#a3f3d8', color: 'black', border: '1px solid #43e681', borderRadius: '4px', cursor: 'pointer', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '4px' }}
+                    >
+                        Approve
+                    </button>
+                    <button
+                        onClick={() => {
+                            setTimesheetToReject(row);
+                            setRejectComment(row.comment || "");
+                            setIsRejectModalOpen(true);
+                        }}
+                        style={{ padding: '4px 8px', cursor: 'pointer', border: '1px solid #fecaca', color: '#ef4444', borderRadius: '4px', backgroundColor: '#fef2f2' }}
+                    >
+                        Reject
+                    </button>
+                </div>
+            )
         }
     ];
 
     return (
-        <div style={{ padding: '2rem', fontFamily: 'sans-serif', maxWidth: '1200px', margin: '0 auto' }}>
+        <div style={{ padding: '2rem', fontFamily: 'sans-serif', margin: '0 auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
                 <h2 style={{ margin: 0 }}>Pending Approvals</h2>
             </div>
@@ -201,23 +245,6 @@ export default function Approval() {
                             isAdding={false}
                             setIsAdding={() => { }}
                             data={group.timesheets}
-                            onAdd={async () => { }}
-                            onEdit={async () => { }}
-                            onDelete={async () => { }}
-                            extraRowActions={(row) => [
-                                {
-                                    label: "✅ Approve",
-                                    onClick: () => handleStatusChange(row, "Approved")
-                                },
-                                {
-                                    label: "❌ Reject",
-                                    onClick: () => {
-                                        setTimesheetToReject(row);
-                                        setRejectComment(row.comment || ""); // Předvyplníme starý komentář, pokud tam nějaký byl
-                                        setIsRejectModalOpen(true);
-                                    }
-                                }
-                            ]}
                         />
                     </div>
                 ))

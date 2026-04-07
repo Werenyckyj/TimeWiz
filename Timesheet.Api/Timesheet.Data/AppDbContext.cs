@@ -44,5 +44,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.Entity<Company>().HasData(
             new Company { Id = 1, Name = "IBM Česká republika, spol. s r.o.", CIN = "14890992", Employees = [] }
         );
+
+        modelBuilder.Entity<TsApproval>()
+            .HasMany(a => a.Managers)
+            .WithMany(u => u.TsApprovals)
+            .UsingEntity(j => j.ToTable("TsApprovalManagers"));
     }
 }

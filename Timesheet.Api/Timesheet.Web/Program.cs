@@ -85,7 +85,14 @@ builder.Services.AddScoped<UnitOfWork>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<UserRepository>();
 builder.Services.AddScoped<ITokenService, TokenService>();
-builder.Services.AddScoped<IMailService, MailService>();
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddScoped<IMailService, DummyMailService>();
+}
+else
+{
+    builder.Services.AddScoped<IMailService, MailService>();
+}
 
 var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET") ?? throw new InvalidOperationException("Chybí JWT_SECRET v .env");
 

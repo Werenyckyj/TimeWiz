@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Timesheet.Data;
@@ -11,9 +12,11 @@ using Timesheet.Data;
 namespace Timesheet.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260404151719_TsWeek-missing-comment")]
+    partial class TsWeekmissingcomment
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -207,10 +210,15 @@ namespace Timesheet.Data.Migrations
                     b.Property<int>("TsWeekId")
                         .HasColumnType("integer");
 
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
                     b.HasIndex("TsWeekId")
                         .IsUnique();
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("TsApprovals");
                 });
@@ -316,6 +324,9 @@ namespace Timesheet.Data.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<int?>("TsApprovalId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Username")
                         .IsRequired()
                         .HasMaxLength(120)
@@ -329,6 +340,8 @@ namespace Timesheet.Data.Migrations
                         .IsUnique();
 
                     b.HasIndex("RoleId");
+
+                    b.HasIndex("TsApprovalId");
 
                     b.HasIndex("Username")
                         .IsUnique();
@@ -358,21 +371,6 @@ namespace Timesheet.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("UserProjects");
-                });
-
-            modelBuilder.Entity("TsApprovalUser", b =>
-                {
-                    b.Property<int>("ManagersId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("TsApprovalsId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("ManagersId", "TsApprovalsId");
-
-                    b.HasIndex("TsApprovalsId");
-
-                    b.ToTable("TsApprovalManagers", (string)null);
                 });
 
             modelBuilder.Entity("Timesheet.Data.Models.PasswordResetToken", b =>
@@ -405,7 +403,15 @@ namespace Timesheet.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Timesheet.Data.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("TsWeek");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Timesheet.Data.Models.TsEntry", b =>
@@ -452,6 +458,10 @@ namespace Timesheet.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Timesheet.Data.Models.TsApproval", null)
+                        .WithMany("Managers")
+                        .HasForeignKey("TsApprovalId");
+
                     b.Navigation("Company");
 
                     b.Navigation("Role");
@@ -476,21 +486,6 @@ namespace Timesheet.Data.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("TsApprovalUser", b =>
-                {
-                    b.HasOne("Timesheet.Data.Models.User", null)
-                        .WithMany()
-                        .HasForeignKey("ManagersId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Timesheet.Data.Models.TsApproval", null)
-                        .WithMany()
-                        .HasForeignKey("TsApprovalsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("Timesheet.Data.Models.Company", b =>
                 {
                     b.Navigation("Employees");
@@ -506,6 +501,11 @@ namespace Timesheet.Data.Migrations
             modelBuilder.Entity("Timesheet.Data.Models.Role", b =>
                 {
                     b.Navigation("Users");
+                });
+
+            modelBuilder.Entity("Timesheet.Data.Models.TsApproval", b =>
+                {
+                    b.Navigation("Managers");
                 });
 
             modelBuilder.Entity("Timesheet.Data.Models.TsWeek", b =>
