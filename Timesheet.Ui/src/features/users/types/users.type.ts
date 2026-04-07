@@ -41,3 +41,9 @@ export interface AddUser {
     roleId: number | null;
     companyId: number | null;
 }
+
+export interface ChangeUserPassword {
+    userId: number;
+    oldPassword: string;
+    newPassword: string;
+}

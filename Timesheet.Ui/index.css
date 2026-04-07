@@ -1,0 +1,45 @@
+:root {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-hover-primary: #abb1b4;
+  --bg-hover-secondary: #e2e8f0;
+  --text-primary: #0f172a;
+  --text-secondary: #64748b;
+  --border-color: #e2e8f0;
+}
+
+[data-bs-theme="dark"] {
+  --bg-primary: #181c24;
+  --bg-secondary: #212731;
+  --bg-hover-primary: #272d36;
+  --bg-hover-secondary: #353c46;
+  --text-primary: #bbbcbd;
+  --text-secondary: #738296;
+  --border-color: #434d5a;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
+}
+
+.secondary-button {
+  transition: all 0.2s ease-in-out;
+}
+
+.secondary-button:hover {
+  background-color: var(--bg-hover-secondary) !important;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.primary-button {
+  transition: all 0.2s ease-in-out;
+}
+
+.primary-button:hover {
+  background-color: var(--bg-hover-primary) !important;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}

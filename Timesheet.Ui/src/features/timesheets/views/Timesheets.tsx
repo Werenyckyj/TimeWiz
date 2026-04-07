@@ -205,19 +205,20 @@ export default function Timesheet() {
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
                 <button
+                    className="primary-button"
                     onClick={handleSaveAll}
-                    style={{ padding: '10px 20px', backgroundColor: '#e2e8f0', border: '1px solid #cbd5e1', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
+                    style={{ padding: '10px 20px', backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
                 >
                     Save
                 </button>
 
                 <div style={{ display: 'flex', gap: '8px' }}>
-                    <button onClick={goToLastWeek} style={{ padding: '8px 12px', cursor: 'pointer', borderRadius: '4px', border: '1px solid #cbd5e1' }}>◀ Last week</button>
-                    <button onClick={goToToday} style={{ padding: '8px 16px', cursor: 'pointer', borderRadius: '4px', border: '1px solid #cbd5e1', fontWeight: 'bold' }}>Today</button>
-                    <button onClick={goToNextWeek} style={{ padding: '8px 12px', cursor: 'pointer', borderRadius: '4px', border: '1px solid #cbd5e1' }}>Next week ▶</button>
+                    <button className="primary-button" onClick={goToLastWeek} style={{ padding: '8px 12px', cursor: 'pointer', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)' }}>◀ Last week</button>
+                    <button className="primary-button" onClick={goToToday} style={{ padding: '8px 16px', cursor: 'pointer', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', fontWeight: 'bold' }}>Today</button>
+                    <button className="primary-button" onClick={goToNextWeek} style={{ padding: '8px 12px', cursor: 'pointer', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)' }}>Next week ▶</button>
                 </div>
 
-                <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#334155' }}>
+                <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>
                     Week {week} / {year}
                 </div>
             </div>
@@ -228,14 +229,14 @@ export default function Timesheet() {
                 </div>
             )}
 
-            <div style={{ border: '1px solid #e2e8f0', borderRadius: '8px', overflow: 'hidden', backgroundColor: 'white' }}>
+            <div style={{ border: '1px solid var(--border-color)', borderRadius: '8px', overflow: 'hidden', backgroundColor: 'var(--bg-primary)' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center' }}>
-                    <thead style={{ backgroundColor: '#f8fafc', borderBottom: '2px solid #cbd5e1' }}>
+                    <thead style={{ backgroundColor: 'var(--bg-secondary)', borderBottom: '2px solid var(--border-color)' }}>
                         <tr>
                             <th style={{ padding: '12px', textAlign: 'left', width: '25%' }}>Project</th>
                             {days.map((d, i) => (
                                 <th key={i} style={{ padding: '12px', width: '9%' }}>
-                                    <div style={{ fontSize: '0.8rem', color: '#64748b' }}>
+                                    <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
                                         {d.toLocaleDateString("en-US", { weekday: 'short' })}
                                     </div>
                                     <div>{d.getDate()}. {d.getMonth() + 1}.</div>
@@ -248,7 +249,7 @@ export default function Timesheet() {
                     <tbody>
                         {drafts.length === 0 ? (
                             <tr>
-                                <td colSpan={10} style={{ padding: '2rem', color: '#64748b' }}>Loading your projects for this week...</td>
+                                <td colSpan={10} style={{ padding: '2rem', color: 'var(--text-secondary)' }}>Loading your projects for this week...</td>
                             </tr>
                         ) : (
                             drafts.map(ts => {
@@ -257,7 +258,7 @@ export default function Timesheet() {
                                 const rowSum = ts.tsEntries?.reduce((acc, e) => acc + (e.hours || 0), 0) || 0;
 
                                 return (
-                                    <tr key={ts.id} style={{ borderBottom: '1px solid #e2e8f0', backgroundColor: isRejected ? '#fef2f2' : 'transparent' }}>
+                                    <tr key={ts.id} style={{ borderBottom: '1px solid var(--border-color)', backgroundColor: isRejected ? 'var(--bg-secondary)' : 'transparent' }}>
                                         <td style={{ padding: '12px', textAlign: 'left', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '8px' }}>
                                             {ts.project?.name || "Unknown Project"}
 
@@ -294,16 +295,16 @@ export default function Timesheet() {
                                                         maxLength={3}
                                                         style={{
                                                             width: '100%', padding: '6px', textAlign: 'center', boxSizing: 'border-box',
-                                                            border: '1px solid #cbd5e1', borderRadius: '4px',
-                                                            backgroundColor: isLocked ? '#f1f5f9' : 'white',
-                                                            color: isLocked ? '#94a3b8' : '#0f172a'
+                                                            border: '1px solid var(--border-color)', borderRadius: '4px',
+                                                            backgroundColor: isLocked ? 'var(--bg-secondary)' : 'var(--bg-primary)',
+                                                            color: isLocked ? 'var(--text-secondary)' : 'var(--text-primary)'
                                                         }}
                                                     />
                                                 </td>
                                             );
                                         })}
 
-                                        <td style={{ padding: '12px', fontWeight: 'bold', color: '#334155' }}>{rowSum}</td>
+                                        <td style={{ padding: '12px', fontWeight: 'bold', color: 'var(--text-primary)' }}>{rowSum}</td>
 
                                         <td style={{ padding: '12px' }}>
                                             {isLocked ? (
@@ -312,8 +313,9 @@ export default function Timesheet() {
                                                 </span>
                                             ) : (
                                                 <button
+                                                    className="secondary-button"
                                                     onClick={() => handleSubmitRow(ts)}
-                                                    style={{ padding: '6px 12px', backgroundColor: '#3b82f6', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.85rem' }}
+                                                    style={{ padding: '6px 12px', backgroundColor: 'var(--bg-secondary)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.85rem' }}
                                                 >
                                                     Send
                                                 </button>
@@ -324,13 +326,13 @@ export default function Timesheet() {
                             })
                         )}
                     </tbody>
-                    <tfoot style={{ backgroundColor: '#f8fafc', borderTop: '2px solid #cbd5e1', fontWeight: 'bold' }}>
+                    <tfoot style={{ backgroundColor: 'var(--bg-secondary)', borderTop: '2px solid var(--border-color)', fontWeight: 'bold' }}>
                         <tr>
                             <td style={{ padding: '12px', textAlign: 'left' }}>∑ Total</td>
                             {colSums.map((sum, i) => (
                                 <td key={i} style={{ padding: '12px' }}>{sum > 0 ? sum : ""}</td>
                             ))}
-                            <td style={{ padding: '12px', color: '#0f172a' }}>{grandTotal}</td>
+                            <td style={{ padding: '12px', color: 'var(--text-primary)' }}>{grandTotal}</td>
                             <td></td>
                         </tr>
                     </tfoot>

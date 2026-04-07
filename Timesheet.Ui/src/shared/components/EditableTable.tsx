@@ -16,7 +16,7 @@ export interface SelectOptions {
     label: string;
 }
 
-interface EditableTableProps<T extends { id: string | number }> {
+export interface EditableTableProps<T extends { id: string | number }> {
     data: T[];
     columns: ColumnDef<T>[];
     onAdd?: (newRecord: Partial<T>) => Promise<void>;
@@ -89,24 +89,24 @@ export function EditableTable<T extends { id: string | number }>({
 
     return (
         <div style={{
-            border: '1px solid #e2e8f0',
+            border: '1px solid var(--border-color)',
             borderRadius: '8px',
-            overflow: 'visible', // OPRAVA: Musí být visible, aby Kebab menu vyjelo ven
-            backgroundColor: '#ffffff',
-            paddingBottom: openMenuId ? '140px' : '0', // OPRAVA: Přidá místo pod tabulkou pro menu
+            overflow: 'visible',
+            backgroundColor: 'var(--bg-primary)',
+            paddingBottom: openMenuId ? '140px' : '0',
             transition: 'padding 0.2s ease'
         }}>
             <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0, textAlign: 'left', tableLayout: 'fixed' }}>
 
-                <thead style={{ backgroundColor: '#f8fafc' }}>
+                <thead style={{ backgroundColor: 'var(--bg-secondary)' }}>
                     <tr>
                         {columns.map((col, idx) => (
                             <th key={idx} style={{
                                 padding: '12px 16px',
                                 fontWeight: '600',
-                                color: '#334155',
+                                color: 'var(--text-primary)',
                                 width: col.width || 'auto',
-                                borderBottom: '2px solid #e2e8f0',
+                                borderBottom: '2px solid var(--border-color)',
                                 borderTopLeftRadius: idx === 0 ? '8px' : '0',
                                 borderTopRightRadius: (!hasActions && idx === columns.length - 1) ? '8px' : '0'
                             }}>
@@ -114,16 +114,16 @@ export function EditableTable<T extends { id: string | number }>({
                             </th>
                         ))}
                         {hasActions && (
-                            <th style={{ padding: '12px 16px', fontWeight: '600', color: '#334155', textAlign: 'right', width: '180px', borderBottom: '2px solid #e2e8f0', borderTopRightRadius: '8px' }}>Action</th>
+                            <th style={{ padding: '12px 16px', fontWeight: '600', color: 'var(--text-primary)', textAlign: 'right', width: '180px', borderBottom: '2px solid var(--border-color)', borderTopRightRadius: '8px' }}>Action</th>
                         )}
                     </tr>
                 </thead>
 
                 <tbody>
                     {isAdding && (
-                        <tr style={{ backgroundColor: '#f0f9ff' }}>
+                        <tr style={{ backgroundColor: 'var(--bg-hover)' }}>
                             {columns.map((col, idx) => (
-                                <td key={idx} style={{ padding: '12px 16px', borderBottom: '1px solid #e2e8f0' }}>
+                                <td key={idx} style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-color)', color: 'var(--text-primary)' }}>
                                     {col.type === 'readonly' ? (
                                         "—"
                                     ) : col.type === 'checkbox' ? (
@@ -131,15 +131,15 @@ export function EditableTable<T extends { id: string | number }>({
                                             type="checkbox"
                                             checked={!!draft[col.accessor]}
                                             onChange={e => handleDraftChange(col.accessor, e.target.checked as T[typeof col.accessor])}
-                                            style={{ width: '20px', height: '20px', cursor: 'pointer' }}
+                                            style={{ width: '20px', height: '20px', cursor: 'pointer', backgroundColor: 'var(--bg-primary)', borderColor: 'var(--border-color)' }}
                                         />
                                     ) : col.type === 'select' ? (
                                         <select
                                             value={(draft[col.accessor] as string | number) || ""}
                                             onChange={e => handleDraftChange(col.accessor, e.target.value as T[typeof col.accessor])}
-                                            style={{ width: '100%', padding: '6px', boxSizing: 'border-box' }}
+                                            style={{ width: '100%', padding: '6px', boxSizing: 'border-box', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', borderRadius: '4px' }}
                                         >
-                                            <option value="">-- Vyberte --</option>
+                                            <option value="">-- Select --</option>
                                             {col.options?.map(opt => (
                                                 <option key={opt.value} value={opt.value}>
                                                     {opt.label}
@@ -155,15 +155,15 @@ export function EditableTable<T extends { id: string | number }>({
                                                     : (draft[col.accessor] as string) || ""
                                             }
                                             onChange={e => handleDraftChange(col.accessor, e.target.value as T[typeof col.accessor])}
-                                            style={{ width: '100%', padding: '6px', boxSizing: 'border-box' }}
+                                            style={{ width: '100%', padding: '6px', boxSizing: 'border-box', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', borderRadius: '4px' }}
                                         />
                                     )}
                                 </td>
                             ))}
-                            <td style={{ padding: '12px 16px', textAlign: 'right', borderBottom: '1px solid #e2e8f0' }}>
-                                <button onClick={commitAdd} style={{ marginRight: '8px', padding: '4px 8px', cursor: 'pointer', border: '1px solid #cbd5e1', borderRadius: '4px', backgroundColor: 'white' }}>Save</button>
+                            {hasActions && <td style={{ padding: '12px 16px', textAlign: 'right', borderBottom: '1px solid var(--border-color)' }}>
+                                <button className="primary-button" onClick={commitAdd} style={{ marginRight: '8px', padding: '4px 8px', cursor: 'pointer', border: '1px solid var(--border-color)', borderRadius: '4px', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>Save</button>
                                 <button onClick={cancelAdd} style={{ padding: '4px 8px', cursor: 'pointer', border: '1px solid #fecaca', color: '#ef4444', borderRadius: '4px', backgroundColor: '#fef2f2' }}>Cancel</button>
-                            </td>
+                            </td>}
                         </tr>
                     )}
 
@@ -171,25 +171,25 @@ export function EditableTable<T extends { id: string | number }>({
                         const isEditingThisRow = editingId === row.id;
 
                         return (
-                            <tr key={row.id} style={{ backgroundColor: isEditingThisRow ? '#f0f9ff' : 'transparent' }}>
+                            <tr key={row.id} style={{ backgroundColor: isEditingThisRow ? 'var(--bg-hover)' : 'transparent', color: 'var(--text-primary)' }}>
                                 {columns.map((col, idx) => (
-                                    <td key={idx} style={{ padding: '12px 16px', borderBottom: '1px solid #e2e8f0' }}>
+                                    <td key={idx} style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-color)' }}>
                                         {isEditingThisRow && col.type !== 'readonly' ? (
                                             col.type === 'checkbox' ? (
                                                 <input
                                                     type="checkbox"
                                                     checked={!!draft[col.accessor]}
                                                     onChange={e => handleDraftChange(col.accessor, e.target.checked as T[typeof col.accessor])}
-                                                    style={{ width: '20px', height: '20px', cursor: 'pointer' }}
+                                                    style={{ width: '20px', height: '20px', cursor: 'pointer', backgroundColor: 'var(--bg-primary)', borderColor: 'var(--border-color)' }}
                                                 />
                                             ) : col.type === 'select' ? (
                                                 <select
                                                     required={col.isRequired}
                                                     value={(draft[col.accessor] as string | number) || ""}
                                                     onChange={e => handleDraftChange(col.accessor, e.target.value as T[typeof col.accessor])}
-                                                    style={{ width: '100%', padding: '6px', boxSizing: 'border-box' }}
+                                                    style={{ width: '100%', padding: '6px', boxSizing: 'border-box', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', borderRadius: '4px' }}
                                                 >
-                                                    <option value="">-- Vyberte --</option>
+                                                    <option value="">-- Select --</option>
                                                     {col.options?.map(opt => (
                                                         <option key={opt.value} value={opt.value}>
                                                             {opt.label}
@@ -206,7 +206,7 @@ export function EditableTable<T extends { id: string | number }>({
                                                             : (draft[col.accessor] as string) || ""
                                                     }
                                                     onChange={e => handleDraftChange(col.accessor, e.target.value as T[typeof col.accessor])}
-                                                    style={{ width: '100%', padding: '6px', boxSizing: 'border-box' }}
+                                                    style={{ width: '100%', padding: '6px', boxSizing: 'border-box', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', borderRadius: '4px' }}
                                                 />
                                             )
                                         ) : (
@@ -215,17 +215,17 @@ export function EditableTable<T extends { id: string | number }>({
                                     </td>
                                 ))}
 
-                                {hasActions ? <td style={{ padding: '12px 16px', textAlign: 'right', position: 'relative', borderBottom: '1px solid #e2e8f0' }}>
+                                {hasActions ? <td style={{ padding: '12px 16px', textAlign: 'right', position: 'relative', borderBottom: '1px solid var(--border-color)' }}>
                                     {isEditingThisRow ? (
                                         <>
-                                            <button onClick={() => commitEdit()} style={{ marginRight: '8px', padding: '4px 8px', cursor: 'pointer', border: '1px solid #cbd5e1', borderRadius: '4px', backgroundColor: 'white' }}>Save</button>
+                                            <button className="primary-button" onClick={() => commitEdit()} style={{ marginRight: '8px', padding: '4px 8px', cursor: 'pointer', border: '1px solid var(--border-color)', borderRadius: '4px', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>Save</button>
                                             <button onClick={cancelEdit} style={{ padding: '4px 8px', cursor: 'pointer', border: '1px solid #fecaca', color: '#ef4444', borderRadius: '4px', backgroundColor: '#fef2f2' }}>Cancel</button>
                                         </>
                                     ) : (
                                         <div style={{ position: 'relative', display: 'inline-block' }}>
                                             <button
                                                 onClick={() => setOpenMenuId(openMenuId === row.id ? null : row.id)}
-                                                style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer', padding: '4px 8px', fontWeight: 'bold', color: '#64748b' }}
+                                                style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer', padding: '4px 8px', fontWeight: 'bold', color: 'var(--text-secondary)' }}
                                             >
                                                 ⋮
                                             </button>
@@ -236,27 +236,30 @@ export function EditableTable<T extends { id: string | number }>({
                                                         onClick={() => setOpenMenuId(null)}
                                                     />
 
-                                                    <div style={{ position: 'absolute', right: 0, top: '100%', background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '6px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)', zIndex: 50, minWidth: '140px', padding: '4px 0', textAlign: 'left' }}>
+                                                    <div style={{ position: 'absolute', right: 0, top: '100%', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '6px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)', zIndex: 50, minWidth: '140px', padding: '4px 0', textAlign: 'left' }}>
                                                         <button
+                                                            className="primary-button"
                                                             onClick={() => { startEdit(row); setOpenMenuId(null); }}
-                                                            style={{ display: 'block', width: '100%', padding: '8px 16px', border: 'none', background: 'none', cursor: 'pointer', textAlign: 'left', color: '#334155' }}
+                                                            style={{ display: 'block', width: '100%', padding: '8px 16px', border: 'none', background: 'none', cursor: 'pointer', textAlign: 'left', color: 'var(--text-primary)' }}
                                                         >
                                                             Edit
                                                         </button>
 
                                                         {extraRowActions && extraRowActions(row).map((action, i) => (
                                                             <button
+                                                                className="primary-button"
                                                                 key={i}
                                                                 onClick={() => { action.onClick(); setOpenMenuId(null); }}
-                                                                style={{ display: 'block', width: '100%', padding: '8px 16px', border: 'none', background: 'none', cursor: 'pointer', textAlign: 'left', color: '#334155' }}
+                                                                style={{ display: 'block', width: '100%', padding: '8px 16px', border: 'none', background: 'none', cursor: 'pointer', textAlign: 'left', color: 'var(--text-primary)' }}
                                                             >
                                                                 {action.label}
                                                             </button>
                                                         ))}
 
-                                                        <div style={{ height: '1px', backgroundColor: '#e2e8f0', margin: '4px 0' }} />
+                                                        <div style={{ height: '1px', backgroundColor: 'var(--border-color)', margin: '4px 0' }} />
 
                                                         <button
+                                                            className="primary-button"
                                                             onClick={() => {
                                                                 if (onDelete) {
                                                                     onDelete(row.id);
@@ -279,8 +282,8 @@ export function EditableTable<T extends { id: string | number }>({
 
                     {data.length === 0 && !isAdding && (
                         <tr>
-                            <td colSpan={columns.length + 1} style={{ padding: '24px', textAlign: 'center', color: '#64748b', borderBottom: '1px solid #e2e8f0' }}>
-                                Žádná data k zobrazení.
+                            <td colSpan={columns.length + (hasActions ? 1 : 0)} style={{ padding: '24px', textAlign: 'center', color: 'var(--text-secondary)', borderBottom: '1px solid var(--border-color)' }}>
+                                No data available.
                             </td>
                         </tr>
                     )}

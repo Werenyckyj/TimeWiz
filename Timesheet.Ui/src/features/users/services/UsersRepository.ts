@@ -1,5 +1,5 @@
 import api from "../../../shared/api/axiosInstance";
-import type { Users, User, EditUser, AddUser } from "../types/users.type";
+import type { Users, User, EditUser, AddUser, ChangeUserPassword } from "../types/users.type";
 
 export const UsersRepository = {
     getUsers: async (): Promise<Users> => {
@@ -20,5 +20,8 @@ export const UsersRepository = {
     getUser: async (id: number): Promise<User> => {
         const response = await api.get(`/user/${id}`);
         return response.data.data || response.data;
+    },
+    changeUserPassword: async (payload: ChangeUserPassword): Promise<void> => {
+        await api.post(`/user/${payload.userId}/change-password`, { newPassword: payload.newPassword, oldPassword: payload.oldPassword });
     }
 };

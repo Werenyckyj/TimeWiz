@@ -54,8 +54,9 @@ export default function Companies() {
 
                 {!isAdding && (
                     <button
+                        className="primary-button"
                         onClick={() => setIsAdding(true)}
-                        style={{ padding: '8px 16px', backgroundColor: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '6px', cursor: 'pointer', fontWeight: '500' }}
+                        style={{ padding: '8px 16px', backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '6px', cursor: 'pointer', fontWeight: '500' }}
                     >
                         + Add company
                     </button>
