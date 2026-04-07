@@ -230,13 +230,13 @@ export default function Approval() {
             )}
 
             {Object.keys(groupedPending).length === 0 ? (
-                <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b', backgroundColor: '#f8fafc', borderRadius: '8px' }}>
+                <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)', backgroundColor: 'var(--bg-secondary)', borderRadius: '8px' }}>
                     No pending timesheets require your approval.
                 </div>
             ) : (
                 Object.values(groupedPending).map(group => (
                     <div key={group.projectName} style={{ marginBottom: '3rem' }}>
-                        <h3 style={{ borderBottom: '2px solid #cbd5e1', paddingBottom: '8px', color: '#334155' }}>
+                        <h3 style={{ borderBottom: '2px solid var(--border-color)', paddingBottom: '8px', color: 'var(--text-primary)' }}>
                             Project: {group.projectName}
                         </h3>
 
@@ -260,7 +260,7 @@ export default function Approval() {
                             style={{
                                 padding: '8px',
                                 borderRadius: '4px',
-                                border: '1px solid #cbd5e1',
+                                border: '1px solid var(--border-color)',
                                 minHeight: '100px',
                                 resize: 'vertical',
                                 fontFamily: 'inherit'
@@ -269,11 +269,11 @@ export default function Approval() {
                         />
                     </div>
 
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '16px', paddingTop: '16px', borderTop: '1px solid #e2e8f0' }}>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--border-color)' }}>
                         <button
                             type="button"
                             onClick={() => setIsRejectModalOpen(false)}
-                            style={{ padding: '8px 16px', backgroundColor: 'white', border: '1px solid #cbd5e1', borderRadius: '4px', cursor: 'pointer' }}
+                            style={{ padding: '8px 16px', backgroundColor: 'white', border: '1px solid var(--border-color)', borderRadius: '4px', cursor: 'pointer' }}
                         >
                             Cancel
                         </button>

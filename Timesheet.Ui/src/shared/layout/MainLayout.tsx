@@ -8,7 +8,7 @@ export const MainLayout = () => {
             <Navbar />
             <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
                 <Sidebar />
-                <main style={{ flex: 1, padding: '30px', overflowY: 'auto', backgroundColor: '#f8f9fa' }}>
+                <main style={{ flex: 1, padding: '30px', overflowY: 'auto', backgroundColor: 'var(--bg-secondary)' }}>
                     <Outlet />
                 </main>
             </div>

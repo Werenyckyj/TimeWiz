@@ -154,14 +154,15 @@ export default function Projects() {
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
                     {!isAdding && (
                         <button
+                            className="primary-button"
                             onClick={() => setIsAdding(true)}
-                            style={{ padding: '8px 16px', backgroundColor: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '6px', cursor: 'pointer', fontWeight: '500' }}
+                            style={{ padding: '8px 16px', backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '6px', cursor: 'pointer', fontWeight: '500' }}
                         >
                             + Add Project
                         </button>
                     )}
 
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.9rem', color: '#475569', cursor: 'pointer' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.9rem', color: 'var(--text-secondary)', cursor: 'pointer' }}>
                         <input
                             type="checkbox"
                             checked={showActiveOnly}
@@ -202,23 +203,23 @@ export default function Projects() {
                         placeholder="Search users by name or email..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        style={{ padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', width: '100%', boxSizing: 'border-box' }}
+                        style={{ padding: '10px', borderRadius: '6px', border: '1px solid var(--border-color)', width: '100%', boxSizing: 'border-box' }}
                     />
 
-                    <div style={{ border: '1px solid #e2e8f0', borderRadius: '6px', maxHeight: '400px', overflowY: 'auto' }}>
+                    <div style={{ border: '1px solid var(--border-color)', borderRadius: '6px', maxHeight: '400px', overflowY: 'auto' }}>
                         {filteredUsers.length === 0 ? (
-                            <div style={{ padding: '16px', textAlign: 'center', color: '#64748b' }}>No users found.</div>
+                            <div style={{ padding: '16px', textAlign: 'center', color: 'var(--text-secondary)' }}>No users found.</div>
                         ) : (
                             filteredUsers.map(user => {
                                 const isMember = projectMembers.some(pm => pm.id === user.id);
                                 const isManager = projectManagers.some(pm => pm.id === user.id);
 
                                 return (
-                                    <div key={user.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', borderBottom: '1px solid #e2e8f0', backgroundColor: isMember ? '#f0fdf4' : 'transparent' }}>
+                                    <div key={user.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', borderBottom: '1px solid var(--border-color)', backgroundColor: isMember ? 'var(--bg-secondary)' : 'transparent' }}>
 
                                         <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                            <span style={{ fontWeight: 500, color: '#1e293b' }}>{user.name} {user.surname}</span>
-                                            <span style={{ fontSize: '0.85rem', color: '#64748b' }}>{user.email}</span>
+                                            <span style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{user.name} {user.surname}</span>
+                                            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{user.email}</span>
                                         </div>
                                         <div>
                                             {isMember && (
@@ -230,9 +231,9 @@ export default function Projects() {
                                                         cursor: 'pointer',
                                                         fontWeight: 500,
                                                         fontSize: '0.85rem',
-                                                        border: isManager ? '1px solid #fbbf24' : '1px solid #cbd5e1',
-                                                        backgroundColor: isManager ? '#fffbeb' : '#ffffff',
-                                                        color: isManager ? '#b45309' : '#334155',
+                                                        border: isManager ? '1px solid #fbbf24' : '1px solid var(--border-color)',
+                                                        backgroundColor: isManager ? '#fffbeb' : 'var(--bg-primary)',
+                                                        color: isManager ? '#b45309' : 'var(--text-secondary)',
                                                         marginRight: '8px'
                                                     }}
                                                 >
@@ -247,9 +248,9 @@ export default function Projects() {
                                                     cursor: 'pointer',
                                                     fontWeight: 500,
                                                     fontSize: '0.85rem',
-                                                    border: isMember ? '1px solid #fca5a5' : '1px solid #cbd5e1',
-                                                    backgroundColor: isMember ? '#fef2f2' : '#ffffff',
-                                                    color: isMember ? '#ef4444' : '#334155'
+                                                    border: isMember ? '1px solid #fca5a5' : '1px solid var(--border-color)',
+                                                    backgroundColor: isMember ? '#fef2f2' : 'var(--bg-primary)',
+                                                    color: isMember ? '#ef4444' : 'var(--text-secondary)'
                                                 }}
                                             >
                                                 {isMember ? "Remove" : "Add"}
@@ -261,9 +262,9 @@ export default function Projects() {
                         )}
                     </div>
 
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px', color: '#64748b', fontSize: '0.9rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
                         <span>Total assigned: <strong>{projectMembers.length}</strong>, Managers: <strong>{projectManagers.length}</strong></span>
-                        <button onClick={() => setIsMembersModalOpen(false)} style={{ padding: '8px 16px', backgroundColor: '#e2e8f0', border: 'none', borderRadius: '4px', cursor: 'pointer', color: '#334155', fontWeight: 500 }}>
+                        <button className="secondary-button" onClick={() => setIsMembersModalOpen(false)} style={{ padding: '8px 16px', backgroundColor: 'var(--bg-secondary)', border: 'none', borderRadius: '4px', cursor: 'pointer', color: 'var(--text-secondary)', fontWeight: 500 }}>
                             Done
                         </button>
                     </div>

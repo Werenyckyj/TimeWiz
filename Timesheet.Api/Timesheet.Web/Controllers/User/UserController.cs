@@ -117,4 +117,28 @@ public class UserController(ILogger<UserController> logger, ITRepository<User> t
         var response = _mapper.Map<List<ProjectRDto>>(projects);
         return Ok(response);
     }
+
+    [HttpPost("{id:int}/change-password")]
+    [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Authorize(Roles = "Admin, Manager, Emploeyee, Externist")]
+    public IActionResult ChangePassword(int id, [FromBody] ChangePasswordDto dto)
+    {
+        var user = _unitOfWork.UserRepository.GetById(id);
+        if (user is null)
+        {
+            return NotFound();
+        }
+
+        if (!BCrypt.Net.BCrypt.Verify(dto.OldPassword, user.PasswordHash))
+        {
+            return BadRequest(false);
+        }
+
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+        _unitOfWork.UserRepository.Update(user);
+        _unitOfWork.SaveChanges();
+        _logger.LogInformation("User with ID {UserId} changed their password.", id);
+        return Ok(true);
+    }
 }
