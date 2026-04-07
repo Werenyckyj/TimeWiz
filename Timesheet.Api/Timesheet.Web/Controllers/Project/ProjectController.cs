@@ -166,14 +166,12 @@ public class ProjectController(ILogger<ProjectController> logger, ITRepository<P
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public IActionResult GetProjectPendingTimesheets(int id)
     {
-        var project = _unitOfWork.ProjectRepository
-        .Query()
-        .Include(p => p.TsWeeks)
-        .ThenInclude(t => t.Approval)
-        .FirstOrDefault(p => p.Id == id);
-        if (project == null) return NotFound($"Project with ID {id} not found.");
-
-        var pendingTimesheets = project.TsWeeks.Where(t => t.Approval.Action == TsApprovalStatus.Pending).ToList();
+        var pendingTimesheets = _unitOfWork.TsWeekRepository.Query()
+            .Include(t => t.User)
+            .Include(t => t.TsEntries)
+            .Include(t => t.Project)
+            .Where(t => t.ProjectId == id && t.Approval != null && t.Approval.Action == TsApprovalStatus.Pending)
+            .ToList();
         var response = _mapper.Map<List<TsWeekRDto>>(pendingTimesheets);
         return Ok(response);
     }

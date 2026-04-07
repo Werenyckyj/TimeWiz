@@ -19,9 +19,9 @@ export interface SelectOptions {
 interface EditableTableProps<T extends { id: string | number }> {
     data: T[];
     columns: ColumnDef<T>[];
-    onAdd: (newRecord: Partial<T>) => Promise<void>;
-    onEdit: (updatedRecord: T) => Promise<void>;
-    onDelete: (id: string | number) => Promise<void>;
+    onAdd?: (newRecord: Partial<T>) => Promise<void>;
+    onEdit?: (updatedRecord: T) => Promise<void>;
+    onDelete?: (id: string | number) => Promise<void>;
     isAdding: boolean;
     setIsAdding: (val: boolean) => void;
     extraRowActions?: (row: T) => { label: string; onClick: () => void }[];
@@ -48,7 +48,9 @@ export function EditableTable<T extends { id: string | number }>({
     };
 
     const commitAdd = async () => {
-        await onAdd(draft);
+        if (onAdd) {
+            await onAdd(draft);
+        }
         setIsAdding(false);
         setDraft({});
     };
@@ -72,7 +74,9 @@ export function EditableTable<T extends { id: string | number }>({
     };
 
     const commitEdit = async () => {
-        await onEdit(draft as T);
+        if (onEdit) {
+            await onEdit(draft as T);
+        }
         setEditingId(null);
         setDraft({});
     };
@@ -80,6 +84,8 @@ export function EditableTable<T extends { id: string | number }>({
     const handleDraftChange = <K extends keyof T>(accessor: K, value: T[K]) => {
         setDraft(prev => ({ ...prev, [accessor]: value }));
     };
+
+    const hasActions = !!(onEdit || onDelete || extraRowActions || onAdd);
 
     return (
         <div style={{
@@ -95,11 +101,21 @@ export function EditableTable<T extends { id: string | number }>({
                 <thead style={{ backgroundColor: '#f8fafc' }}>
                     <tr>
                         {columns.map((col, idx) => (
-                            <th key={idx} style={{ padding: '12px 16px', fontWeight: '600', color: '#334155', width: col.width || 'auto', borderBottom: '2px solid #e2e8f0', borderTopLeftRadius: idx === 0 ? '8px' : '0' }}>
+                            <th key={idx} style={{
+                                padding: '12px 16px',
+                                fontWeight: '600',
+                                color: '#334155',
+                                width: col.width || 'auto',
+                                borderBottom: '2px solid #e2e8f0',
+                                borderTopLeftRadius: idx === 0 ? '8px' : '0',
+                                borderTopRightRadius: (!hasActions && idx === columns.length - 1) ? '8px' : '0'
+                            }}>
                                 {col.header}
                             </th>
                         ))}
-                        <th style={{ padding: '12px 16px', fontWeight: '600', color: '#334155', textAlign: 'right', width: '180px', borderBottom: '2px solid #e2e8f0', borderTopRightRadius: '8px' }}>Action</th>
+                        {hasActions && (
+                            <th style={{ padding: '12px 16px', fontWeight: '600', color: '#334155', textAlign: 'right', width: '180px', borderBottom: '2px solid #e2e8f0', borderTopRightRadius: '8px' }}>Action</th>
+                        )}
                     </tr>
                 </thead>
 
@@ -199,7 +215,7 @@ export function EditableTable<T extends { id: string | number }>({
                                     </td>
                                 ))}
 
-                                <td style={{ padding: '12px 16px', textAlign: 'right', position: 'relative', borderBottom: '1px solid #e2e8f0' }}>
+                                {hasActions ? <td style={{ padding: '12px 16px', textAlign: 'right', position: 'relative', borderBottom: '1px solid #e2e8f0' }}>
                                     {isEditingThisRow ? (
                                         <>
                                             <button onClick={() => commitEdit()} style={{ marginRight: '8px', padding: '4px 8px', cursor: 'pointer', border: '1px solid #cbd5e1', borderRadius: '4px', backgroundColor: 'white' }}>Save</button>
@@ -241,7 +257,12 @@ export function EditableTable<T extends { id: string | number }>({
                                                         <div style={{ height: '1px', backgroundColor: '#e2e8f0', margin: '4px 0' }} />
 
                                                         <button
-                                                            onClick={() => { onDelete(row.id); setOpenMenuId(null); }}
+                                                            onClick={() => {
+                                                                if (onDelete) {
+                                                                    onDelete(row.id);
+                                                                }
+                                                                setOpenMenuId(null);
+                                                            }}
                                                             style={{ display: 'block', width: '100%', padding: '8px 16px', border: 'none', background: 'none', cursor: 'pointer', textAlign: 'left', color: '#ef4444' }}
                                                         >
                                                             Delete
@@ -251,7 +272,7 @@ export function EditableTable<T extends { id: string | number }>({
                                             )}
                                         </div>
                                     )}
-                                </td>
+                                </td> : null}
                             </tr>
                         );
                     })}

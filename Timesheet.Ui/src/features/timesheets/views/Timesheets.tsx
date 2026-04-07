@@ -40,7 +40,7 @@ const getDaysOfWeek = (year: number, week: number): Date[] => {
     return days;
 };
 
-export default function TimesheetEntry() {
+export default function Timesheet() {
     const { user } = useAuth();
     const { timesheets, getTimesheets, editTimesheet, addTimesheet } = useTimesheet();
     const { projects, getUserProjects } = useProjects();
@@ -68,8 +68,6 @@ export default function TimesheetEntry() {
             if (!user?.nameid) return;
             const rawTimesheets = Array.isArray((timesheets as TsWeek[])) ? (timesheets as TsWeek[]) : (Array.isArray(timesheets) ? timesheets : []);
             const rawProjects = Array.isArray((projects as Projects)?.data) ? (projects as Projects).data : (Array.isArray(projects) ? projects : []);
-            console.log("Syncing missing rows - timesheets:", rawTimesheets, "projects:", rawProjects);
-
 
             const existingProjectIds = rawTimesheets.map((ts: TsWeek) => ts.project?.id);
 
@@ -93,7 +91,7 @@ export default function TimesheetEntry() {
                             status: "Draft",
                             tsEntries: [],
                             daysInWeek: 7,
-                            startDate: days[0],
+                            startDate: toLocalDateString(days[0]) as string,
                         });
                         anyAdded = true;
                     } catch (error) {
@@ -159,7 +157,9 @@ export default function TimesheetEntry() {
                     status: ts.status,
                     tsEntries: ts.tsEntries,
                     daysInWeek: ts.tsEntries.length,
-                    startDate: ts.tsEntries.length > 0 ? new Date(ts.tsEntries[0].workDate) : new Date(ts.year, 0, 1)
+                    startDate: ts.tsEntries.length > 0
+                        ? toLocalDateString(new Date(ts.tsEntries[0].workDate))
+                        : toLocalDateString(new Date(ts.year, 0, 1))
                 });
             }
             setMessage("All draft timesheets saved successfully.");
@@ -180,7 +180,9 @@ export default function TimesheetEntry() {
                 status: "Submitted",
                 tsEntries: ts.tsEntries,
                 daysInWeek: ts.tsEntries.length,
-                startDate: ts.tsEntries.length > 0 ? new Date(ts.tsEntries[0].workDate) : new Date(ts.year, 0, 1)
+                startDate: ts.tsEntries.length > 0
+                    ? toLocalDateString(new Date(ts.tsEntries[0].workDate))
+                    : toLocalDateString(new Date(ts.year, 0, 1))
             });
             setMessage(`Timesheet for ${ts.project.name} was submitted for approval.`);
             await getTimesheets(Number(user?.nameid), year, week);
@@ -199,7 +201,7 @@ export default function TimesheetEntry() {
     const grandTotal = colSums.reduce((acc, val) => acc + val, 0);
 
     return (
-        <div style={{ padding: '2rem', fontFamily: 'sans-serif', maxWidth: '1200px', margin: '0 auto' }}>
+        <div style={{ padding: '2rem', fontFamily: 'sans-serif', margin: '0 auto' }}>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
                 <button
@@ -250,7 +252,7 @@ export default function TimesheetEntry() {
                             </tr>
                         ) : (
                             drafts.map(ts => {
-                                const isLocked = ts.status === "Pending" || ts.status === "Approved";
+                                const isLocked = ts.status === "Submitted" || ts.status === "Approved";
                                 const isRejected = ts.status === "Rejected";
                                 const rowSum = ts.tsEntries?.reduce((acc, e) => acc + (e.hours || 0), 0) || 0;
 

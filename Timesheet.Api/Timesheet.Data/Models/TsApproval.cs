@@ -19,9 +19,6 @@ public class TsApproval : Entity
     public int TsWeekId { get; set; }
     public required TsWeek TsWeek { get; set; }
 
-    public int UserId { get; set; }
-    public required User User { get; set; }
-
     // Collections
-    public required IEnumerable<User> Managers { get; set; }
+    public required ICollection<User> Managers { get; set; }
 }

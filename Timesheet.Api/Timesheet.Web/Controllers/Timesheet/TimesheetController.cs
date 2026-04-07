@@ -97,6 +97,7 @@ public class TimesheetController(ILogger<TimesheetController> logger, ITReposito
     {
         var existingTsWeek = _unitOfWork.TsWeekRepository.Query()
             .Include(t => t.Approval)
+            .ThenInclude(a => a.Managers)
             .Include(t => t.TsEntries)
             .FirstOrDefault(t => t.Id == id);
 
@@ -139,7 +140,6 @@ public class TimesheetController(ILogger<TimesheetController> logger, ITReposito
 
     private bool ManageApproval(bool isNewlySubmitted, bool isStatusChanged, TsWeek existingTsWeek, TsWeekWDto dto)
     {
-        TsApproval? newApproval = null;
         if (isNewlySubmitted || isStatusChanged)
         {
             var user = _unitOfWork.UserRepository.GetById(dto.UserId);
@@ -149,20 +149,35 @@ public class TimesheetController(ILogger<TimesheetController> logger, ITReposito
                 return false;
             }
 
-            newApproval = new TsApproval
-            {
-                TsWeekId = existingTsWeek.Id,
-                TsWeek = existingTsWeek,
-                UserId = dto.UserId,
-                User = user,
-                ActionTime = DateTime.UtcNow,
-                Action = isNewlySubmitted ? TsApprovalStatus.Pending : (isStatusChanged ? TsApprovalStatus.Rejected : TsApprovalStatus.Approved),
-                Comment = isStatusChanged ? dto.Comment : null,
-                Managers = [.. _unitOfWork.UserRepository.Where(u => u.UserProjects.
-                    Any(up => up.ProjectId == existingTsWeek.ProjectId && up.ProjectRole == RoleTypes.Manager))]
-            };
+            var newStatus = isNewlySubmitted ? TsApprovalStatus.Pending : (isStatusChanged ? TsApprovalStatus.Rejected : TsApprovalStatus.Approved);
 
-            _unitOfWork.TsApprovalRepository.Add(newApproval);
+            var currentManagers = _unitOfWork.UserRepository.Where(u => u.UserProjects
+                .Any(up => up.ProjectId == existingTsWeek.ProjectId && up.ProjectRole == RoleTypes.Manager)).ToList();
+
+            if (existingTsWeek.Approval != null)
+            {
+                existingTsWeek.Approval.ActionTime = DateTime.UtcNow;
+                existingTsWeek.Approval.Action = newStatus;
+                existingTsWeek.Approval.Comment = isStatusChanged ? dto.Comment : null;
+
+                existingTsWeek.Approval.Managers.Clear();
+                foreach (var manager in currentManagers)
+                {
+                    existingTsWeek.Approval.Managers.Add(manager);
+                }
+            }
+            else
+            {
+                existingTsWeek.Approval = new TsApproval
+                {
+                    TsWeekId = existingTsWeek.Id,
+                    ActionTime = DateTime.UtcNow,
+                    Action = newStatus,
+                    Comment = isStatusChanged ? dto.Comment : null,
+                    Managers = currentManagers,
+                    TsWeek = existingTsWeek,
+                };
+            }
         }
         return true;
     }

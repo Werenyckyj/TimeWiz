@@ -14,8 +14,17 @@ export const TimesheetProvider = ({ children }: { children: ReactNode }) => {
     }, []);
 
     const getPendingTimesheets = useCallback(async (projectId: number) => {
-        const data = await ApprovalRepository.getPendingTimesheets(projectId);
-        setPending(data)
+        try {
+            const data = await ApprovalRepository.getPendingTimesheets(projectId);
+
+            setPending(prev => {
+                const otherProjects = prev.filter(ts => ts.project?.id !== projectId);
+
+                return [...otherProjects, ...data];
+            });
+        } catch (error) {
+            console.error(`Failed to fetch pending timesheets for project ${projectId}`, error);
+        }
     }, []);
 
     const editTimesheet = async (timesheetId: number, tsWeek: EditTsWeek) => {
