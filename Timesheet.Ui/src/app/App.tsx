@@ -1,7 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from '../features/auth/views/Login';
 import { AuthProvider } from '../features/auth/store/AtuhProvider';
-import { useAuth } from '../features/auth/hooks/useAuth';
 import { MainLayout } from '../shared/layout/MainLayout';
 import Timesheets from '../features/timesheets/views/Timesheets';
 import Companies from '../features/companies/views/Companies';
@@ -13,16 +12,7 @@ import Projects from '../features/projects/views/Projects';
 import { ProtectedRoute } from '../shared/components/ProtectedRoute';
 import { TimesheetProvider } from '../features/timesheets/stroe/TimesheetProvider';
 import Approval from '../features/timesheets/views/Approval';
-
-const Dashboard = () => {
-    const { user } = useAuth();
-    return (
-        <div>
-            <h1>Dashboard</h1>
-            <p>Welcome, {user?.unique_name}!</p>
-        </div>
-    );
-};
+import Dashboard from '../features/dashboard/views/Dashboard';
 
 function App() {
     return (
