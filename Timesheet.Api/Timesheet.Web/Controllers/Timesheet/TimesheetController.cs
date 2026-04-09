@@ -14,7 +14,7 @@ namespace Timesheet.Web.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Produces("application/json")]
-[Authorize(Roles = "Admin, Manager, Emploeyee, Externist")]
+[Authorize(Roles = "Admin, Manager, Employee, Externist")]
 public class TimesheetController(ILogger<TimesheetController> logger, ITRepository<TsWeek> repository, IMapper mapper, UnitOfWork unitOfWork, IMailService mailService) : GenericController<TsWeek, TsWeekWDto, TsWeekRDto>(logger, repository, mapper)
 {
     private readonly UnitOfWork _unitOfWork = unitOfWork;
@@ -136,6 +136,50 @@ public class TimesheetController(ILogger<TimesheetController> logger, ITReposito
 
         var responseDto = _mapper.Map<TsWeekRDto>(updatedTsWeek.Entity);
         return Ok(responseDto);
+    }
+
+    [HttpGet("report")]
+    [ProducesResponseType(typeof(List<TsWeekRDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public IActionResult GetReport(
+        [FromQuery] int? projectId,
+        [FromQuery] int? userId,
+        [FromQuery] int? companyId,
+        [FromQuery] DateTime? dateFrom,
+        [FromQuery] DateTime? dateTo)
+    {
+
+        if (!dateFrom.HasValue || !dateTo.HasValue)
+        {
+            return BadRequest("Both dateFrom and dateTo query parameters are required.");
+        }
+
+        var query = _unitOfWork.TsWeekRepository.Query()
+            .AsNoTracking()
+            .Include(t => t.TsEntries)
+            .Include(t => t.Project)
+            .Include(t => t.User)
+            .AsQueryable();
+
+        if (projectId.HasValue)
+            query = query.Where(t => t.ProjectId == projectId.Value);
+
+        if (userId.HasValue)
+            query = query.Where(t => t.UserId == userId.Value);
+
+        if (companyId.HasValue)
+            query = query.Where(t => t.User.CompanyId == companyId.Value);
+
+        if (dateFrom.HasValue)
+            query = query.Where(t => t.TsEntries.Any(e => e.WorkDate >= dateFrom.Value));
+
+        if (dateTo.HasValue)
+            query = query.Where(t => t.TsEntries.Any(e => e.WorkDate <= dateTo.Value));
+
+        var timesheets = query.ToList();
+
+        var response = _mapper.Map<List<TsWeekRDto>>(timesheets);
+        return Ok(response);
     }
 
     private bool ManageApproval(bool isNewlySubmitted, bool isStatusChanged, TsWeek existingTsWeek, TsWeekWDto dto)

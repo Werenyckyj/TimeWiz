@@ -13,6 +13,7 @@ import { ProtectedRoute } from '../shared/components/ProtectedRoute';
 import { TimesheetProvider } from '../features/timesheets/stroe/TimesheetProvider';
 import Approval from '../features/timesheets/views/Approval';
 import Dashboard from '../features/dashboard/views/Dashboard';
+import Reports from '../features/reports/views/Reports';
 
 function App() {
     return (
@@ -30,7 +31,7 @@ function App() {
                         <Route element={<ProtectedRoute allowedRoles={['Admin', 'Manager', 'Employee', 'External']} />} >
                             <Route path="/dashboard" element={<Dashboard />} />
                             <Route path="/timesheets" element={<ProjectsProvider><TimesheetProvider><Timesheets /></TimesheetProvider></ProjectsProvider>} />
-                            <Route path="/reports" element={<h2>Reporty</h2>} />
+                            <Route path="/reports" element={<Reports />} />
                         </Route>
                         <Route element={<ProtectedRoute allowedRoles={['Admin', 'Manager']} />} >
                             <Route path="/approvals" element={<ProjectsProvider><TimesheetProvider><Approval /></TimesheetProvider></ProjectsProvider>} />
