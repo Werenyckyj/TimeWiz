@@ -31,6 +31,17 @@ const getMonthDates = (monthOffset: number = 0) => {
     };
 };
 
+type ReportRow = {
+    id: number;
+    date: string;
+    isoDate: string;
+    projectName: string;
+    userId: number;
+    userName: string;
+    status: string;
+    hours: number;
+};
+
 interface ReportBlockProps {
     title: string;
     isTeamReport: boolean;
@@ -52,9 +63,40 @@ const ReportBlock = ({ title, isTeamReport, currentUser, projectsList, usersList
     const [reportData, setReportData] = useState<TsWeek[]>([]);
     const [isLoading, setIsLoading] = useState(false);
 
+    const [sortField, setSortField] = useState<keyof ReportRow | "">("");
+    const [order, setOrder] = useState<'asc' | 'desc'>("asc");
+    const [tableData, setTableData] = useState<ReportRow[]>([]);
+
     useEffect(() => {
         handleTimeSpanChange('this');
     }, []);
+
+    const detailedData = useMemo<ReportRow[]>(() => {
+        return reportData.flatMap(ts => {
+            const userinfo = usersList.data.find(u => u.id === ts.userId) ?? null;
+
+            return (ts.tsEntries || [])
+                .filter(entry => {
+                    const eDate = new Date(entry.workDate).toISOString().split('T')[0];
+                    return (!dateFrom || eDate >= dateFrom) && (!dateTo || eDate <= dateTo);
+                })
+                .filter(entry => entry.hours > 0)
+                .map(entry => ({
+                    id: entry.id,
+                    date: new Date(entry.workDate).toLocaleDateString(),
+                    isoDate: new Date(entry.workDate).toISOString().split('T')[0],
+                    projectName: ts.project?.name || "Unknown",
+                    userId: ts.userId,
+                    userName: userinfo ? `${userinfo.name} ${userinfo.surname}` : "Unknown",
+                    status: ts.status,
+                    hours: entry.hours
+                }));
+        }).sort((a, b) => a.isoDate.localeCompare(b.isoDate));
+    }, [reportData, dateFrom, dateTo, usersList]);
+
+    useEffect(() => {
+        setTableData(detailedData);
+    }, [detailedData]);
 
     const handleTimeSpanChange = (mode: 'last' | 'this' | 'custom') => {
         setTimeSpanMode(mode);
@@ -95,26 +137,15 @@ const ReportBlock = ({ title, isTeamReport, currentUser, projectsList, usersList
         }
     };
 
-    const detailedData = useMemo(() => {
-        return reportData.flatMap(ts => {
-            return (ts.tsEntries || [])
-                .filter(entry => {
-                    const eDate = new Date(entry.workDate).toISOString().split('T')[0];
-                    return (!dateFrom || eDate >= dateFrom) && (!dateTo || eDate <= dateTo);
-                })
-                .filter(entry => entry.hours > 0)
-                .map(entry => ({
-                    id: entry.id,
-                    date: new Date(entry.workDate).toLocaleDateString(),
-                    isoDate: new Date(entry.workDate).toISOString().split('T')[0],
-                    projectName: ts.project?.name || "Unknown",
-                    userId: ts.userId,
-                    status: ts.status,
-                    hours: entry.hours
-                }));
-        }).sort((a, b) => a.isoDate.localeCompare(b.isoDate));
-    }, [reportData, dateFrom, dateTo]);
-
+    const downloadCSV = (data: string, filename: string) => {
+        const csv_file = new Blob([data], { type: "text/csv" });
+        const download_link = document.createElement("a");
+        download_link.download = filename;
+        download_link.href = window.URL.createObjectURL(csv_file);
+        download_link.style.display = "none";
+        document.body.appendChild(download_link);
+        download_link.click();
+    }
 
     const exportToCSV = () => {
         if (detailedData.length === 0) {
@@ -122,28 +153,53 @@ const ReportBlock = ({ title, isTeamReport, currentUser, projectsList, usersList
             return;
         }
 
-        const headers = ["Date", "Project", "Employee ID", "Status", "Hours"];
-        const csvRows = detailedData.map(row => {
-            return [
-                row.date,
-                `"${row.projectName}"`,
-                row.userId,
-                row.status,
-                row.hours
-            ].join(",");
+        const header = ["Date", "Project", ...(isTeamReport ? ["Employee Name"] : []), "Status", "Hours"];
+        const rows: string[][] = detailedData.map((row) => {
+            const cols: string[] = [row.date, row.projectName];
+
+            if (isTeamReport) {
+                cols.push(row.userName);
+            }
+
+            cols.push(row.status, row.hours.toString());
+            return cols;
         });
 
-        const csvContent = [headers.join(","), ...csvRows].join("\n");
-        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-        const link = document.createElement("a");
-        const url = URL.createObjectURL(blob);
-        link.setAttribute("href", url);
-        link.setAttribute("download", `timesheet_${isTeamReport ? 'team' : 'personal'}_${dateFrom}_to_${dateTo}.csv`);
-        link.style.visibility = "hidden";
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        const csvContent = [header, ...rows]
+            .join("\n");
+
+        downloadCSV(csvContent, `${title.replace(/\s+/g, '_').toLowerCase()}_${dateFrom}_to_${dateTo}.csv`);
     };
+
+    const handleSort = (field: keyof ReportRow, sortOrder: 'asc' | 'desc') => {
+        if (field) {
+            const sortedData = [...detailedData].sort((a, b) => {
+                if (a[field] === null) return 1;
+                if (b[field] === null) return -1;
+                if (a[field] === null && b[field] === null) return 0;
+                return (
+                    a[field].toString().localeCompare(b[field].toString(), "en", { numeric: true }) * (sortOrder === 'asc' ? 1 : -1)
+                );
+            });
+            setTableData(sortedData);
+        }
+    };
+
+    const handleSortingChange = (accessor: keyof ReportRow) => {
+        const sortOrder =
+            accessor === sortField && order === 'asc' ? 'desc' : 'asc';
+        setSortField(accessor);
+        setOrder(sortOrder);
+        handleSort(accessor, sortOrder);
+    };
+
+    const columns: { header: string; accessor: keyof ReportRow; type: "text" | "number" }[] = [
+        { header: "Date", accessor: "date", type: "text" },
+        { header: "Project", accessor: "projectName", type: "text" },
+        { header: "Employee Name", accessor: "userName", type: "text" },
+        { header: "Status", accessor: "status", type: "text" },
+        { header: "Hours", accessor: "hours", type: "number" }
+    ];
 
     const activeBtnStyle = { backgroundColor: '#3b82f6', color: 'white', borderColor: '#3b82f6' };
     const inactiveBtnStyle = { backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', borderColor: 'var(--border-color)' };
@@ -156,7 +212,7 @@ const ReportBlock = ({ title, isTeamReport, currentUser, projectsList, usersList
                     onClick={exportToCSV}
                     style={{ padding: '8px 16px', backgroundColor: '#10b981', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
                 >
-                    ⬇ Export Detailed CSV
+                    ⬇ Export CSV
                 </button>
             </div>
 
@@ -236,31 +292,33 @@ const ReportBlock = ({ title, isTeamReport, currentUser, projectsList, usersList
                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                     <thead style={{ backgroundColor: 'var(--bg-secondary)' }}>
                         <tr>
-                            <th style={{ padding: '12px', color: 'var(--text-primary)', borderBottom: '1px solid var(--border-color)' }}>Date</th>
-                            <th style={{ padding: '12px', color: 'var(--text-primary)', borderBottom: '1px solid var(--border-color)' }}>Project</th>
-                            {isTeamReport && (
-                                <th style={{ padding: '12px', color: 'var(--text-primary)', borderBottom: '1px solid var(--border-color)' }}>Employee ID</th>
-                            )}
-                            <th style={{ padding: '12px', color: 'var(--text-primary)', borderBottom: '1px solid var(--border-color)' }}>Status</th>
-                            <th style={{ padding: '12px', color: 'var(--text-primary)', borderBottom: '1px solid var(--border-color)' }}>Hours</th>
+                            {columns.map(col => (
+                                <th
+                                    className="secondary-button"
+                                    key={col.accessor}
+                                    style={{ padding: '12px', color: 'var(--text-primary)', borderBottom: '1px solid var(--border-color)', cursor: 'pointer' }}
+                                    onClick={() => handleSortingChange(col.accessor)}
+                                >
+                                    {col.header}
+                                </th>
+                            ))}
                         </tr>
                     </thead>
                     <tbody>
                         {detailedData.length === 0 ? (
                             <tr><td colSpan={isTeamReport ? 5 : 4} style={{ padding: '24px', textAlign: 'center', color: 'var(--text-secondary)' }}>No entries found for the selected period.</td></tr>
                         ) : (
-                            detailedData.map((row, idx) => (
-                                <tr key={idx} style={{ borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)' }}>
-                                    <td style={{ padding: '12px', color: 'var(--text-primary)' }}>{row.date}</td>
-                                    <td style={{ padding: '12px', color: 'var(--text-primary)' }}>{row.projectName}</td>
-                                    {isTeamReport && (
-                                        <td style={{ padding: '12px', color: 'var(--text-primary)' }}>{row.userId}</td>
-                                    )}
-                                    <td style={{ padding: '12px', color: 'var(--text-primary)' }}>{row.status}</td>
-                                    <td style={{ padding: '12px', color: 'var(--text-primary)', fontWeight: 'bold' }}>{row.hours}h</td>
-                                </tr>
-                            ))
-                        )}
+                            tableData.map((data) => {
+                                return (
+                                    <tr key={data.id} style={{ backgroundColor: 'var(--bg-primary)' }}>
+                                        {columns.map(({ accessor }) => {
+                                            const tData = data[accessor];
+                                            return <td key={accessor} style={{ padding: '12px', color: 'var(--text-primary)', borderBottom: '1px solid var(--border-color)' }}>{tData !== null ? tData : "N/A"}</td>
+                                        })}
+                                    </tr>
+                                );
+                            }))
+                        }
                         {detailedData.length > 0 && (
                             <tr style={{ backgroundColor: 'var(--bg-secondary)', borderTop: '2px solid var(--border-color)' }}>
                                 <td colSpan={isTeamReport ? 4 : 3} style={{ padding: '12px', color: 'var(--text-primary)', textAlign: 'right', fontWeight: 'bold' }}>

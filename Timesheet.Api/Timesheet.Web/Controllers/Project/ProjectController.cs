@@ -13,7 +13,7 @@ namespace Timesheet.Web.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Produces("application/json")]
-[Authorize(Roles = "Manager, Admin")]
+[Authorize(Roles = "Manager, Admin, Employee, Externist")]
 public class ProjectController(ILogger<ProjectController> logger, ITRepository<Project> tRepository, IMapper mapper, UnitOfWork unitOfWork) : GenericController<Project, ProjectWDto, ProjectRDto>(logger, tRepository, mapper)
 {
     private readonly UnitOfWork _unitOfWork = unitOfWork;

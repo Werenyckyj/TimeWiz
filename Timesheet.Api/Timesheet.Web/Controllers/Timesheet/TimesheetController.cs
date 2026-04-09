@@ -14,7 +14,7 @@ namespace Timesheet.Web.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Produces("application/json")]
-[Authorize(Roles = "Admin, Manager, Emploeyee, Externist")]
+[Authorize(Roles = "Admin, Manager, Employee, Externist")]
 public class TimesheetController(ILogger<TimesheetController> logger, ITRepository<TsWeek> repository, IMapper mapper, UnitOfWork unitOfWork, IMailService mailService) : GenericController<TsWeek, TsWeekWDto, TsWeekRDto>(logger, repository, mapper)
 {
     private readonly UnitOfWork _unitOfWork = unitOfWork;

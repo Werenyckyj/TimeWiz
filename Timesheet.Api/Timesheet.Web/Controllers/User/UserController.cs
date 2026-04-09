@@ -13,7 +13,7 @@ namespace Timesheet.Web.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Produces("application/json")]
-[Authorize(Roles = "Admin")]
+[Authorize(Roles = "Admin, Manager, Employee, Externist")]
 public class UserController(ILogger<UserController> logger, ITRepository<User> tRepository, IMapper mapper, UnitOfWork unitOfWork) : GenericController<User, UserWDto, UserRDto>(logger, tRepository, mapper)
 {
     private readonly UnitOfWork _unitOfWork = unitOfWork;
@@ -35,7 +35,7 @@ public class UserController(ILogger<UserController> logger, ITRepository<User> t
     [HttpGet("{id:int}/timesheets")]
     [ProducesResponseType(typeof(List<TsWeekRDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [Authorize(Roles = "Admin, Manager, Emploeyee, Externist")]
+    [Authorize(Roles = "Admin, Manager, Employee, Externist")]
     public IActionResult GetUserTimesheets(int id, [FromQuery] int year, [FromQuery] int week)
     {
         if (_unitOfWork.UserRepository.GetById(id) is null)
@@ -99,7 +99,7 @@ public class UserController(ILogger<UserController> logger, ITRepository<User> t
     [HttpGet("{id:int}/projects")]
     [ProducesResponseType(typeof(List<ProjectRDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [Authorize(Roles = "Admin, Manager, Emploeyee, Externist")]
+    [Authorize(Roles = "Admin, Manager, Employee, Externist")]
     public IActionResult GetUserProjects(int id)
     {
         if (_unitOfWork.UserRepository.GetById(id) is null)
@@ -121,7 +121,7 @@ public class UserController(ILogger<UserController> logger, ITRepository<User> t
     [HttpPost("{id:int}/change-password")]
     [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [Authorize(Roles = "Admin, Manager, Emploeyee, Externist")]
+    [Authorize(Roles = "Admin, Manager, Employee, Externist")]
     public IActionResult ChangePassword(int id, [FromBody] ChangePasswordDto dto)
     {
         var user = _unitOfWork.UserRepository.GetById(id);
