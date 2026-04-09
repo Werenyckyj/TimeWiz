@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { useAuth } from "../../auth/hooks/useAuth"; // Uprav cestu podle své struktury
+import { useAuth } from "../../auth/hooks/useAuth";
 
 export default function Dashboard() {
     const { user } = useAuth();
