@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Timesheet.Core;
 using Timesheet.Data.Dtos;
 using Timesheet.Data.Dtos.Page;
+using Timesheet.Data.Enums;
 using Timesheet.Data.Models;
 
 namespace Timesheet.Web.Controllers;
@@ -68,7 +69,7 @@ public class UserController(ILogger<UserController> logger, ITRepository<User> t
 
         var query = _unitOfWork.TsWeekRepository.Query()
         .Include(t => t.TsEntries)
-        .Where(ts => ts.UserId == id && ts.ProjectId == projectId);
+        .Where(ts => ts.UserId == id && ts.ProjectId == projectId && ts.Status == TsWeekStatus.Approved);
 
         if (year.HasValue) query = query.Where(ts => ts.Year == year.Value);
         if (week.HasValue) query = query.Where(ts => ts.WeekNumber == week.Value);

@@ -22,8 +22,8 @@ export interface EditableTableProps<T extends { id: string | number }> {
     onAdd?: (newRecord: Partial<T>) => Promise<void>;
     onEdit?: (updatedRecord: T) => Promise<void>;
     onDelete?: (id: string | number) => Promise<void>;
-    isAdding: boolean;
-    setIsAdding: (val: boolean) => void;
+    isAdding?: boolean;
+    setIsAdding?: (val: boolean) => void;
     extraRowActions?: (row: T) => { label: string; onClick: () => void }[];
 }
 
@@ -43,7 +43,7 @@ export function EditableTable<T extends { id: string | number }>({
     const [openMenuId, setOpenMenuId] = useState<string | number | null>(null);
 
     const cancelAdd = () => {
-        setIsAdding(false);
+        setIsAdding?.(false);
         setDraft({});
     };
 
@@ -51,12 +51,12 @@ export function EditableTable<T extends { id: string | number }>({
         if (onAdd) {
             await onAdd(draft);
         }
-        setIsAdding(false);
+        setIsAdding?.(false);
         setDraft({});
     };
 
     const startEdit = (row: T) => {
-        setIsAdding(false);
+        setIsAdding?.(false);
         setEditingId(row.id);
 
         const rowWithRoleFix = { ...row };
@@ -170,6 +170,20 @@ export function EditableTable<T extends { id: string | number }>({
                     {data.map((row) => {
                         const isEditingThisRow = editingId === row.id;
 
+                        const rowActions: { label: string, onClick: () => void, color: string }[] = [];
+
+                        if (onEdit) {
+                            rowActions.push({ label: 'Edit', onClick: () => { startEdit(row); setOpenMenuId(null); }, color: 'var(--text-primary)' });
+                        }
+                        if (extraRowActions) {
+                            extraRowActions(row).forEach(action => {
+                                rowActions.push({ label: action.label, onClick: () => { action.onClick(); setOpenMenuId(null); }, color: 'var(--text-primary)' });
+                            });
+                        }
+                        if (onDelete) {
+                            rowActions.push({ label: 'Delete', onClick: () => { onDelete(row.id); setOpenMenuId(null); }, color: '#ef4444' });
+                        }
+
                         return (
                             <tr key={row.id} style={{ backgroundColor: isEditingThisRow ? 'var(--bg-hover)' : 'transparent', color: 'var(--text-primary)' }}>
                                 {columns.map((col, idx) => (
@@ -221,7 +235,23 @@ export function EditableTable<T extends { id: string | number }>({
                                             <button className="primary-button" onClick={() => commitEdit()} style={{ marginRight: '8px', padding: '4px 8px', cursor: 'pointer', border: '1px solid var(--border-color)', borderRadius: '4px', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>Save</button>
                                             <button onClick={cancelEdit} style={{ padding: '4px 8px', cursor: 'pointer', border: '1px solid #fecaca', color: '#ef4444', borderRadius: '4px', backgroundColor: '#fef2f2' }}>Cancel</button>
                                         </>
-                                    ) : (
+                                    ) : (rowActions.length === 1 ? (
+                                        <button
+                                            onClick={rowActions[0].onClick}
+                                            style={{
+                                                padding: '4px 12px',
+                                                cursor: 'pointer',
+                                                border: '1px solid',
+                                                borderColor: rowActions[0].color === '#ef4444' ? '#fecaca' : 'var(--border-color)',
+                                                borderRadius: '4px',
+                                                backgroundColor: rowActions[0].color === '#ef4444' ? '#fef2f2' : 'var(--bg-secondary)',
+                                                color: rowActions[0].color,
+                                                fontWeight: '500'
+                                            }}
+                                        >
+                                            {rowActions[0].label}
+                                        </button>
+                                    ) : rowActions.length > 1 ? (
                                         <div style={{ position: 'relative', display: 'inline-block' }}>
                                             <button
                                                 onClick={() => setOpenMenuId(openMenuId === row.id ? null : row.id)}
@@ -273,7 +303,7 @@ export function EditableTable<T extends { id: string | number }>({
                                                     </div>
                                                 </>
                                             )}
-                                        </div>
+                                        </div>) : null
                                     )}
                                 </td> : null}
                             </tr>
