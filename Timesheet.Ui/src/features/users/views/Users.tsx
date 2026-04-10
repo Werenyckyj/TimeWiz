@@ -6,9 +6,12 @@ import type { SelectOptions } from "../../../shared/components/EditableTable";
 import { RoleRepository } from "../../roles/services/RoleRepository";
 import { Modal } from "../../../shared/components/Modal";
 import { CompaniesRepository } from "../../companies/services/CompaniesRepository"; // Přidán import
+import { useNavigate } from "react-router-dom";
+
 
 
 export default function Users() {
+    const navigate = useNavigate();
     const { users, getUsers, editUser, deleteUser, addUser } = useUsers();
     const [isAdding, setIsAdding] = useState(false);
     const [message, setMessage] = useState<string>("");
@@ -165,8 +168,13 @@ export default function Users() {
                 onAdd={async () => { }}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
+                extraRowActions={(row) => [
+                    {
+                        label: "View Details", onClick: () => navigate(`/users/${row.id}`)
+                    }
+                ]}
             />
-            <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Create New User">
+            < Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Create New User" >
                 <form onSubmit={handleFormSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
                     <div style={{ display: 'flex', gap: '16px' }}>
@@ -254,7 +262,7 @@ export default function Users() {
                         <button className="secondary-button" type="submit" style={{ padding: '8px 16px', backgroundColor: 'var(--bg-secondary)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 500 }}>Create User</button>
                     </div>
                 </form>
-            </Modal>
+            </Modal >
         </div >
     );
 }

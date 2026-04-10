@@ -23,3 +23,16 @@ export interface EditTsWeek {
     status: string,
     tsEntries: TsEntry[],
 }
+
+export interface RawTsWeek {
+    id: number,
+    week: string,
+    year: number,
+    Mo: number,
+    Tu: number,
+    We: number,
+    Th: number,
+    Fr: number,
+    Sa: number,
+    Su: number,
+}

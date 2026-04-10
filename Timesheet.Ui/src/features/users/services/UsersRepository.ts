@@ -1,4 +1,6 @@
 import api from "../../../shared/api/axiosInstance";
+import type { TsWeek } from "../../timesheets/types/tsWeek.type";
+import type { PaginatedResponse } from "../types/paginatedResponse.type";
 import type { Users, User, EditUser, AddUser, ChangeUserPassword } from "../types/users.type";
 
 export const UsersRepository = {
@@ -23,5 +25,13 @@ export const UsersRepository = {
     },
     changeUserPassword: async (payload: ChangeUserPassword): Promise<void> => {
         await api.post(`/user/${payload.userId}/change-password`, { newPassword: payload.newPassword, oldPassword: payload.oldPassword });
+    },
+    getUserProjectTimesheets: async (userId: number, projectId: number, page?: number, pageSize?: number): Promise<PaginatedResponse<TsWeek>> => {
+        let query = `/user/${userId}/project-timesheets?projectId=${projectId}`;
+        if (page && pageSize) {
+            query += `&page=${page}&pageSize=${pageSize}`;
+        }
+        const response = await api.get<PaginatedResponse<TsWeek>>(query);
+        return response.data;
     }
 };

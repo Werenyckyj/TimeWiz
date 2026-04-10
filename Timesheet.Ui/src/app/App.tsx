@@ -14,6 +14,7 @@ import { TimesheetProvider } from '../features/timesheets/stroe/TimesheetProvide
 import Approval from '../features/timesheets/views/Approval';
 import Dashboard from '../features/dashboard/views/Dashboard';
 import Reports from '../features/reports/views/Reports';
+import UserDetail from '../features/users/views/UserDetail';
 
 function App() {
     return (
@@ -24,7 +25,6 @@ function App() {
                         <Route path="/" element={<Navigate to="/login" />} />
                     </Route>
                     <Route path="/login" element={<Login />} />
-
                     <Route
                         element={<MainLayout />}
                     >
@@ -36,6 +36,7 @@ function App() {
                         <Route element={<ProtectedRoute allowedRoles={['Admin', 'Manager']} />} >
                             <Route path="/approvals" element={<ProjectsProvider><TimesheetProvider><Approval /></TimesheetProvider></ProjectsProvider>} />
                             <Route path="/projects" element={<ProjectsProvider><Projects /></ProjectsProvider>} />
+                            <Route path="/users/:id" element={<UserDetail />} />
                         </Route>
                         <Route element={<ProtectedRoute allowedRoles={['Admin']} />} >
                             <Route path="/users" element={<UsersProvider><Users /></UsersProvider>} />
