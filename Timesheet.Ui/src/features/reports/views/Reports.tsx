@@ -10,6 +10,53 @@ import { ProjectsRepository } from "../../projects/services/ProjectsRepository";
 import { UsersRepository } from "../../users/services/UsersRepository";
 import { CompaniesRepository } from "../../companies/services/CompaniesRepository";
 
+interface MultiSelectProps {
+    options: { value: string; label: string }[];
+    selectedValues: string[];
+    onChange: (values: string[]) => void;
+    placeholder: string;
+}
+
+const MultiSelect = ({ options, selectedValues, onChange, placeholder }: MultiSelectProps) => {
+    const [isOpen, setIsOpen] = useState(false);
+
+    const toggleOption = (val: string) => {
+        if (selectedValues.includes(val)) {
+            onChange(selectedValues.filter(v => v !== val));
+        } else {
+            onChange([...selectedValues, val]);
+        }
+    };
+
+    return (
+        <div style={{ position: 'relative', width: '100%' }}>
+            <div
+                onClick={() => setIsOpen(!isOpen)}
+                style={{ padding: '8px', border: '1px solid var(--border-color)', borderRadius: '4px', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', cursor: 'pointer', minHeight: '38px', display: 'flex', alignItems: 'center', boxSizing: 'border-box' }}
+            >
+                {selectedValues.length === 0 ? placeholder : `${selectedValues.length} selected`}
+            </div>
+            {isOpen && (
+                <>
+                    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 10 }} onClick={() => setIsOpen(false)} />
+                    <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', zIndex: 11, maxHeight: '200px', overflowY: 'auto', borderRadius: '4px', marginTop: '4px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
+                        {options.map(opt => (
+                            <div
+                                key={opt.value}
+                                onClick={() => toggleOption(opt.value)}
+                                style={{ padding: '8px 12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
+                            >
+                                <input type="checkbox" checked={selectedValues.includes(opt.value)} readOnly style={{ cursor: 'pointer' }} />
+                                <span>{opt.label}</span>
+                            </div>
+                        ))}
+                    </div>
+                </>
+            )}
+        </div>
+    );
+};
+
 const formatDate = (date: Date) => {
     const y = date.getFullYear();
     const m = String(date.getMonth() + 1).padStart(2, '0');
@@ -21,14 +68,9 @@ const getMonthDates = (monthOffset: number = 0) => {
     const now = new Date();
     const year = now.getFullYear();
     const month = now.getMonth() + monthOffset;
-
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
-
-    return {
-        dateFrom: formatDate(firstDay),
-        dateTo: formatDate(lastDay)
-    };
+    return { dateFrom: formatDate(firstDay), dateTo: formatDate(lastDay) };
 };
 
 type ReportRow = {
@@ -56,9 +98,10 @@ const ReportBlock = ({ title, isTeamReport, currentUser, projectsList, usersList
     const [dateFrom, setDateFrom] = useState<string>("");
     const [dateTo, setDateTo] = useState<string>("");
 
-    const [projectId, setProjectId] = useState<string>("");
-    const [userId, setUserId] = useState<string>("");
-    const [companyId, setCompanyId] = useState<string>("");
+    const [selectedProjectIds, setSelectedProjectIds] = useState<string[]>([]);
+    const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
+    const [selectedCompanyIds, setSelectedCompanyIds] = useState<string[]>([]);
+    const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
 
     const [reportData, setReportData] = useState<TsWeek[]>([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -67,14 +110,11 @@ const ReportBlock = ({ title, isTeamReport, currentUser, projectsList, usersList
     const [order, setOrder] = useState<'asc' | 'desc'>("asc");
     const [tableData, setTableData] = useState<ReportRow[]>([]);
 
-    useEffect(() => {
-        handleTimeSpanChange('this');
-    }, []);
+    useEffect(() => { handleTimeSpanChange('this'); }, []);
 
     const detailedData = useMemo<ReportRow[]>(() => {
         return reportData.flatMap(ts => {
             const userinfo = usersList.data.find(u => u.id === ts.userId) ?? null;
-
             return (ts.tsEntries || [])
                 .filter(entry => {
                     const eDate = new Date(entry.workDate).toISOString().split('T')[0];
@@ -94,9 +134,7 @@ const ReportBlock = ({ title, isTeamReport, currentUser, projectsList, usersList
         }).sort((a, b) => a.isoDate.localeCompare(b.isoDate));
     }, [reportData, dateFrom, dateTo, usersList]);
 
-    useEffect(() => {
-        setTableData(detailedData);
-    }, [detailedData]);
+    useEffect(() => { setTableData(detailedData); }, [detailedData]);
 
     const handleTimeSpanChange = (mode: 'last' | 'this' | 'custom') => {
         setTimeSpanMode(mode);
@@ -115,16 +153,15 @@ const ReportBlock = ({ title, isTeamReport, currentUser, projectsList, usersList
             const params = new URLSearchParams();
             if (dateFrom) params.append("dateFrom", dateFrom);
             if (dateTo) params.append("dateTo", dateTo);
-            if (projectId) params.append("projectId", projectId);
+
+            selectedProjectIds.forEach(id => params.append("projectIds", id));
+            selectedStatuses.forEach(status => params.append("statuses", status));
 
             if (!isTeamReport && currentUser?.nameid) {
-                params.append("userId", currentUser.nameid.toString());
-            } else if (isTeamReport && userId) {
-                params.append("userId", userId);
-            }
-
-            if (isTeamReport && companyId) {
-                params.append("companyId", companyId);
+                params.append("userIds", currentUser.nameid.toString());
+            } else if (isTeamReport) {
+                selectedUserIds.forEach(id => params.append("userIds", id));
+                selectedCompanyIds.forEach(id => params.append("companyIds", id));
             }
 
             const response = await ReportRepository.get(params.toString());
@@ -137,38 +174,27 @@ const ReportBlock = ({ title, isTeamReport, currentUser, projectsList, usersList
         }
     };
 
-    const downloadCSV = (data: string, filename: string) => {
-        const csv_file = new Blob([data], { type: "text/csv" });
-        const download_link = document.createElement("a");
-        download_link.download = filename;
-        download_link.href = window.URL.createObjectURL(csv_file);
-        download_link.style.display = "none";
-        document.body.appendChild(download_link);
-        download_link.click();
-    }
-
     const exportToCSV = () => {
         if (detailedData.length === 0) {
             alert("No data to export.");
             return;
         }
-
         const header = ["Date", "Project", ...(isTeamReport ? ["Employee Name"] : []), "Status", "Hours"];
         const rows: string[][] = detailedData.map((row) => {
-            const cols: string[] = [row.date, row.projectName];
-
-            if (isTeamReport) {
-                cols.push(row.userName);
-            }
-
+            const cols = [row.date, row.projectName];
+            if (isTeamReport) cols.push(row.userName);
             cols.push(row.status, row.hours.toString());
             return cols;
         });
 
-        const csvContent = [header, ...rows]
-            .join("\n");
-
-        downloadCSV(csvContent, `${title.replace(/\s+/g, '_').toLowerCase()}_${dateFrom}_to_${dateTo}.csv`);
+        const csvContent = [header, ...rows].join("\n");
+        const csv_file = new Blob([csvContent], { type: "text/csv" });
+        const download_link = document.createElement("a");
+        download_link.download = `${title.replace(/\s+/g, '_').toLowerCase()}_${dateFrom}_to_${dateTo}.csv`;
+        download_link.href = window.URL.createObjectURL(csv_file);
+        download_link.style.display = "none";
+        document.body.appendChild(download_link);
+        download_link.click();
     };
 
     const handleSort = (field: keyof ReportRow, sortOrder: 'asc' | 'desc') => {
@@ -177,17 +203,14 @@ const ReportBlock = ({ title, isTeamReport, currentUser, projectsList, usersList
                 if (a[field] === null) return 1;
                 if (b[field] === null) return -1;
                 if (a[field] === null && b[field] === null) return 0;
-                return (
-                    a[field].toString().localeCompare(b[field].toString(), "en", { numeric: true }) * (sortOrder === 'asc' ? 1 : -1)
-                );
+                return (a[field].toString().localeCompare(b[field].toString(), "en", { numeric: true }) * (sortOrder === 'asc' ? 1 : -1));
             });
             setTableData(sortedData);
         }
     };
 
     const handleSortingChange = (accessor: keyof ReportRow) => {
-        const sortOrder =
-            accessor === sortField && order === 'asc' ? 'desc' : 'asc';
+        const sortOrder = accessor === sortField && order === 'asc' ? 'desc' : 'asc';
         setSortField(accessor);
         setOrder(sortOrder);
         handleSort(accessor, sortOrder);
@@ -208,81 +231,80 @@ const ReportBlock = ({ title, isTeamReport, currentUser, projectsList, usersList
         <div style={{ marginBottom: '4rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                 <h2 style={{ margin: 0, color: 'var(--text-primary)' }}>{title}</h2>
-                <button
-                    onClick={exportToCSV}
-                    style={{ padding: '8px 16px', backgroundColor: '#10b981', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
-                >
+                <button onClick={exportToCSV} style={{ padding: '8px 16px', backgroundColor: '#10b981', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>
                     ⬇ Export CSV
                 </button>
             </div>
 
             <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
-                <button onClick={() => handleTimeSpanChange('last')} style={{ padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', border: '1px solid', ...(timeSpanMode === 'last' ? activeBtnStyle : inactiveBtnStyle) }}>
-                    Last month
-                </button>
-                <button onClick={() => handleTimeSpanChange('this')} style={{ padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', border: '1px solid', ...(timeSpanMode === 'this' ? activeBtnStyle : inactiveBtnStyle) }}>
-                    This month
-                </button>
-                <button onClick={() => handleTimeSpanChange('custom')} style={{ padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', border: '1px solid', ...(timeSpanMode === 'custom' ? activeBtnStyle : inactiveBtnStyle) }}>
-                    Own time span
-                </button>
+                <button onClick={() => handleTimeSpanChange('last')} style={{ padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', border: '1px solid', ...(timeSpanMode === 'last' ? activeBtnStyle : inactiveBtnStyle) }}>Last month</button>
+                <button onClick={() => handleTimeSpanChange('this')} style={{ padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', border: '1px solid', ...(timeSpanMode === 'this' ? activeBtnStyle : inactiveBtnStyle) }}>This month</button>
+                <button onClick={() => handleTimeSpanChange('custom')} style={{ padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', border: '1px solid', ...(timeSpanMode === 'custom' ? activeBtnStyle : inactiveBtnStyle) }}>Own time span</button>
             </div>
 
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', marginBottom: '1.5rem', backgroundColor: 'var(--bg-secondary)', padding: '16px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-
                 <div style={{ display: 'flex', gap: '8px' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                         <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Date From</label>
-                        <input type="date" value={dateFrom} disabled={timeSpanMode !== 'custom'} onChange={(e) => setDateFrom(e.target.value)} style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', width: '130px' }} />
+                        <input type="date" value={dateFrom} disabled={timeSpanMode !== 'custom'} onChange={(e) => setDateFrom(e.target.value)} style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', width: '130px', boxSizing: 'border-box' }} />
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                         <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Date To</label>
-                        <input type="date" value={dateTo} disabled={timeSpanMode !== 'custom'} onChange={(e) => setDateTo(e.target.value)} style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', width: '130px' }} />
+                        <input type="date" value={dateTo} disabled={timeSpanMode !== 'custom'} onChange={(e) => setDateTo(e.target.value)} style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', width: '130px', boxSizing: 'border-box' }} />
                     </div>
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1, minWidth: '150px' }}>
-                    <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Project</label>
-                    <select value={projectId} onChange={(e) => setProjectId(e.target.value)} style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
-                        <option value="">All Projects</option>
-                        {projectsList.data.map(p => (
-                            <option key={p.id} value={p.id}>{p.name}</option>
-                        ))}
-                    </select>
+                    <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Projects</label>
+                    <MultiSelect
+                        options={projectsList.data.map(p => ({ value: p.id.toString(), label: p.name }))}
+                        selectedValues={selectedProjectIds}
+                        onChange={setSelectedProjectIds}
+                        placeholder="All Projects"
+                    />
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1, minWidth: '150px' }}>
+                    <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Statuses</label>
+                    <MultiSelect
+                        options={[
+                            { value: "Draft", label: "Draft" },
+                            { value: "Submitted", label: "Submitted" },
+                            { value: "Approved", label: "Approved" },
+                            { value: "Rejected", label: "Rejected" },
+                        ]}
+                        selectedValues={selectedStatuses}
+                        onChange={setSelectedStatuses}
+                        placeholder="All Statuses"
+                    />
                 </div>
 
                 {isTeamReport && (
                     <>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1, minWidth: '150px' }}>
-                            <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Employee</label>
-                            <select value={userId} onChange={(e) => setUserId(e.target.value)} style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
-                                <option value="">All Employees</option>
-                                {usersList.data.map(u => (
-                                    <option key={u.id} value={u.id}>
-                                        {u.name} {u.surname} ({u.username})
-                                    </option>
-                                ))}
-                            </select>
+                            <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Employees</label>
+                            <MultiSelect
+                                options={usersList.data.map(u => ({ value: u.id.toString(), label: `${u.name} ${u.surname}` }))}
+                                selectedValues={selectedUserIds}
+                                onChange={setSelectedUserIds}
+                                placeholder="All Employees"
+                            />
                         </div>
 
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1, minWidth: '150px' }}>
-                            <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Company</label>
-                            <select value={companyId} onChange={(e) => setCompanyId(e.target.value)} style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
-                                <option value="">All Companies</option>
-                                {companiesList.data.map(c => (
-                                    <option key={c.id} value={c.id}>{c.name}</option>
-                                ))}
-                            </select>
+                            <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Companies</label>
+                            <MultiSelect
+                                options={companiesList.data.map(c => ({ value: c.id.toString(), label: c.name }))}
+                                selectedValues={selectedCompanyIds}
+                                onChange={setSelectedCompanyIds}
+                                placeholder="All Companies"
+                            />
                         </div>
                     </>
                 )}
 
                 <div style={{ display: 'flex', alignItems: 'flex-end' }}>
-                    <button
-                        onClick={fetchReport}
-                        disabled={isLoading}
-                        style={{ padding: '8px 24px', backgroundColor: '#3b82f6', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', height: '38px', fontWeight: 'bold' }}
-                    >
+                    <button onClick={fetchReport} disabled={isLoading} style={{ padding: '8px 24px', backgroundColor: '#3b82f6', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', height: '38px', fontWeight: 'bold' }}>
                         {isLoading ? 'Loading...' : 'Generate'}
                     </button>
                 </div>
@@ -292,41 +314,34 @@ const ReportBlock = ({ title, isTeamReport, currentUser, projectsList, usersList
                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                     <thead style={{ backgroundColor: 'var(--bg-secondary)' }}>
                         <tr>
-                            {columns.map(col => (
-                                <th
-                                    className="secondary-button"
-                                    key={col.accessor}
-                                    style={{ padding: '12px', color: 'var(--text-primary)', borderBottom: '1px solid var(--border-color)', cursor: 'pointer' }}
-                                    onClick={() => handleSortingChange(col.accessor)}
-                                >
-                                    {col.header}
-                                </th>
-                            ))}
+                            {columns.map(col => {
+                                if (!isTeamReport && col.accessor === 'userName') return null;
+                                return (
+                                    <th className="secondary-button" key={col.accessor} style={{ padding: '12px', color: 'var(--text-primary)', borderBottom: '1px solid var(--border-color)', cursor: 'pointer' }} onClick={() => handleSortingChange(col.accessor)}>
+                                        {col.header}
+                                    </th>
+                                )
+                            })}
                         </tr>
                     </thead>
                     <tbody>
                         {detailedData.length === 0 ? (
                             <tr><td colSpan={isTeamReport ? 5 : 4} style={{ padding: '24px', textAlign: 'center', color: 'var(--text-secondary)' }}>No entries found for the selected period.</td></tr>
                         ) : (
-                            tableData.map((data) => {
-                                return (
-                                    <tr key={data.id} style={{ backgroundColor: 'var(--bg-primary)' }}>
-                                        {columns.map(({ accessor }) => {
-                                            const tData = data[accessor];
-                                            return <td key={accessor} style={{ padding: '12px', color: 'var(--text-primary)', borderBottom: '1px solid var(--border-color)' }}>{tData !== null ? tData : "N/A"}</td>
-                                        })}
-                                    </tr>
-                                );
-                            }))
-                        }
+                            tableData.map((data) => (
+                                <tr key={data.id} style={{ backgroundColor: 'var(--bg-primary)' }}>
+                                    {columns.map(({ accessor }) => {
+                                        const tData = data[accessor];
+                                        if (!isTeamReport && accessor === 'userName') return null;
+                                        return <td key={accessor} style={{ padding: '12px', color: 'var(--text-primary)', borderBottom: '1px solid var(--border-color)' }}>{tData !== null ? tData : "N/A"}</td>
+                                    })}
+                                </tr>
+                            ))
+                        )}
                         {detailedData.length > 0 && (
                             <tr style={{ backgroundColor: 'var(--bg-secondary)', borderTop: '2px solid var(--border-color)' }}>
-                                <td colSpan={isTeamReport ? 4 : 3} style={{ padding: '12px', color: 'var(--text-primary)', textAlign: 'right', fontWeight: 'bold' }}>
-                                    Total Hours in period:
-                                </td>
-                                <td style={{ padding: '12px', color: 'var(--text-primary)', fontWeight: 'bold' }}>
-                                    {detailedData.reduce((sum, row) => sum + row.hours, 0)}h
-                                </td>
+                                <td colSpan={isTeamReport ? 4 : 3} style={{ padding: '12px', color: 'var(--text-primary)', textAlign: 'right', fontWeight: 'bold' }}>Total Hours in period:</td>
+                                <td style={{ padding: '12px', color: 'var(--text-primary)', fontWeight: 'bold' }}>{detailedData.reduce((sum, row) => sum + row.hours, 0)}h</td>
                             </tr>
                         )}
                     </tbody>
@@ -366,28 +381,14 @@ export default function Reports() {
     }, [canSeeTeamReport]);
 
     return (
-        <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
+        <div style={{ padding: '2rem', margin: '0 auto' }}>
             <h1 style={{ margin: '0 0 2rem 0', color: 'var(--text-primary)' }}>Reports Center</h1>
 
-            <ReportBlock
-                title="My Personal Report"
-                isTeamReport={false}
-                currentUser={user}
-                projectsList={projects}
-                usersList={users}
-                companiesList={companies}
-            />
+            <ReportBlock title="My Personal Report" isTeamReport={false} currentUser={user} projectsList={projects} usersList={users} companiesList={companies} />
 
             {canSeeTeamReport && (
                 <div style={{ borderTop: '2px dashed var(--border-color)', paddingTop: '2rem' }}>
-                    <ReportBlock
-                        title="Team & Projects Report"
-                        isTeamReport={true}
-                        currentUser={user}
-                        projectsList={projects}
-                        usersList={users}
-                        companiesList={companies}
-                    />
+                    <ReportBlock title="Team & Projects Report" isTeamReport={true} currentUser={user} projectsList={projects} usersList={users} companiesList={companies} />
                 </div>
             )}
         </div>

@@ -142,13 +142,13 @@ public class TimesheetController(ILogger<TimesheetController> logger, ITReposito
     [ProducesResponseType(typeof(List<TsWeekRDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public IActionResult GetReport(
-        [FromQuery] int? projectId,
-        [FromQuery] int? userId,
-        [FromQuery] int? companyId,
+        [FromQuery] List<int>? projectIds,
+        [FromQuery] List<int>? userIds,
+        [FromQuery] List<int>? companyIds,
         [FromQuery] DateTime? dateFrom,
-        [FromQuery] DateTime? dateTo)
+        [FromQuery] DateTime? dateTo,
+        [FromQuery] List<TsWeekStatus>? statuses)
     {
-
         if (!dateFrom.HasValue || !dateTo.HasValue)
         {
             return BadRequest("Both dateFrom and dateTo query parameters are required.");
@@ -161,20 +161,23 @@ public class TimesheetController(ILogger<TimesheetController> logger, ITReposito
             .Include(t => t.User)
             .AsQueryable();
 
-        if (projectId.HasValue)
-            query = query.Where(t => t.ProjectId == projectId.Value);
+        if (projectIds != null && projectIds.Any())
+            query = query.Where(t => projectIds.Contains(t.ProjectId));
 
-        if (userId.HasValue)
-            query = query.Where(t => t.UserId == userId.Value);
+        if (userIds != null && userIds.Any())
+            query = query.Where(t => userIds.Contains(t.UserId));
 
-        if (companyId.HasValue)
-            query = query.Where(t => t.User.CompanyId == companyId.Value);
+        if (companyIds != null && companyIds.Any())
+            query = query.Where(t => t.User.CompanyId > 0 && companyIds.Contains(t.User.CompanyId));
 
         if (dateFrom.HasValue)
             query = query.Where(t => t.TsEntries.Any(e => e.WorkDate >= dateFrom.Value));
 
         if (dateTo.HasValue)
             query = query.Where(t => t.TsEntries.Any(e => e.WorkDate <= dateTo.Value));
+
+        if (statuses != null && statuses.Any())
+            query = query.Where(t => statuses.Contains(t.Status));
 
         var timesheets = query.ToList();
 
