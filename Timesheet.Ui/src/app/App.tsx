@@ -15,6 +15,8 @@ import Approval from '../features/timesheets/views/Approval';
 import Dashboard from '../features/dashboard/views/Dashboard';
 import Reports from '../features/reports/views/Reports';
 import UserDetail from '../features/users/views/UserDetail';
+import Forgot from '../features/auth/views/Forgot';
+import Reset from '../features/auth/views/Reset';
 
 function App() {
     return (
@@ -25,6 +27,8 @@ function App() {
                         <Route path="/" element={<Navigate to="/login" />} />
                     </Route>
                     <Route path="/login" element={<Login />} />
+                    <Route path="/forgot" element={<Forgot />} />
+                    <Route path="/reset-password" element={<Reset />} />
                     <Route
                         element={<MainLayout />}
                     >
