@@ -197,18 +197,20 @@ export default function Approval() {
             renderCell: (row) => (
                 <div style={{ display: 'flex', gap: '8px' }}>
                     <button
+                        className="success-button"
                         onClick={() => handleStatusChange(row, "Approved")}
-                        style={{ padding: '6px 12px', backgroundColor: '#a3f3d8', color: 'black', border: '1px solid #43e681', borderRadius: '4px', cursor: 'pointer', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '4px' }}
+                        style={{ padding: '6px 12px', backgroundColor: 'var(--success-2)', color: 'white', border: '1px solid var(--success-border)', borderRadius: '4px', cursor: 'pointer', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '4px' }}
                     >
                         Approve
                     </button>
                     <button
+                        className="reject-button"
                         onClick={() => {
                             setTimesheetToReject(row);
                             setRejectComment(row.comment || "");
                             setIsRejectModalOpen(true);
                         }}
-                        style={{ padding: '4px 8px', cursor: 'pointer', border: '1px solid #fecaca', color: '#ef4444', borderRadius: '4px', backgroundColor: '#fef2f2' }}
+                        style={{ padding: '4px 8px', cursor: 'pointer', border: '1px solid var(--reject-border)', color: 'var(--reject-text)', borderRadius: '4px', backgroundColor: 'var(--reject)' }}
                     >
                         Reject
                     </button>
@@ -224,7 +226,7 @@ export default function Approval() {
             </div>
 
             {message && (
-                <div style={{ marginBottom: '1rem', padding: '10px', backgroundColor: message.includes("Error") ? '#f8d7da' : '#d4edda', color: message.includes("Error") ? '#721c24' : '#155724', borderRadius: '4px' }}>
+                <div style={{ marginBottom: '1rem', padding: '10px', backgroundColor: message.includes("Error") ? '#f8d7da' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
                     {message}
                 </div>
             )}
@@ -263,7 +265,8 @@ export default function Approval() {
                                 border: '1px solid var(--border-color)',
                                 minHeight: '100px',
                                 resize: 'vertical',
-                                fontFamily: 'inherit'
+                                fontFamily: 'inherit',
+                                backgroundColor: 'var(--bg-secondary)',
                             }}
                             placeholder="Please provide a reason so the employee can fix the timesheet..."
                         />
@@ -271,15 +274,17 @@ export default function Approval() {
 
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--border-color)' }}>
                         <button
+                            className="primary-button"
                             type="button"
                             onClick={() => setIsRejectModalOpen(false)}
-                            style={{ padding: '8px 16px', backgroundColor: 'white', border: '1px solid var(--border-color)', borderRadius: '4px', cursor: 'pointer' }}
+                            style={{ padding: '8px 16px', backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', borderRadius: '4px', cursor: 'pointer' }}
                         >
                             Cancel
                         </button>
                         <button
+                            className="reject-button"
                             type="submit"
-                            style={{ padding: '8px 16px', backgroundColor: '#ef4444', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 500 }}
+                            style={{ padding: '8px 16px', backgroundColor: 'var(--reject)', color: 'reject-text', border: '1px solid var(--reject-border)', borderRadius: '4px', cursor: 'pointer', fontWeight: 500 }}
                         >
                             Reject Timesheet
                         </button>

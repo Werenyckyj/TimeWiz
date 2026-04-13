@@ -44,7 +44,7 @@ export default function Login() {
                                 <input type="password" className="form-control" id="passwordInput" value={password} onChange={(e) => setPassword(e.target.value)} />
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.5rem' }}>
-                                <button type="submit" className="btn btn-primary">Login</button>
+                                <button type="submit" className="btn btn-primary" style={{ backgroundColor: "var(--primary-button)", borderColor: "var(--primary-button-border)", color: "white" }}>Login</button>
                                 <Link to="/forgot" style={{ color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '0.9rem' }}>
                                     Forgot Password?
                                 </Link>                            </div>

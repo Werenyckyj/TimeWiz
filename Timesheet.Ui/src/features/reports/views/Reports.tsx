@@ -224,22 +224,22 @@ const ReportBlock = ({ title, isTeamReport, currentUser, projectsList, usersList
         { header: "Hours", accessor: "hours", type: "number" }
     ];
 
-    const activeBtnStyle = { backgroundColor: '#3b82f6', color: 'white', borderColor: '#3b82f6' };
+    const activeBtnStyle = { backgroundColor: 'var(--primary-button)', color: 'white', borderColor: 'var(--primary-button-border)' };
     const inactiveBtnStyle = { backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', borderColor: 'var(--border-color)' };
 
     return (
         <div style={{ marginBottom: '4rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                 <h2 style={{ margin: 0, color: 'var(--text-primary)' }}>{title}</h2>
-                <button onClick={exportToCSV} style={{ padding: '8px 16px', backgroundColor: '#10b981', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>
+                <button className="success-button" onClick={exportToCSV} style={{ padding: '8px 16px', backgroundColor: 'var(--success-2)', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>
                     ⬇ Export CSV
                 </button>
             </div>
 
             <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
-                <button onClick={() => handleTimeSpanChange('last')} style={{ padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', border: '1px solid', ...(timeSpanMode === 'last' ? activeBtnStyle : inactiveBtnStyle) }}>Last month</button>
-                <button onClick={() => handleTimeSpanChange('this')} style={{ padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', border: '1px solid', ...(timeSpanMode === 'this' ? activeBtnStyle : inactiveBtnStyle) }}>This month</button>
-                <button onClick={() => handleTimeSpanChange('custom')} style={{ padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', border: '1px solid', ...(timeSpanMode === 'custom' ? activeBtnStyle : inactiveBtnStyle) }}>Own time span</button>
+                <button className={(timeSpanMode === 'last' ? 'primary-button-2' : 'primary-button')} onClick={() => handleTimeSpanChange('last')} style={{ padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', border: '1px solid', ...(timeSpanMode === 'last' ? activeBtnStyle : inactiveBtnStyle) }}>Last month</button>
+                <button className={(timeSpanMode === 'this' ? 'primary-button-2' : 'primary-button')} onClick={() => handleTimeSpanChange('this')} style={{ padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', border: '1px solid', ...(timeSpanMode === 'this' ? activeBtnStyle : inactiveBtnStyle) }}>This month</button>
+                <button className={(timeSpanMode === 'custom' ? 'primary-button-2' : 'primary-button')} onClick={() => handleTimeSpanChange('custom')} style={{ padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', border: '1px solid', ...(timeSpanMode === 'custom' ? activeBtnStyle : inactiveBtnStyle) }}>Own time span</button>
             </div>
 
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', marginBottom: '1.5rem', backgroundColor: 'var(--bg-secondary)', padding: '16px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
@@ -304,7 +304,7 @@ const ReportBlock = ({ title, isTeamReport, currentUser, projectsList, usersList
                 )}
 
                 <div style={{ display: 'flex', alignItems: 'flex-end' }}>
-                    <button onClick={fetchReport} disabled={isLoading} style={{ padding: '8px 24px', backgroundColor: '#3b82f6', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', height: '38px', fontWeight: 'bold' }}>
+                    <button className="primary-button-2" onClick={fetchReport} disabled={isLoading} style={{ padding: '8px 24px', backgroundColor: 'var(--primary-button)', color: 'white', border: '1px solid var(--primary-button-borderf)', borderRadius: '6px', cursor: 'pointer', height: '38px', fontWeight: 'bold' }}>
                         {isLoading ? 'Loading...' : 'Generate'}
                     </button>
                 </div>
@@ -347,7 +347,7 @@ const ReportBlock = ({ title, isTeamReport, currentUser, projectsList, usersList
                     </tbody>
                 </table>
             </div>
-        </div>
+        </div >
     );
 };
 

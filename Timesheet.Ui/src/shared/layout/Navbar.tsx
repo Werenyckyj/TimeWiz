@@ -166,13 +166,14 @@ export const Navbar = () => {
                                     </div>
                                 </div>
                                 <button
+                                    className="primary-button-2"
                                     type="submit"
                                     style={{
                                         padding: "8px 12px",
                                         cursor: "pointer",
-                                        backgroundColor: "#10b981",
+                                        backgroundColor: "var(--primary-button)",
                                         color: "white",
-                                        border: "none",
+                                        border: "1px solid var(--primary-button-border)",
                                         borderRadius: "6px",
                                         width: "100%",
                                         fontWeight: "bold"

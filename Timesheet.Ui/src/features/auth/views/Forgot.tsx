@@ -29,7 +29,7 @@ export default function Forgot() {
                 <h2 style={{ textAlign: 'center', marginBottom: '1.5rem' }}>Forgot Password</h2>
 
                 {message && (
-                    <div style={{ marginBottom: '1rem', padding: '10px', borderRadius: '4px', backgroundColor: message.type === 'error' ? '#fef2f2' : '#f0fdf4', color: message.type === 'error' ? '#ef4444' : '#16a34a', border: `1px solid ${message.type === 'error' ? '#fecaca' : '#bbf7d0'}` }}>
+                    <div style={{ marginBottom: '1rem', padding: '10px', backgroundColor: message.text.includes("Error") ? '#f8d7da' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
                         {message.text}
                     </div>
                 )}
@@ -53,14 +53,14 @@ export default function Forgot() {
                         type="submit"
                         className="btn btn-primary w-100"
                         disabled={isLoading || !email}
-                        style={{ fontWeight: 'bold', padding: '10px' }}
+                        style={{ fontWeight: 'bold', padding: '10px', backgroundColor: "var(--primary-button)", color: "white", border: "1px solid var(--primary-button-border)" }}
                     >
                         {isLoading ? "Sending..." : "Send Reset Link"}
                     </button>
                 </form>
 
                 <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
-                    <Link to="/login" style={{ color: '#3b82f6', textDecoration: 'none' }}>
+                    <Link to="/login" style={{ color: 'var(--text-primary)', textDecoration: 'none' }}>
                         Back to Login
                     </Link>
                 </div>
