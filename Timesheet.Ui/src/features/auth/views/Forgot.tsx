@@ -29,7 +29,7 @@ export default function Forgot() {
                 <h2 style={{ textAlign: 'center', marginBottom: '1.5rem' }}>Forgot Password</h2>
 
                 {message && (
-                    <div style={{ marginBottom: '1rem', padding: '10px', backgroundColor: message.text.includes("Error") ? '#f8d7da' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
+                    <div style={{ marginBottom: '1rem', padding: '10px', backgroundColor: message.text.includes("Error") ? 'var(--reject)' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
                         {message.text}
                     </div>
                 )}

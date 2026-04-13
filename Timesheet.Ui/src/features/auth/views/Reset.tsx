@@ -64,7 +64,7 @@ export default function Reset() {
                 <h2 style={{ textAlign: 'center', marginBottom: '1.5rem' }}>Create New Password</h2>
 
                 {message && (
-                    <div style={{ marginBottom: '1rem', padding: '10px', borderRadius: '4px', backgroundColor: message.type === 'error' ? '#fef2f2' : '#f0fdf4', color: message.type === 'error' ? '#ef4444' : '#16a34a', border: `1px solid ${message.type === 'error' ? '#fecaca' : '#bbf7d0'}` }}>
+                    <div style={{ marginBottom: '1rem', padding: '10px', backgroundColor: message.text.includes("Error") ? 'var(--reject)' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
                         {message.text}
                     </div>
                 )}

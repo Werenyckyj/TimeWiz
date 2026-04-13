@@ -173,7 +173,7 @@ export default function Projects() {
                 </div>
             </div>
             {message && (
-                <div style={{ marginBottom: '1rem', padding: '10px', backgroundColor: message.includes("Error") ? '#f8d7da' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
+                <div style={{ marginBottom: '1rem', padding: '10px', backgroundColor: message.includes("Error") ? 'var(--reject)' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
                     {message}
                 </div>
             )}

@@ -209,7 +209,7 @@ export default function UserDetail() {
                 <h2 style={{ margin: 0, color: 'var(--text-primary)' }}>{user?.name} {user?.surname}</h2>
             </div>
             {message && (
-                <div style={{ marginBottom: '1rem', padding: '10px', backgroundColor: message.includes("Error") ? '#f8d7da' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
+                <div style={{ marginBottom: '1rem', padding: '10px', backgroundColor: message.includes("Error") ? 'var(--reject)' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
                     {message}
                 </div>
             )}
