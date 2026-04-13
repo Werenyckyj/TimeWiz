@@ -1,8 +1,16 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "../../auth/hooks/useAuth";
+import timesheetIcon from "../../../assets/archive.png";
+import reporticon from "../../../assets/report.png";
+import approvalIcon from "../../../assets/quality.png";
+import projectIcon from "../../../assets/folder.png";
+import userIcon from "../../../assets/user.png";
+import companyIcon from "../../../assets/office.png";
+import { useTheme } from "../../../shared/context/ThemeContext";
 
 export default function Dashboard() {
     const { user } = useAuth();
+    const { theme } = useTheme();
 
     const cardStyle = {
         backgroundColor: 'var(--bg-secondary)',
@@ -44,24 +52,24 @@ export default function Dashboard() {
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px' }}>
 
                 <Link to="/timesheets" style={cardStyle} className="dashboard-card">
-                    <h2 style={titleStyle}>🕒 My Timesheets</h2>
+                    <h2 style={titleStyle}><img style={{ width: '30px', filter: theme === 'dark' ? 'invert(1)' : 'none' }} src={timesheetIcon} alt="Timesheet" /> My Timesheets</h2>
                     <p style={descStyle}>Log your working hours, edit drafts, and submit timesheets for approval.</p>
                 </Link>
 
                 <Link to="/reports" style={cardStyle} className="dashboard-card">
-                    <h2 style={titleStyle}>📊 Reports</h2>
+                    <h2 style={titleStyle}><img style={{ width: '30px', filter: theme === 'dark' ? 'invert(1)' : 'none' }} src={reporticon} alt="Reports" /> Reports</h2>
                     <p style={descStyle}>View summaries and detailed reports of your tracked time.</p>
                 </Link>
 
                 {(user?.role === 'Admin' || user?.role === 'Manager') && (
                     <>
                         <Link to="/approvals" style={cardStyle} className="dashboard-card">
-                            <h2 style={titleStyle}>✅ Pending Approvals</h2>
+                            <h2 style={titleStyle}><img style={{ width: '30px', filter: theme === 'dark' ? 'invert(1)' : 'none' }} src={approvalIcon} alt="Approvals" /> Pending Approvals</h2>
                             <p style={descStyle}>Review and approve or reject timesheets submitted by your team.</p>
                         </Link>
 
                         <Link to="/projects" style={cardStyle} className="dashboard-card">
-                            <h2 style={titleStyle}>📁 Projects</h2>
+                            <h2 style={titleStyle}><img style={{ width: '30px', filter: theme === 'dark' ? 'invert(1)' : 'none' }} src={projectIcon} alt="Projects" /> Projects</h2>
                             <p style={descStyle}>Manage projects, assign members, and oversee progress.</p>
                         </Link>
                     </>
@@ -70,12 +78,12 @@ export default function Dashboard() {
                 {user?.role === 'Admin' && (
                     <>
                         <Link to="/users" style={cardStyle} className="dashboard-card">
-                            <h2 style={titleStyle}>👥 Users</h2>
+                            <h2 style={titleStyle}><img style={{ width: '30px', filter: theme === 'dark' ? 'invert(1)' : 'none' }} src={userIcon} alt="Users" /> Users</h2>
                             <p style={descStyle}>Manage employee accounts, roles, and system access.</p>
                         </Link>
 
                         <Link to="/companies" style={cardStyle} className="dashboard-card">
-                            <h2 style={titleStyle}>🏢 Companies</h2>
+                            <h2 style={titleStyle}><img style={{ width: '30px', filter: theme === 'dark' ? 'invert(1)' : 'none' }} src={companyIcon} alt="Companies" /> Companies</h2>
                             <p style={descStyle}>Manage company profiles and organizational settings.</p>
                         </Link>
                     </>
