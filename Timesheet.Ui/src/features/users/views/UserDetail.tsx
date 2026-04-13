@@ -72,6 +72,29 @@ export default function UserDetail() {
         fetchData();
     }, [id, userId]);
 
+
+    const handleLoadMore = async (projectId: number) => {
+        const currentData = userProjectTimesheets[projectId];
+        if (!currentData) return;
+
+        try {
+            const nextPage = currentData.page + 1;
+
+            const newResponse = await UsersRepository.getUserProjectTimesheets(userId, projectId, nextPage, 3);
+
+            setUserProjectTimesheets(prev => ({
+                ...prev,
+                [projectId]: {
+                    ...newResponse,
+                    data: [...prev[projectId].data, ...newResponse.data]
+                }
+            }));
+        } catch (error) {
+            console.error("Failed to load more timesheets:", error);
+            setMessage("Failed to load older records.");
+        }
+    };
+
     const handleEdit = async (row: RawTsWeek) => {
         try {
             setMessage("Saving...");
@@ -149,13 +172,13 @@ export default function UserDetail() {
 
     const columns: ColumnDef<RawTsWeek>[] = [
         { header: 'Week', accessor: 'week', type: 'readonly' },
-        { header: 'Mo', accessor: 'Mo', type: 'number' },
-        { header: 'Tu', accessor: 'Tu', type: 'number' },
-        { header: 'We', accessor: 'We', type: 'number' },
-        { header: 'Th', accessor: 'Th', type: 'number' },
-        { header: 'Fr', accessor: 'Fr', type: 'number' },
-        { header: 'Sa', accessor: 'Sa', type: 'number' },
-        { header: 'Su', accessor: 'Su', type: 'number' },
+        { header: 'Mon', accessor: 'Mo', type: 'number' },
+        { header: 'Tue', accessor: 'Tu', type: 'number' },
+        { header: 'Wen', accessor: 'We', type: 'number' },
+        { header: 'Thu', accessor: 'Th', type: 'number' },
+        { header: 'Fri', accessor: 'Fr', type: 'number' },
+        { header: 'Sat', accessor: 'Sa', type: 'number' },
+        { header: 'Sun', accessor: 'Su', type: 'number' },
     ];
 
     const getRawData = (timesheets: TsWeek[]): RawTsWeek[] => {
@@ -186,7 +209,7 @@ export default function UserDetail() {
                 <h2 style={{ margin: 0, color: 'var(--text-primary)' }}>{user?.name} {user?.surname}</h2>
             </div>
             {message && (
-                <div style={{ marginBottom: '1rem', padding: '10px', backgroundColor: message.includes("Error") ? '#f8d7da' : '#d4edda', color: message.includes("Error") ? '#721c24' : '#155724', borderRadius: '4px' }}>
+                <div style={{ marginBottom: '1rem', padding: '10px', backgroundColor: message.includes("Error") ? '#f8d7da' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
                     {message}
                 </div>
             )}
@@ -194,23 +217,51 @@ export default function UserDetail() {
             {userProjects.length === 0 ? (
                 <p style={{ color: 'var(--text-secondary)' }}>No projects assigned.</p>
             ) : (
-                userProjects.map(project => (
-                    <div key={project.id} style={{ marginBottom: '1rem' }}>
-                        <h3 style={{ color: 'var(--text-primary)' }}>{project.name}</h3>
-                        {userProjectTimesheets[project.id] ? (
-                            <div>
-                                <EditableTable<RawTsWeek>
-                                    columns={columns}
-                                    data={getRawData(userProjectTimesheets[project.id].data)}
-                                    onEdit={handleEdit}
-                                />
-                                <br />
-                            </div>
-                        ) : (
-                            <p style={{ color: 'var(--text-secondary)' }}>Loading timesheets...</p>
-                        )}
-                    </div>
-                ))
+                userProjects.map(project => {
+                    const timesheetData = userProjectTimesheets[project.id];
+
+                    return (
+                        <div key={project.id} style={{ marginBottom: '2rem' }}>
+                            <h3 style={{ color: 'var(--text-primary)', marginBottom: '1rem' }}>{project.name}</h3>
+                            {timesheetData ? (
+                                <div style={{ display: 'flex', flexDirection: 'column' }}>
+
+                                    <EditableTable<RawTsWeek>
+                                        columns={columns}
+                                        data={getRawData(timesheetData.data)}
+                                        onEdit={handleEdit}
+                                    />
+
+                                    {timesheetData.page < timesheetData.totalPages && (
+                                        <button
+                                            onClick={() => handleLoadMore(project.id)}
+                                            style={{
+                                                width: '100%',
+                                                padding: '12px',
+                                                backgroundColor: 'var(--bg-secondary)',
+                                                color: 'var(--text-primary)',
+                                                border: '1px solid var(--border-color)',
+                                                borderTop: 'none',
+                                                borderBottomLeftRadius: '8px',
+                                                borderBottomRightRadius: '8px',
+                                                cursor: 'pointer',
+                                                fontWeight: 'bold',
+                                                transition: 'background-color 0.2s ease',
+                                                marginTop: '-1px'
+                                            }}
+                                            onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'var(--bg-hover)'}
+                                            onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'var(--bg-secondary)'}
+                                        >
+                                            Load 3 more ↓
+                                        </button>
+                                    )}
+                                </div>
+                            ) : (
+                                <p style={{ color: 'var(--text-secondary)' }}>Loading timesheets...</p>
+                            )}
+                        </div>
+                    );
+                })
             )}
         </div>
     );

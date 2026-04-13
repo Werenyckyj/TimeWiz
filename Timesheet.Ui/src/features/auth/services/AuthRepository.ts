@@ -1,5 +1,5 @@
 import api from "../../../shared/api/axiosInstance";
-import type { LoginRequest, LoginResponse, RevokeRequest } from "../types/auth.types";
+import type { ForgotPasswordRequest, LoginRequest, ResetPasswordRequest, LoginResponse, RevokeRequest } from "../types/auth.types";
 
 export const AuthRepository = {
     login: async (credentials: LoginRequest): Promise<LoginResponse> => {
@@ -15,6 +15,16 @@ export const AuthRepository = {
         if (!tokens.accessToken || !tokens.refreshToken) return "No tokens to revoke";
 
         const response = await api.post("/auth/revoke", tokens);
+        return response.data;
+    },
+
+    forgotPassword: async (data: ForgotPasswordRequest): Promise<string> => {
+        const response = await api.post("/auth/forgot-password", data);
+        return response.data;
+    },
+
+    resetPassword: async (data: ResetPasswordRequest): Promise<string> => {
+        const response = await api.post("/auth/reset-password", data);
         return response.data;
     }
 };

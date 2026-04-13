@@ -54,9 +54,9 @@ export default function Companies() {
 
                 {!isAdding && (
                     <button
-                        className="primary-button"
+                        className="primary-button-2"
                         onClick={() => setIsAdding(true)}
-                        style={{ padding: '8px 16px', backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '6px', cursor: 'pointer', fontWeight: '500' }}
+                        style={{ padding: '8px 16px', backgroundColor: 'var(--primary-button)', border: '1px solid var(--primary-button-border)', color: 'white', borderRadius: '6px', cursor: 'pointer', fontWeight: '500' }}
                     >
                         + Add company
                     </button>
@@ -64,7 +64,7 @@ export default function Companies() {
             </div>
 
             {message && (
-                <div style={{ padding: '10px', backgroundColor: '#f0fdf4', color: '#166534', borderRadius: '6px', marginBottom: '1rem' }}>
+                <div style={{ marginBottom: '1rem', padding: '10px', backgroundColor: message.includes("Error") ? '#f8d7da' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
                     {message}
                 </div>
             )}

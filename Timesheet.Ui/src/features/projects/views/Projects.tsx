@@ -154,9 +154,9 @@ export default function Projects() {
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
                     {!isAdding && (
                         <button
-                            className="primary-button"
+                            className="primary-button-2"
                             onClick={() => setIsAdding(true)}
-                            style={{ padding: '8px 16px', backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '6px', cursor: 'pointer', fontWeight: '500' }}
+                            style={{ padding: '8px 16px', backgroundColor: 'var(--primary-button)', border: '1px solid var(--primary-button-border)', borderRadius: '6px', cursor: 'pointer', fontWeight: '500', color: 'white' }}
                         >
                             + Add Project
                         </button>
@@ -173,7 +173,7 @@ export default function Projects() {
                 </div>
             </div>
             {message && (
-                <div style={{ marginBottom: '1rem', padding: '10px', backgroundColor: message.includes("Error") ? '#f8d7da' : '#d4edda', color: message.includes("Error") ? '#721c24' : '#155724', borderRadius: '4px' }}>
+                <div style={{ marginBottom: '1rem', padding: '10px', backgroundColor: message.includes("Error") ? '#f8d7da' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
                     {message}
                 </div>
             )}
@@ -224,6 +224,7 @@ export default function Projects() {
                                         <div>
                                             {isMember && (
                                                 <button
+                                                    className={isManager ? "primary-button-2" : "secondary-button"}
                                                     onClick={() => toggleManager(user, isManager)}
                                                     style={{
                                                         padding: '6px 12px',
@@ -231,9 +232,9 @@ export default function Projects() {
                                                         cursor: 'pointer',
                                                         fontWeight: 500,
                                                         fontSize: '0.85rem',
-                                                        border: isManager ? '1px solid #fbbf24' : '1px solid var(--border-color)',
-                                                        backgroundColor: isManager ? '#fffbeb' : 'var(--bg-primary)',
-                                                        color: isManager ? '#b45309' : 'var(--text-secondary)',
+                                                        border: isManager ? '1px solid var(--primary-button-border)' : '1px solid var(--border-color)',
+                                                        backgroundColor: isManager ? 'var(--primary-button)' : 'var(--bg-secondary)',
+                                                        color: isManager ? 'white' : 'var(--text-secondary)',
                                                         marginRight: '8px'
                                                     }}
                                                 >
@@ -241,6 +242,7 @@ export default function Projects() {
                                                 </button>
                                             )}
                                             <button
+                                                className={isMember ? "reject-button" : "primary-button-2"}
                                                 onClick={() => toggleMember(user, isMember)}
                                                 style={{
                                                     padding: '6px 12px',
@@ -248,9 +250,9 @@ export default function Projects() {
                                                     cursor: 'pointer',
                                                     fontWeight: 500,
                                                     fontSize: '0.85rem',
-                                                    border: isMember ? '1px solid #fca5a5' : '1px solid var(--border-color)',
-                                                    backgroundColor: isMember ? '#fef2f2' : 'var(--bg-primary)',
-                                                    color: isMember ? '#ef4444' : 'var(--text-secondary)'
+                                                    border: isMember ? '1px solid var(--reject-border)' : '1px solid var(--primary-button-border)',
+                                                    backgroundColor: isMember ? 'var(--reject)' : 'var(--primary-button)',
+                                                    color: isMember ? 'var(--reject-text)' : 'white',
                                                 }}
                                             >
                                                 {isMember ? "Remove" : "Add"}

@@ -205,17 +205,17 @@ export default function Timesheet() {
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
                 <button
-                    className="primary-button"
+                    className="primary-button-2"
                     onClick={handleSaveAll}
-                    style={{ padding: '10px 20px', backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
+                    style={{ padding: '10px 20px', backgroundColor: 'var(--primary-button)', border: '1px solid var(--primary-button-border)', color: 'white', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
                 >
                     Save
                 </button>
 
                 <div style={{ display: 'flex', gap: '8px' }}>
-                    <button className="primary-button" onClick={goToLastWeek} style={{ padding: '8px 12px', cursor: 'pointer', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)' }}>◀ Last week</button>
-                    <button className="primary-button" onClick={goToToday} style={{ padding: '8px 16px', cursor: 'pointer', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', fontWeight: 'bold' }}>Today</button>
-                    <button className="primary-button" onClick={goToNextWeek} style={{ padding: '8px 12px', cursor: 'pointer', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)' }}>Next week ▶</button>
+                    <button className="primary-button" onClick={goToLastWeek} style={{ padding: '8px 12px', cursor: 'pointer', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>◀ Last week</button>
+                    <button className="primary-button" onClick={goToToday} style={{ padding: '8px 16px', cursor: 'pointer', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', fontWeight: 'bold', color: 'var(--text-primary)' }}>Today</button>
+                    <button className="primary-button" onClick={goToNextWeek} style={{ padding: '8px 12px', cursor: 'pointer', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>Next week ▶</button>
                 </div>
 
                 <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>
@@ -224,7 +224,7 @@ export default function Timesheet() {
             </div>
 
             {message && (
-                <div style={{ marginBottom: '1rem', padding: '10px', backgroundColor: message.includes("Error") ? '#f8d7da' : '#d4edda', color: message.includes("Error") ? '#721c24' : '#155724', borderRadius: '4px' }}>
+                <div style={{ marginBottom: '1rem', padding: '10px', backgroundColor: message.includes("Error") ? '#f8d7da' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
                     {message}
                 </div>
             )}
@@ -308,14 +308,14 @@ export default function Timesheet() {
 
                                         <td style={{ padding: '12px' }}>
                                             {isLocked ? (
-                                                <span style={{ fontSize: '0.85rem', color: ts.status === "Approved" ? '#10b981' : '#f59e0b', fontWeight: 'bold' }}>
+                                                <span style={{ fontSize: '0.85rem', color: ts.status === "Approved" ? '#10b981' : 'var(--primary-button-hover)', fontWeight: 'bold' }}>
                                                     {ts.status}
                                                 </span>
                                             ) : (
                                                 <button
                                                     className="secondary-button"
                                                     onClick={() => handleSubmitRow(ts)}
-                                                    style={{ padding: '6px 12px', backgroundColor: 'var(--bg-secondary)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.85rem' }}
+                                                    style={{ padding: '6px 12px', backgroundColor: 'var(--bg-secondary)', color: 'var(--text-color)', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.85rem' }}
                                                 >
                                                     Send
                                                 </button>

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { AuthRepository } from '../services/AuthRepository';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 
 export default function Login() {
@@ -27,7 +27,7 @@ export default function Login() {
     };
 
     return (
-        <div style={{ padding: '2rem', fontFamily: 'sans-serif' }}>
+        <div style={{ padding: '2rem', fontFamily: 'sans-serif', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
             <div className="container">
                 <div className="row">
                     <div className="col">
@@ -43,7 +43,11 @@ export default function Login() {
                                 <label htmlFor="passwordInput" className="form-label">Password</label>
                                 <input type="password" className="form-control" id="passwordInput" value={password} onChange={(e) => setPassword(e.target.value)} />
                             </div>
-                            <button type="submit" className="btn btn-primary mx-auto">Login</button>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.5rem' }}>
+                                <button type="submit" className="btn btn-primary" style={{ backgroundColor: "var(--primary-button)", borderColor: "var(--primary-button-border)", color: "white" }}>Login</button>
+                                <Link to="/forgot" style={{ color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '0.9rem' }}>
+                                    Forgot Password?
+                                </Link>                            </div>
                             {message && <p style={{ marginTop: '1rem', fontWeight: 'bold' }}>{message}</p>}
                         </form>
                     </div>

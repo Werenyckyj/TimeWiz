@@ -161,8 +161,12 @@ export function EditableTable<T extends { id: string | number }>({
                                 </td>
                             ))}
                             {hasActions && <td style={{ padding: '12px 16px', textAlign: 'right', borderBottom: '1px solid var(--border-color)' }}>
-                                <button className="primary-button" onClick={commitAdd} style={{ marginRight: '8px', padding: '4px 8px', cursor: 'pointer', border: '1px solid var(--border-color)', borderRadius: '4px', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>Save</button>
-                                <button onClick={cancelAdd} style={{ padding: '4px 8px', cursor: 'pointer', border: '1px solid #fecaca', color: '#ef4444', borderRadius: '4px', backgroundColor: '#fef2f2' }}>Cancel</button>
+                                <button className="primary-button-2" onClick={commitAdd} style={{ marginRight: '8px', padding: '4px 8px', cursor: 'pointer', border: '1px solid var(--primary-button-border)', borderRadius: '4px', backgroundColor: 'var(--primary-button)', color: 'white' }}>
+                                    Save
+                                </button>
+                                <button className="reject-button" onClick={cancelAdd} style={{ padding: '4px 8px', cursor: 'pointer', border: '1px solid var(--reject-border)', color: 'var(--reject-text)', borderRadius: '4px', backgroundColor: 'var(--reject)' }}>
+                                    Cancel
+                                </button>
                             </td>}
                         </tr>
                     )}
@@ -173,11 +177,11 @@ export function EditableTable<T extends { id: string | number }>({
                         const rowActions: { label: string, onClick: () => void, color: string }[] = [];
 
                         if (onEdit) {
-                            rowActions.push({ label: 'Edit', onClick: () => { startEdit(row); setOpenMenuId(null); }, color: 'var(--text-primary)' });
+                            rowActions.push({ label: 'Edit', onClick: () => { startEdit(row); setOpenMenuId(null); }, color: 'white' });
                         }
                         if (extraRowActions) {
                             extraRowActions(row).forEach(action => {
-                                rowActions.push({ label: action.label, onClick: () => { action.onClick(); setOpenMenuId(null); }, color: 'var(--text-primary)' });
+                                rowActions.push({ label: action.label, onClick: () => { action.onClick(); setOpenMenuId(null); }, color: 'white' });
                             });
                         }
                         if (onDelete) {
@@ -232,19 +236,22 @@ export function EditableTable<T extends { id: string | number }>({
                                 {hasActions ? <td style={{ padding: '12px 16px', textAlign: 'right', position: 'relative', borderBottom: '1px solid var(--border-color)' }}>
                                     {isEditingThisRow ? (
                                         <>
-                                            <button className="primary-button" onClick={() => commitEdit()} style={{ marginRight: '8px', padding: '4px 8px', cursor: 'pointer', border: '1px solid var(--border-color)', borderRadius: '4px', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>Save</button>
-                                            <button onClick={cancelEdit} style={{ padding: '4px 8px', cursor: 'pointer', border: '1px solid #fecaca', color: '#ef4444', borderRadius: '4px', backgroundColor: '#fef2f2' }}>Cancel</button>
+                                            <button className="primary-button-2" onClick={() => commitEdit()} style={{ marginRight: '8px', padding: '4px 8px', cursor: 'pointer', border: '1px solid var(--primary-button-border)', borderRadius: '4px', backgroundColor: 'var(--primary-button)', color: 'white' }}>
+                                                Save</button>
+                                            <button className="reject-button" onClick={cancelEdit} style={{ padding: '4px 8px', cursor: 'pointer', border: '1px solid var(--reject-border)', color: 'var(--reject-text)', borderRadius: '4px', backgroundColor: 'var(--reject)' }}>
+                                                Cancel</button>
                                         </>
                                     ) : (rowActions.length === 1 ? (
                                         <button
+                                            className="primary-button-2"
                                             onClick={rowActions[0].onClick}
                                             style={{
                                                 padding: '4px 12px',
                                                 cursor: 'pointer',
                                                 border: '1px solid',
-                                                borderColor: rowActions[0].color === '#ef4444' ? '#fecaca' : 'var(--border-color)',
+                                                borderColor: rowActions[0].color === '#ef4444' ? '#fecaca' : 'var(--primary-button-border)',
                                                 borderRadius: '4px',
-                                                backgroundColor: rowActions[0].color === '#ef4444' ? '#fef2f2' : 'var(--bg-secondary)',
+                                                backgroundColor: rowActions[0].color === '#ef4444' ? '#fef2f2' : 'var(--primary-button)',
                                                 color: rowActions[0].color,
                                                 fontWeight: '500'
                                             }}
