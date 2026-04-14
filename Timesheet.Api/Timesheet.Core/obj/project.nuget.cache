@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "QtSB6eO7cMg=",
+  "dgSpecHash": "RF9tyhPEOl4=",
   "success": true,
   "projectFilePath": "/home/werenvoj/Documents/CVUT/timesheet-app/Timesheet.Api/Timesheet.Core/Timesheet.Core.csproj",
   "expectedPackageFiles": [
@@ -122,14 +122,17 @@
     "/home/werenvoj/.nuget/packages/system.threading.timer/4.3.0/system.threading.timer.4.3.0.nupkg.sha512",
     "/home/werenvoj/.nuget/packages/system.xml.readerwriter/4.3.0/system.xml.readerwriter.4.3.0.nupkg.sha512",
     "/home/werenvoj/.nuget/packages/system.xml.xdocument/4.3.0/system.xml.xdocument.4.3.0.nupkg.sha512",
-    "/home/werenvoj/.nuget/packages/microsoft.aspnetcore.app.ref/9.0.8/microsoft.aspnetcore.app.ref.9.0.8.nupkg.sha512"
+    "/home/werenvoj/.nuget/packages/microsoft.aspnetcore.app.ref/9.0.14/microsoft.aspnetcore.app.ref.9.0.14.nupkg.sha512",
+    "/home/werenvoj/.nuget/packages/microsoft.netcore.app.host.linux-x64/9.0.14/microsoft.netcore.app.host.linux-x64.9.0.14.nupkg.sha512"
   ],
   "logs": [
     {
       "code": "NU1903",
       "level": "Warning",
-      "warningLevel": 1,
       "message": "Package 'AutoMapper' 13.0.1 has a known high severity vulnerability, https://github.com/advisories/GHSA-rvv3-g6hj-g44x",
+      "projectPath": "/home/werenvoj/Documents/CVUT/timesheet-app/Timesheet.Api/Timesheet.Core/Timesheet.Core.csproj",
+      "warningLevel": 1,
+      "filePath": "/home/werenvoj/Documents/CVUT/timesheet-app/Timesheet.Api/Timesheet.Core/Timesheet.Core.csproj",
       "libraryId": "AutoMapper",
       "targetGraphs": [
         "net9.0"
