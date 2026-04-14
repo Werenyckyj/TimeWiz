@@ -228,7 +228,8 @@ const ReportBlock = ({ title, isTeamReport, currentUser, projectsList, usersList
     const inactiveBtnStyle = { backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', borderColor: 'var(--border-color)' };
 
     return (
-        <div style={{ marginBottom: '4rem' }}>
+        <div className="main-content"
+            style={{ marginBottom: '4rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                 <h2 style={{ margin: 0, color: 'var(--text-primary)' }}>{title}</h2>
                 <button className="success-button" onClick={exportToCSV} style={{ padding: '8px 16px', backgroundColor: 'var(--success-2)', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>

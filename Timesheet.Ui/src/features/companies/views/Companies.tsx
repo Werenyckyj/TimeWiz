@@ -48,7 +48,8 @@ export default function Companies() {
     };
 
     return (
-        <div style={{ padding: '2rem', fontFamily: 'sans-serif', margin: '0 auto' }}>
+        <div className="main-content"
+            style={{ fontFamily: 'sans-serif', margin: '0 auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                 <h2 style={{ margin: 0 }}>Companies</h2>
 

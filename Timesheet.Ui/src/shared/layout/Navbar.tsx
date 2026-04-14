@@ -6,7 +6,11 @@ import { Modal } from "../components/Modal";
 import { useTheme } from "../context/ThemeContext";
 import switchIcon from "../../assets/night-mode.png";
 
-export const Navbar = () => {
+interface NavbarProps {
+    toggleMenu: () => void;
+}
+
+export const Navbar = ({ toggleMenu }: NavbarProps) => {
     const { user } = useAuth();
     const [userInfo, setUserInfo] = useState<User | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -58,7 +62,13 @@ export const Navbar = () => {
                 padding: '10px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
                 borderBottom: '1px solid var(--border-color)'
             }}>
-                <h2 style={{ margin: 0 }}>Timesheet App</h2>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <button className="mobile-toggle" onClick={toggleMenu}>☰</button>
+
+                    <h2 className="desktop-title" style={{ margin: 0, color: 'var(--text-primary)', fontSize: '1.25rem' }}>
+                        Timesheet App
+                    </h2>
+                </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                     <button
@@ -94,16 +104,15 @@ export const Navbar = () => {
                                 border: '1px solid var(--border-color)',
                                 borderRadius: '6px',
                                 color: 'var(--text-primary)',
-                                minWidth: '300px',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'space-between',
                                 gap: '10px',
                             }}
                         >
-                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
-                                <span>{userInfo?.name} {userInfo?.surname}</span>
-                                <span style={{ color: 'var(--text-secondary)' }}>{userInfo?.role?.name}</span>
+                            <div className="user-details-text" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '4px' }}>
+                                <span style={{ fontWeight: 'bold' }}>{userInfo?.name} {userInfo?.surname}</span>
+                                <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>{userInfo?.role?.name}</span>
                             </div>
 
                             <div style={{
@@ -116,6 +125,7 @@ export const Navbar = () => {
                                 justifyContent: 'center',
                                 alignItems: 'center',
                                 color: 'var(--text-primary)',
+                                fontWeight: 'bold',
                                 flexShrink: 0
                             }}>
                                 {userInfo?.name?.charAt(0)}{userInfo?.surname?.charAt(0)}
@@ -157,7 +167,7 @@ export const Navbar = () => {
                                         />
                                     </div>
                                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                                        <label style={{ fontSize: '0.875rem', fontWeight: 500 }}>Confirm New Password *</label>
+                                        <label style={{ fontSize: '0.875rem', fontWeight: 500 }}>Confirm Password *</label>
                                         <input
                                             required
                                             type="password"

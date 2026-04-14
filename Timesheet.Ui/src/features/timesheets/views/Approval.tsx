@@ -220,7 +220,8 @@ export default function Approval() {
     ];
 
     return (
-        <div style={{ padding: '2rem', fontFamily: 'sans-serif', margin: '0 auto' }}>
+        <div className="main-content"
+            style={{ fontFamily: 'sans-serif', margin: '0 auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
                 <h2 style={{ margin: 0 }}>Pending Approvals</h2>
             </div>

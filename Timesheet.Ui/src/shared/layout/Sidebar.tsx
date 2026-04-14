@@ -3,18 +3,32 @@ import { useAuth } from "../../features/auth/hooks/useAuth";
 import logoutIcon from "../../assets/logout.png";
 import { useTheme } from "../context/ThemeContext";
 
-export const Sidebar = () => {
+interface SidebarProps {
+    isOpen: boolean;
+    closeMenu: () => void;
+}
+
+export const Sidebar = ({ isOpen, closeMenu }: SidebarProps) => {
     const { user, logout } = useAuth();
     const { theme } = useTheme();
 
+    const close = () => {
+        closeMenu();
+    }
+
     return (
-        <aside style={{
-            width: '250px', backgroundColor: 'var(--bg-primary)', borderRight: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column'
-        }}>
+        <aside className={`sidebar-container ${isOpen ? 'open' : ''}`}
+            style={{
+                width: '250px', backgroundColor: 'var(--bg-primary)', borderRight: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column'
+            }}>
             <div className="list-group list-group-flush" style={{ flex: 1, color: 'var(--text-primary)', backgroundColor: 'transparent' }}>
+                <div className="mobile-only" style={{ padding: '20px', fontSize: '1.2rem', fontWeight: 'bold', borderBottom: '1px solid var(--border-color)' }}>
+                    Timesheet App
+                </div>
                 <Link
                     to="/dashboard"
                     className="list-group-item list-group-item-action py-3 border-0 primary-button"
+                    onClick={close}
                     style={{ backgroundColor: 'transparent', color: 'var(--text-primary)' }}
                 >
                     Dashboard
@@ -23,6 +37,7 @@ export const Sidebar = () => {
                 <Link
                     to="/timesheets"
                     className="list-group-item list-group-item-action py-3 border-0 primary-button"
+                    onClick={close}
                     style={{ backgroundColor: 'transparent', color: 'var(--text-primary)' }}
                 >
                     My Timesheets
@@ -31,6 +46,7 @@ export const Sidebar = () => {
                 <Link
                     to="/reports"
                     className="list-group-item list-group-item-action py-3 border-0 primary-button"
+                    onClick={close}
                     style={{ backgroundColor: 'transparent', color: 'var(--text-primary)' }}
                 >
                     Reports
@@ -41,6 +57,7 @@ export const Sidebar = () => {
                         <Link
                             to="/approvals"
                             className="list-group-item list-group-item-action py-3 border-0 primary-button"
+                            onClick={close}
                             style={{ backgroundColor: 'transparent', color: 'var(--text-primary)' }}
                         >
                             Approvals
@@ -49,6 +66,7 @@ export const Sidebar = () => {
                         <Link
                             to="/projects"
                             className="list-group-item list-group-item-action py-3 border-0 primary-button"
+                            onClick={close}
                             style={{ backgroundColor: 'transparent', color: 'var(--text-primary)' }}
                         >
                             Projects
@@ -61,6 +79,7 @@ export const Sidebar = () => {
                         <Link
                             to="/users"
                             className="list-group-item list-group-item-action py-3 border-0 primary-button"
+                            onClick={close}
                             style={{ backgroundColor: 'transparent', color: 'var(--text-primary)' }}
                         >
                             Users
@@ -69,6 +88,7 @@ export const Sidebar = () => {
                         <Link
                             to="/companies"
                             className="list-group-item list-group-item-action py-3 border-0 primary-button"
+                            onClick={close}
                             style={{ backgroundColor: 'transparent', color: 'var(--text-primary)' }}
                         >
                             Companies
@@ -85,6 +105,6 @@ export const Sidebar = () => {
                     }} />
                 </button>
             </div>
-        </aside>
+        </aside >
     );
 }

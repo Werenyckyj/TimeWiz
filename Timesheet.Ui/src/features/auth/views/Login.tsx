@@ -32,7 +32,7 @@ export default function Login() {
                 <div className="row">
                     <div className="col">
                     </div>
-                    <div className="col border border-secondary-subtle gap-3 rounded-4 p-2">
+                    <div className="col border border-secondary-subtle gap-3 rounded-4 p-2" style={{ minWidth: '270px' }}>
                         <h2 className="text-center">Login to Timesheet</h2>
                         <form onSubmit={handleLogin}>
                             <div className="mb-3">

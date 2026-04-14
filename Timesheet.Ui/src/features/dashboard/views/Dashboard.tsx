@@ -40,7 +40,7 @@ export default function Dashboard() {
     };
 
     return (
-        <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
+        <div className="main-content">
             <div style={{ marginBottom: '2rem' }}>
                 <h1 style={{ margin: '0 0 8px 0', color: 'var(--text-primary)' }}>Dashboard</h1>
                 <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '1.1rem' }}>
@@ -70,7 +70,7 @@ export default function Dashboard() {
 
                         <Link to="/projects" style={cardStyle} className="dashboard-card">
                             <h2 style={titleStyle}><img style={{ width: '30px', filter: theme === 'dark' ? 'invert(1)' : 'none' }} src={projectIcon} alt="Projects" /> Projects</h2>
-                            <p style={descStyle}>Manage projects, assign members, and oversee progress.</p>
+                            <p style={descStyle}>Manage projects, assign members.</p>
                         </Link>
                     </>
                 )}

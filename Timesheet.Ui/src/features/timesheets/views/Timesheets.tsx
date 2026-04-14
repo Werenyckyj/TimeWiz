@@ -201,26 +201,37 @@ export default function Timesheet() {
     const grandTotal = colSums.reduce((acc, val) => acc + val, 0);
 
     return (
-        <div style={{ padding: '2rem', fontFamily: 'sans-serif', margin: '0 auto' }}>
+        <div className="main-content">
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+            <div className="timesheet-header"
+                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>
+                    Week {week} / {year}
+                </div>
+
+                <div style={{ display: 'flex', gap: '8px' }}>
+                    <button className="primary-button" onClick={goToLastWeek} style={{ padding: '8px 12px', cursor: 'pointer', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <span>◀</span>
+                            <span className="comp-only"> Last week</span>
+                        </div>
+                    </button>
+                    <button className="primary-button" onClick={goToToday} style={{ padding: '8px 16px', cursor: 'pointer', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', fontWeight: 'bold', color: 'var(--text-primary)' }}>Today</button>
+                    <button className="primary-button" onClick={goToNextWeek} style={{ padding: '8px 12px', cursor: 'pointer', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <span className="comp-only">Next week </span>
+                            <span>▶</span>
+                        </div>
+                    </button>
+                </div>
+
                 <button
-                    className="primary-button-2"
+                    className="primary-button-2 save-button"
                     onClick={handleSaveAll}
-                    style={{ padding: '10px 20px', backgroundColor: 'var(--primary-button)', border: '1px solid var(--primary-button-border)', color: 'white', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
                 >
                     Save
                 </button>
 
-                <div style={{ display: 'flex', gap: '8px' }}>
-                    <button className="primary-button" onClick={goToLastWeek} style={{ padding: '8px 12px', cursor: 'pointer', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>◀ Last week</button>
-                    <button className="primary-button" onClick={goToToday} style={{ padding: '8px 16px', cursor: 'pointer', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', fontWeight: 'bold', color: 'var(--text-primary)' }}>Today</button>
-                    <button className="primary-button" onClick={goToNextWeek} style={{ padding: '8px 12px', cursor: 'pointer', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>Next week ▶</button>
-                </div>
-
-                <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>
-                    Week {week} / {year}
-                </div>
             </div>
 
             {message && (
