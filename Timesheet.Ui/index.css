@@ -1,11 +1,14 @@
 :root {
-  --bg-primary: #ffffff;
-  --bg-secondary: #f8fafc;
-  --bg-hover-primary: #abb1b4;
-  --bg-hover-secondary: #e2e8f0;
-  --text-primary: #0f172a;
-  --text-secondary: #64748b;
-  --border-color: #e2e8f0;
+  --bg-primary: #fafafa;
+  --bg-secondary: #f4f4f5;
+
+  --bg-hover-primary: #e4e4e7;
+  --bg-hover-secondary: #d4d4d8;
+
+  --text-primary: #27272a;
+  --text-secondary: #71717a;
+
+  --border-color: #e4e4e7;
   --primary-button: #6977fa;
   --primary-button-border: #4d5bd4;
   --primary-button-hover: #5b68e2;
@@ -24,7 +27,7 @@
   --bg-secondary: #212731;
   --bg-hover-primary: #272d36;
   --bg-hover-secondary: #353c46;
-  --text-primary: #dadada;
+  --text-primary: #fafafa;
   --text-secondary: #738296;
   --border-color: #434d5a;
   --primary-button: #3a44a3;
@@ -136,7 +139,7 @@ body {
 
 .main-content {
   padding: 2rem;
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
 }
 
@@ -154,6 +157,20 @@ body {
   display: flex;
   align-items: end;
   flex-direction: row;
+}
+
+.date-wrapper {
+  flex: 0 0 auto;
+}
+
+.date-wrapper > div {
+  flex: 1 1 50% !important;
+  min-width: 0 !important;
+}
+
+.date-input {
+  width: 100%;
+  max-width: 150px;
 }
 
 @media (max-width: 768px) {
@@ -317,5 +334,14 @@ body {
 
   td.empty-state-cell::before {
     display: none !important;
+  }
+
+  .date-wrapper {
+    width: 100% !important;
+    flex: 1 1 100% !important;
+  }
+
+  .date-input {
+    max-width: none !important;
   }
 }

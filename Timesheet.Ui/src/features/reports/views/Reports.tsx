@@ -228,7 +228,7 @@ const ReportBlock = ({ title, isTeamReport, currentUser, projectsList, usersList
     const inactiveBtnStyle = { backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', borderColor: 'var(--border-color)' };
 
     return (
-        <div className="main-content"
+        <div
             style={{ marginBottom: '2rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                 <h2 style={{ margin: 0, color: 'var(--text-primary)' }}>{title}</h2>
@@ -244,14 +244,14 @@ const ReportBlock = ({ title, isTeamReport, currentUser, projectsList, usersList
             </div>
 
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', marginBottom: '1.5rem', backgroundColor: 'var(--bg-secondary)', padding: '16px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <div className="date-wrapper" style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1 }}>
                         <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Date From</label>
-                        <input type="date" value={dateFrom} disabled={timeSpanMode !== 'custom'} onChange={(e) => setDateFrom(e.target.value)} style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', width: '130px', boxSizing: 'border-box' }} />
+                        <input type="date" className="date-input" value={dateFrom} disabled={timeSpanMode !== 'custom'} onChange={(e) => setDateFrom(e.target.value)} style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', boxSizing: 'border-box' }} />
                     </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1 }}>
                         <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Date To</label>
-                        <input type="date" value={dateTo} disabled={timeSpanMode !== 'custom'} onChange={(e) => setDateTo(e.target.value)} style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', width: '130px', boxSizing: 'border-box' }} />
+                        <input type="date" className="date-input" value={dateTo} disabled={timeSpanMode !== 'custom'} onChange={(e) => setDateTo(e.target.value)} style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', boxSizing: 'border-box' }} />
                     </div>
                 </div>
 
@@ -382,8 +382,7 @@ export default function Reports() {
     }, [canSeeTeamReport]);
 
     return (
-        <div style={{ padding: '2rem', margin: '0 auto' }}>
-            <h1 style={{ margin: '0 0 2rem 0', color: 'var(--text-primary)' }}>Reports Center</h1>
+        <div className="main-content">
 
             <ReportBlock title="My Personal Report" isTeamReport={false} currentUser={user} projectsList={projects} usersList={users} companiesList={companies} />
 

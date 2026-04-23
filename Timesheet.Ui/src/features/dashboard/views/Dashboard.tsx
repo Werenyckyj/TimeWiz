@@ -40,7 +40,7 @@ export default function Dashboard() {
     };
 
     return (
-        <div className="main-content">
+        <div className="main-content" style={{ maxWidth: '1200px' }}>
             <div style={{ marginBottom: '2rem' }}>
                 <h1 style={{ margin: '0 0 8px 0', color: 'var(--text-primary)' }}>Dashboard</h1>
                 <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '1.1rem' }}>
