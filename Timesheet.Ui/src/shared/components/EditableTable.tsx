@@ -93,7 +93,6 @@ export function EditableTable<T extends { id: string | number }>({
             borderRadius: '8px',
             overflow: 'visible',
             backgroundColor: 'var(--bg-primary)',
-            paddingBottom: openMenuId ? '140px' : '0',
             transition: 'padding 0.2s ease'
         }}>
             <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0, textAlign: 'left', tableLayout: 'fixed' }}>
@@ -123,7 +122,7 @@ export function EditableTable<T extends { id: string | number }>({
                     {isAdding && (
                         <tr style={{ backgroundColor: 'var(--bg-hover)' }}>
                             {columns.map((col, idx) => (
-                                <td key={idx} style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-color)', color: 'var(--text-primary)' }}>
+                                <td data-label={col.header} key={idx} style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-color)', color: 'var(--text-primary)' }}>
                                     {col.type === 'readonly' ? (
                                         "—"
                                     ) : col.type === 'checkbox' ? (
@@ -160,13 +159,15 @@ export function EditableTable<T extends { id: string | number }>({
                                     )}
                                 </td>
                             ))}
-                            {hasActions && <td style={{ padding: '12px 16px', textAlign: 'right', borderBottom: '1px solid var(--border-color)' }}>
-                                <button className="primary-button-2" onClick={commitAdd} style={{ marginRight: '8px', padding: '4px 8px', cursor: 'pointer', border: '1px solid var(--primary-button-border)', borderRadius: '4px', backgroundColor: 'var(--primary-button)', color: 'white' }}>
-                                    Save
-                                </button>
-                                <button className="reject-button" onClick={cancelAdd} style={{ padding: '4px 8px', cursor: 'pointer', border: '1px solid var(--reject-border)', color: 'var(--reject-text)', borderRadius: '4px', backgroundColor: 'var(--reject)' }}>
-                                    Cancel
-                                </button>
+                            {hasActions && <td data-label="Actions" style={{ padding: '12px 16px', textAlign: 'right', borderBottom: '1px solid var(--border-color)', alignItems: 'end' }}>
+                                <div style={{ justifyContent: 'flex-end' }}>
+                                    <button className="primary-button-2" onClick={commitAdd} style={{ marginRight: '8px', padding: '4px 8px', cursor: 'pointer', border: '1px solid var(--primary-button-border)', borderRadius: '4px', backgroundColor: 'var(--primary-button)', color: 'white' }}>
+                                        Save
+                                    </button>
+                                    <button className="reject-button" onClick={cancelAdd} style={{ padding: '4px 8px', cursor: 'pointer', border: '1px solid var(--reject-border)', color: 'var(--reject-text)', borderRadius: '4px', backgroundColor: 'var(--reject)' }}>
+                                        Cancel
+                                    </button>
+                                </div>
                             </td>}
                         </tr>
                     )}
@@ -191,7 +192,7 @@ export function EditableTable<T extends { id: string | number }>({
                         return (
                             <tr key={row.id} style={{ backgroundColor: isEditingThisRow ? 'var(--bg-hover)' : 'transparent', color: 'var(--text-primary)' }}>
                                 {columns.map((col, idx) => (
-                                    <td key={idx} style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-color)' }}>
+                                    <td data-label={col.header} key={idx} style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-color)' }}>
                                         {isEditingThisRow && col.type !== 'readonly' ? (
                                             col.type === 'checkbox' ? (
                                                 <input
@@ -233,14 +234,14 @@ export function EditableTable<T extends { id: string | number }>({
                                     </td>
                                 ))}
 
-                                {hasActions ? <td style={{ padding: '12px 16px', textAlign: 'right', position: 'relative', borderBottom: '1px solid var(--border-color)' }}>
+                                {hasActions ? <td data-label="Actions" style={{ padding: '12px 16px', textAlign: 'right', position: 'relative', borderBottom: '1px solid var(--border-color)' }}>
                                     {isEditingThisRow ? (
-                                        <>
+                                        <div style={{ justifyContent: 'flex-end' }}>
                                             <button className="primary-button-2" onClick={() => commitEdit()} style={{ marginRight: '8px', padding: '4px 8px', cursor: 'pointer', border: '1px solid var(--primary-button-border)', borderRadius: '4px', backgroundColor: 'var(--primary-button)', color: 'white' }}>
                                                 Save</button>
                                             <button className="reject-button" onClick={cancelEdit} style={{ padding: '4px 8px', cursor: 'pointer', border: '1px solid var(--reject-border)', color: 'var(--reject-text)', borderRadius: '4px', backgroundColor: 'var(--reject)' }}>
                                                 Cancel</button>
-                                        </>
+                                        </div>
                                     ) : (rowActions.length === 1 ? (
                                         <button
                                             className="primary-button-2"
@@ -319,7 +320,16 @@ export function EditableTable<T extends { id: string | number }>({
 
                     {data.length === 0 && !isAdding && (
                         <tr>
-                            <td colSpan={columns.length + (hasActions ? 1 : 0)} style={{ padding: '24px', textAlign: 'center', color: 'var(--text-secondary)', borderBottom: '1px solid var(--border-color)' }}>
+                            <td
+                                colSpan={columns.length + (hasActions ? 1 : 0)}
+                                className="empty-state-cell"
+                                style={{
+                                    padding: '24px',
+                                    textAlign: 'center',
+                                    color: 'var(--text-secondary)',
+                                    borderBottom: '1px solid var(--border-color)'
+                                }}
+                            >
                                 No data available.
                             </td>
                         </tr>

@@ -16,6 +16,11 @@ export default function Reset() {
         e.preventDefault();
         setMessage(null);
 
+        if (newPassword.length < 8) {
+            setMessage({ text: "Password must be at least 8 characters long.", type: 'error' });
+            return;
+        }
+
         if (newPassword !== confirmPassword) {
             setMessage({ text: "Passwords do not match.", type: 'error' });
             return;
@@ -50,7 +55,7 @@ export default function Reset() {
         return (
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', color: 'var(--text-primary)' }}>
                 <div style={{ textAlign: 'center' }}>
-                    <h2 style={{ color: '#ef4444' }}>Invalid Reset Link</h2>
+                    <h2 style={{ color: 'var(--reject-text)' }}>Invalid Reset Link</h2>
                     <p style={{ color: 'var(--text-secondary)' }}>The link you followed is missing required information.</p>
                     <Link to="/forgot" className="btn btn-primary mt-3">Request New Link</Link>
                 </div>
@@ -59,76 +64,86 @@ export default function Reset() {
     }
 
     return (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', color: 'var(--text-primary)' }}>
-            <div style={{ maxWidth: '400px', width: '100%', padding: '2rem', border: '1px solid var(--border-color)', borderRadius: '8px', backgroundColor: 'var(--bg-secondary)' }}>
-                <h2 style={{ textAlign: 'center', marginBottom: '1.5rem' }}>Create New Password</h2>
+        <div className="container" style={{ color: 'var(--text-primary)', display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+            <div className="row">
+                <div className="col">
+                </div>
+                <div className="col border border-secondary-subtle gap-3 rounded-4 p-2" style={{ minWidth: '270px', backgroundColor: 'var(--bg-secondary)' }}>
+                    <div style={{ maxWidth: '400px', width: '100%', borderRadius: '8px', backgroundColor: 'var(--bg-secondary)' }}>
+                        <h2 style={{ textAlign: 'center', marginBottom: '1.5rem' }}>Create New Password</h2>
 
-                {message && (
-                    <div style={{ marginBottom: '1rem', padding: '10px', backgroundColor: message.text.includes("Error") ? 'var(--reject)' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
-                        {message.text}
+                        {message && (
+                            <div style={{ marginBottom: '1rem', padding: '10px', backgroundColor: message.text.includes("Error") ? 'var(--reject)' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
+                                {message.text}
+                            </div>
+                        )}
+
+                        {message?.type !== 'success' && (
+                            <form onSubmit={handleSubmit}>
+                                <div className="mb-3">
+                                    <label className="form-label" style={{ fontWeight: '500' }}>Email</label>
+                                    <input
+                                        type="email"
+                                        className="form-control"
+                                        value={email}
+                                        disabled
+                                        style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-secondary)', borderColor: 'var(--border-color)' }}
+                                    />
+                                </div>
+
+                                <div className="mb-3">
+                                    <label htmlFor="newPassword" className="form-label" style={{ fontWeight: '500' }}>New Password</label>
+                                    <input
+                                        type="password"
+                                        className="form-control"
+                                        id="newPassword"
+                                        value={newPassword}
+                                        onChange={(e) => setNewPassword(e.target.value)}
+                                        required
+                                        disabled={isLoading}
+                                        minLength={8}
+                                        style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', borderColor: 'var(--border-color)' }}
+                                    />
+                                </div>
+
+                                <div className="mb-4">
+                                    <label htmlFor="confirmPassword" className="form-label" style={{ fontWeight: '500' }}>Confirm Password</label>
+                                    <input
+                                        type="password"
+                                        className="form-control"
+                                        id="confirmPassword"
+                                        value={confirmPassword}
+                                        onChange={(e) => setConfirmPassword(e.target.value)}
+                                        required
+                                        disabled={isLoading}
+                                        minLength={6}
+                                        style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', borderColor: 'var(--border-color)' }}
+                                    />
+                                </div>
+
+                                <button
+                                    type="submit"
+                                    className="primary-button-2"
+                                    disabled={isLoading || !newPassword || !confirmPassword}
+                                    style={{ fontWeight: 'bold', padding: '10px', backgroundColor: "var(--primary-button)", color: "white", border: "1px solid var(--primary-button-border)", borderRadius: '8px', width: '100%' }}
+                                >
+                                    {isLoading ? "Saving..." : "Reset Password"}
+                                </button>
+                            </form>
+                        )}
+
+                        <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
+                            <Link to="/login" style={{ color: 'var(--primary-button)', textDecoration: 'none', fontWeight: 'bold' }}>
+                                Back to Login
+                            </Link>
+                        </div>
+                        <br />
                     </div>
-                )}
-
-                {message?.type !== 'success' && (
-                    <form onSubmit={handleSubmit}>
-                        <div className="mb-3">
-                            <label className="form-label" style={{ fontWeight: '500' }}>Email</label>
-                            <input
-                                type="email"
-                                className="form-control"
-                                value={email}
-                                disabled
-                                style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-secondary)', borderColor: 'var(--border-color)' }}
-                            />
-                        </div>
-
-                        <div className="mb-3">
-                            <label htmlFor="newPassword" className="form-label" style={{ fontWeight: '500' }}>New Password</label>
-                            <input
-                                type="password"
-                                className="form-control"
-                                id="newPassword"
-                                value={newPassword}
-                                onChange={(e) => setNewPassword(e.target.value)}
-                                required
-                                disabled={isLoading}
-                                minLength={6}
-                                style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', borderColor: 'var(--border-color)' }}
-                            />
-                        </div>
-
-                        <div className="mb-4">
-                            <label htmlFor="confirmPassword" className="form-label" style={{ fontWeight: '500' }}>Confirm Password</label>
-                            <input
-                                type="password"
-                                className="form-control"
-                                id="confirmPassword"
-                                value={confirmPassword}
-                                onChange={(e) => setConfirmPassword(e.target.value)}
-                                required
-                                disabled={isLoading}
-                                minLength={6}
-                                style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', borderColor: 'var(--border-color)' }}
-                            />
-                        </div>
-
-                        <button
-                            type="submit"
-                            className="btn btn-primary w-100"
-                            disabled={isLoading || !newPassword || !confirmPassword}
-                            style={{ fontWeight: 'bold', padding: '10px' }}
-                        >
-                            {isLoading ? "Saving..." : "Reset Password"}
-                        </button>
-                    </form>
-                )}
-
-                <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
-                    <Link to="/login" style={{ color: '#3b82f6', textDecoration: 'none' }}>
-                        Back to Login
-                    </Link>
+                </div>
+                <div className="col">
                 </div>
             </div>
+
         </div>
     );
 }

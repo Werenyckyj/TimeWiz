@@ -222,7 +222,7 @@ export default function Projects() {
                                             <span style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{user.name} {user.surname}</span>
                                             <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{user.email}</span>
                                         </div>
-                                        <div>
+                                        <div className="manage-project-users-button-group">
                                             {isMember && (
                                                 <button
                                                     className={isManager ? "primary-button-2" : "secondary-button"}
@@ -236,7 +236,7 @@ export default function Projects() {
                                                         border: isManager ? '1px solid var(--primary-button-border)' : '1px solid var(--border-color)',
                                                         backgroundColor: isManager ? 'var(--primary-button)' : 'var(--bg-secondary)',
                                                         color: isManager ? 'white' : 'var(--text-secondary)',
-                                                        marginRight: '8px'
+                                                        margin: '4px'
                                                     }}
                                                 >
                                                     {isManager ? "Make Employee" : "Make Manager"}
@@ -254,6 +254,7 @@ export default function Projects() {
                                                     border: isMember ? '1px solid var(--reject-border)' : '1px solid var(--primary-button-border)',
                                                     backgroundColor: isMember ? 'var(--reject)' : 'var(--primary-button)',
                                                     color: isMember ? 'var(--reject-text)' : 'white',
+                                                    margin: '4px'
                                                 }}
                                             >
                                                 {isMember ? "Remove" : "Add"}

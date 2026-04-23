@@ -137,6 +137,18 @@
       "targetGraphs": [
         "net9.0"
       ]
+    },
+    {
+      "code": "NU1902",
+      "level": "Warning",
+      "message": "Package 'MailKit' 4.15.1 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-9j88-vvj5-vhgr",
+      "projectPath": "/home/werenvoj/Documents/CVUT/timesheet-app/Timesheet.Api/Timesheet.Core/Timesheet.Core.csproj",
+      "warningLevel": 1,
+      "filePath": "/home/werenvoj/Documents/CVUT/timesheet-app/Timesheet.Api/Timesheet.Core/Timesheet.Core.csproj",
+      "libraryId": "MailKit",
+      "targetGraphs": [
+        "net9.0"
+      ]
     }
   ]
 }

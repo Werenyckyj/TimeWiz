@@ -187,7 +187,7 @@ export default function Approval() {
             renderCell: (row) => {
                 const arr = Array.isArray(row.tsEntries) ? row.tsEntries : [];
                 const sum = arr.reduce((acc, curr) => acc + (curr.hours || 0), 0);
-                return <strong style={{ color: '#0f172a' }}>{sum}h</strong>;
+                return <strong style={{ color: 'var(--text-primary)' }}>{sum}h</strong>;
             }
         },
         {

@@ -209,7 +209,7 @@ export default function Timesheet() {
                     Week {week} / {year}
                 </div>
 
-                <div style={{ display: 'flex', gap: '8px' }}>
+                <div className="comp-only" style={{ display: 'flex', gap: '8px' }}>
                     <button className="primary-button" onClick={goToLastWeek} style={{ padding: '8px 12px', cursor: 'pointer', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                             <span>◀</span>
@@ -232,6 +232,22 @@ export default function Timesheet() {
                     Save
                 </button>
 
+            </div>
+
+            <div className="mobile-only" style={{ gap: '8px', margin: '1rem auto', justifyContent: 'center', width: '100%' }}>
+                <button className="primary-button" onClick={goToLastWeek} style={{ padding: '8px 12px', cursor: 'pointer', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <span>◀</span>
+                        <span className="comp-only"> Last week</span>
+                    </div>
+                </button>
+                <button className="primary-button" onClick={goToToday} style={{ padding: '8px 16px', cursor: 'pointer', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', fontWeight: 'bold', color: 'var(--text-primary)' }}>Today</button>
+                <button className="primary-button" onClick={goToNextWeek} style={{ padding: '8px 12px', cursor: 'pointer', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <span className="comp-only">Next week </span>
+                        <span>▶</span>
+                    </div>
+                </button>
             </div>
 
             {message && (
@@ -270,9 +286,9 @@ export default function Timesheet() {
 
                                 return (
                                     <tr key={ts.id} style={{ borderBottom: '1px solid var(--border-color)', backgroundColor: isRejected ? 'var(--bg-secondary)' : 'transparent' }}>
-                                        <td style={{ padding: '12px', textAlign: 'left', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                            {ts.project?.name || "Unknown Project"}
 
+                                        <td className="mobile-card-header" data-label="Project" style={{ padding: '12px', textAlign: 'left', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            {ts.project?.name || "Unknown Project"}
                                             {isRejected && ts.comment && (
                                                 <span title={`Note from Manager: ${ts.comment}`} style={{ cursor: 'help', color: '#ef4444' }}>
                                                     <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
@@ -285,21 +301,15 @@ export default function Timesheet() {
                                             const entry = ts.tsEntries?.find(e => toLocalDateString(new Date(e.workDate)) === dateIso);
                                             const val = entry?.hours || 0;
 
+                                            const mobileLabel = `${d.toLocaleDateString("en-US", { weekday: 'short' })} ${d.getDate()}. ${d.getMonth() + 1}.`;
+
                                             return (
-                                                <td key={i} style={{ padding: '8px' }}>
+                                                <td key={i} data-label={mobileLabel} style={{ padding: '8px' }}>
                                                     <input
                                                         type="text"
                                                         min="0" max="24" step="0.5"
-                                                        onFocus={(e) => {
-                                                            if (val === 0) {
-                                                                e.target.value = '';
-                                                            }
-                                                        }}
-                                                        onBlur={(e) => {
-                                                            if (val === 0) {
-                                                                e.target.value = '0'
-                                                            }
-                                                        }}
+                                                        onFocus={(e) => { if (val === 0) e.target.value = ''; }}
+                                                        onBlur={(e) => { if (val === 0) e.target.value = '0'; }}
                                                         value={val}
                                                         onChange={(e) => handleHoursChange(ts.id, dateIso, e.target.value)}
                                                         disabled={isLocked}
@@ -315,9 +325,9 @@ export default function Timesheet() {
                                             );
                                         })}
 
-                                        <td style={{ padding: '12px', fontWeight: 'bold', color: 'var(--text-primary)' }}>{rowSum}</td>
+                                        <td data-label="∑ Total" style={{ padding: '12px', fontWeight: 'bold', color: 'var(--text-primary)' }}>{rowSum}</td>
 
-                                        <td style={{ padding: '12px' }}>
+                                        <td data-label="Action" style={{ padding: '12px' }}>
                                             {isLocked ? (
                                                 <span style={{ fontSize: '0.85rem', color: ts.status === "Approved" ? '#10b981' : 'var(--primary-button-hover)', fontWeight: 'bold' }}>
                                                     {ts.status}
@@ -339,12 +349,20 @@ export default function Timesheet() {
                     </tbody>
                     <tfoot style={{ backgroundColor: 'var(--bg-secondary)', borderTop: '2px solid var(--border-color)', fontWeight: 'bold' }}>
                         <tr>
-                            <td style={{ padding: '12px', textAlign: 'left' }}>∑ Total</td>
-                            {colSums.map((sum, i) => (
-                                <td key={i} style={{ padding: '12px' }}>{sum > 0 ? sum : ""}</td>
-                            ))}
-                            <td style={{ padding: '12px', color: 'var(--text-primary)' }}>{grandTotal}</td>
-                            <td></td>
+                            <td data-label="" style={{ padding: '12px', textAlign: 'left' }}>∑ Total</td>
+
+                            {colSums.map((sum, i) => {
+                                const d = days[i];
+                                const mobileLabel = `${d.toLocaleDateString("en-US", { weekday: 'short' })}`;
+                                return (
+                                    <td key={i} data-label={mobileLabel} style={{ padding: '12px' }}>
+                                        {sum > 0 ? sum : 0}
+                                    </td>
+                                );
+                            })}
+
+                            <td data-label="Grand Total" style={{ padding: '12px', color: 'var(--text-primary)', backgroundColor: 'var(--bg-secondary)' }}>{grandTotal}</td>
+                            <td className="comp-only" data-label=""></td>
                         </tr>
                     </tfoot>
                 </table>

@@ -44,6 +44,11 @@ export const Navbar = ({ toggleMenu }: NavbarProps) => {
                 return;
             }
 
+            if (payload.newPassword.length < 8) {
+                alert("New password must be at least 8 characters long.");
+                return;
+            }
+
             await UsersRepository.changeUserPassword(payload as ChangeUserPassword);
             setIsChangePassword(false);
             setMessage("Password changed successfully.");
