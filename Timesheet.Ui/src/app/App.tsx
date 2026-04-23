@@ -17,6 +17,7 @@ import Reports from '../features/reports/views/Reports';
 import UserDetail from '../features/users/views/UserDetail';
 import Forgot from '../features/auth/views/Forgot';
 import Reset from '../features/auth/views/Reset';
+import NotFound from '../shared/views/NotFound';
 
 function App() {
     return (
@@ -47,6 +48,8 @@ function App() {
                             <Route path="/companies" element={<CompaniesProvider><Companies /></CompaniesProvider>} />
                         </Route>
                     </Route>
+
+                    <Route path="*" element={<NotFound />} />
                 </Routes>
             </BrowserRouter>
         </AuthProvider>

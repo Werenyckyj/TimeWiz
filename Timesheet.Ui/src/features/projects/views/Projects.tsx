@@ -147,7 +147,8 @@ export default function Projects() {
     });
 
     return (
-        <div style={{ padding: '2rem', fontFamily: 'sans-serif', margin: '0 auto' }}>
+        <div className="main-content"
+            style={{ fontFamily: 'sans-serif', margin: '0 auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
                 <h2 style={{ margin: 0 }}>Projects</h2>
 
@@ -173,7 +174,7 @@ export default function Projects() {
                 </div>
             </div>
             {message && (
-                <div style={{ marginBottom: '1rem', padding: '10px', backgroundColor: message.includes("Error") ? '#f8d7da' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
+                <div style={{ marginBottom: '1rem', padding: '10px', backgroundColor: message.includes("Error") ? 'var(--reject)' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
                     {message}
                 </div>
             )}
@@ -221,7 +222,7 @@ export default function Projects() {
                                             <span style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{user.name} {user.surname}</span>
                                             <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{user.email}</span>
                                         </div>
-                                        <div>
+                                        <div className="manage-project-users-button-group">
                                             {isMember && (
                                                 <button
                                                     className={isManager ? "primary-button-2" : "secondary-button"}
@@ -235,7 +236,7 @@ export default function Projects() {
                                                         border: isManager ? '1px solid var(--primary-button-border)' : '1px solid var(--border-color)',
                                                         backgroundColor: isManager ? 'var(--primary-button)' : 'var(--bg-secondary)',
                                                         color: isManager ? 'white' : 'var(--text-secondary)',
-                                                        marginRight: '8px'
+                                                        margin: '4px'
                                                     }}
                                                 >
                                                     {isManager ? "Make Employee" : "Make Manager"}
@@ -253,6 +254,7 @@ export default function Projects() {
                                                     border: isMember ? '1px solid var(--reject-border)' : '1px solid var(--primary-button-border)',
                                                     backgroundColor: isMember ? 'var(--reject)' : 'var(--primary-button)',
                                                     color: isMember ? 'var(--reject-text)' : 'white',
+                                                    margin: '4px'
                                                 }}
                                             >
                                                 {isMember ? "Remove" : "Add"}

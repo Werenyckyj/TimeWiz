@@ -12,6 +12,11 @@ export const UsersProvider = ({ children }: { children: ReactNode }) => {
     }, []);
 
     const editUser = async (user: EditUser) => {
+        if (user.roleId === 0) {
+            throw new Error("Invalid role");
+        } else if (user.companyId === 0) {
+            throw new Error("Invalid company");
+        }
         const updated = await UsersRepository.editUser(user);
         setUsers(prev => {
             if (!prev || !Array.isArray(prev.data)) return prev;

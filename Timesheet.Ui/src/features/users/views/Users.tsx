@@ -126,7 +126,8 @@ export default function Users() {
     };
 
     return (
-        <div style={{ padding: '2rem', fontFamily: 'sans-serif', margin: '0 auto' }}>
+        <div className="main-content"
+            style={{ fontFamily: 'sans-serif', margin: '0 auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                 <h2 style={{ marginBottom: '1.5rem' }}>Users</h2>
 
@@ -153,7 +154,7 @@ export default function Users() {
             </div>
 
             {message && (
-                <div style={{ marginBottom: '1rem', padding: '10px', backgroundColor: message.includes("Error") ? '#f8d7da' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
+                <div style={{ marginBottom: '1rem', padding: '10px', backgroundColor: message.includes("Error") ? 'var(--reject)' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
                     {message}
                 </div>
             )}
@@ -175,25 +176,25 @@ export default function Users() {
             < Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Create New User" >
                 <form onSubmit={handleFormSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
-                    <div style={{ display: 'flex', gap: '16px' }}>
-                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+                        <div style={{ flex: '1 1 calc(50% - 8px)', minWidth: '150px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
                             <label style={{ fontSize: '0.875rem', fontWeight: 500 }}>Name *</label>
                             <input required type="text" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)' }} />
                         </div>
-                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <div style={{ flex: '1 1 calc(50% - 8px)', minWidth: '150px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
                             <label style={{ fontSize: '0.875rem', fontWeight: 500 }}>Surname *</label>
-                            <input required type="text" value={formData.surname} onChange={e => setFormData({ ...formData, surname: e.target.value })} style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)' }} />
+                            <input required type="text" value={formData.surname} onChange={e => setFormData({ ...formData, surname: e.target.value })} style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)', width: '100%', boxSizing: 'border-box' }} />
                         </div>
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                         <label style={{ fontSize: '0.875rem', fontWeight: 500 }}>Username *</label>
-                        <input required type="text" value={formData.username} onChange={e => setFormData({ ...formData, username: e.target.value })} style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)' }} />
+                        <input required type="text" value={formData.username} onChange={e => setFormData({ ...formData, username: e.target.value })} style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)', width: '100%', boxSizing: 'border-box' }} />
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                         <label style={{ fontSize: '0.875rem', fontWeight: 500 }}>Email *</label>
-                        <input required type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)' }} />
+                        <input required type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)', width: '100%', boxSizing: 'border-box' }} />
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -233,10 +234,10 @@ export default function Users() {
                         </div>
                     </div>
 
-                    <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
+                        <div style={{ flex: '1 1 calc(50% - 8px)', minWidth: '150px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
                             <label style={{ fontSize: '0.875rem', fontWeight: 500 }}>Role</label>
-                            <select value={formData.roleId} onChange={e => setFormData({ ...formData, roleId: e.target.value })} style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>
+                            <select value={formData.roleId} onChange={e => setFormData({ ...formData, roleId: e.target.value })} style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)', width: '100%', boxSizing: 'border-box' }}>
                                 <option value="">-- Select --</option>
                                 {roleOptions.map(opt => (
                                     <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -244,9 +245,9 @@ export default function Users() {
                             </select>
                         </div>
 
-                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <div style={{ flex: '1 1 calc(50% - 8px)', minWidth: '150px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
                             <label style={{ fontSize: '0.875rem', fontWeight: 500 }}>Organization</label>
-                            <select value={formData.companyId} onChange={e => setFormData({ ...formData, companyId: e.target.value })} style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>
+                            <select value={formData.companyId} onChange={e => setFormData({ ...formData, companyId: e.target.value })} style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)', width: '100%', boxSizing: 'border-box' }}>
                                 <option value="">-- Select --</option>
                                 {organizationOptions.map(opt => (
                                     <option key={opt.value} value={opt.value}>{opt.label}</option>
