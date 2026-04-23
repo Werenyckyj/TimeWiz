@@ -14,7 +14,8 @@ export default function Dashboard() {
 
     const cardStyle = {
         backgroundColor: 'var(--bg-secondary)',
-        border: '1px solid var(--border-color)',
+        boxShadow: '0 4px 6px -1px rgba(146, 236, 252, 0.26), 0 2px 4px -1px rgba(110, 221, 236, 0.27)',
+        border: '1px solid rgba(99, 102, 241, 0.1)',
         borderRadius: '8px',
         padding: '24px',
         display: 'flex',

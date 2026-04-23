@@ -1,25 +1,26 @@
 :root {
-  --bg-primary: #fafafa;
-  --bg-secondary: #f4f4f5;
+  --bg-primary: #e6f6fd;
+  --bg-secondary: #effaff;
+  --bg-hover-primary: #d1ebf8;
+  --bg-hover-secondary: #daeafd;
 
-  --bg-hover-primary: #e4e4e7;
-  --bg-hover-secondary: #d4d4d8;
+  --text-primary: #2a2723;
+  --text-secondary: #7a7671;
+  --border-color: #d3dfe9;
 
-  --text-primary: #27272a;
-  --text-secondary: #71717a;
+  --primary-button: #5865f2;
+  --primary-button-border: #4752c4;
+  --primary-button-hover: #4752c4;
 
-  --border-color: #e4e4e7;
-  --primary-button: #6977fa;
-  --primary-button-border: #4d5bd4;
-  --primary-button-hover: #5b68e2;
-  --success: #bde9c7;
-  --success-border: #9ee9b0;
-  --success-2: #6db37d;
-  --success-2-hover: #85cc95;
-  --reject: #fef2f2;
-  --reject-border: #fecaca;
-  --reject-text: #ef4444;
-  --reject-hover: #f7d5d5;
+  --success: #d1fadf;
+  --success-border: #6ce9a6;
+  --success-2: #12b76a;
+  --success-2-hover: #039855;
+
+  --reject: #fee4e2;
+  --reject-border: #f04438;
+  --reject-text: #d92d20;
+  --reject-hover: #fecdca;
 }
 
 [data-bs-theme="dark"] {
