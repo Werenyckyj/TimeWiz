@@ -126,8 +126,18 @@ export default function Timesheet() {
     const goToToday = () => setCurrentDate(new Date());
 
     const handleHoursChange = (tsId: number, dateIso: string, val: string) => {
-        const parsedHours = parseFloat(val);
-        const hours = isNaN(parsedHours) ? 0 : parsedHours;
+        if (!/^[0-9.,]*$/.test(val)) return;
+
+        const safeVal = val.replace(',', '.');
+        const parts = safeVal.split('.');
+        if (parts.length > 2) return;
+
+        let finalValue: number | string = safeVal;
+
+        if (safeVal !== "" && !safeVal.endsWith('.')) {
+            const parsedHours = parseFloat(safeVal);
+            finalValue = isNaN(parsedHours) ? 0 : parsedHours;
+        }
 
         setDrafts(prev => prev.map(ts => {
             if (ts.id !== tsId) return ts;
@@ -135,9 +145,9 @@ export default function Timesheet() {
             const existingIdx = newEntries.findIndex(e => toLocalDateString(new Date(e.workDate)) === dateIso);
 
             if (existingIdx >= 0) {
-                newEntries[existingIdx].hours = hours;
+                (newEntries[existingIdx] as { hours: number | string }).hours = finalValue;
             } else {
-                newEntries.push({ id: 0, tsWeekId: ts.id, workDate: new Date(dateIso) as Date, hours, notes: "" });
+                newEntries.push({ id: 0, tsWeekId: ts.id, workDate: new Date(dateIso) as Date, hours: finalValue as unknown as number, notes: "" });
             }
             return { ...ts, tsEntries: newEntries };
         }));
@@ -148,6 +158,12 @@ export default function Timesheet() {
         try {
             const unlocked = drafts.filter(ts => ts.status !== "Pending" && ts.status !== "Approved");
             for (const ts of unlocked) {
+
+                const cleanEntries = ts.tsEntries.map(e => ({
+                    ...e,
+                    hours: Number(e.hours) || 0
+                }));
+
                 await editTimesheet(ts.id, {
                     projectId: ts.project.id,
                     userId: ts.userId,
@@ -155,7 +171,7 @@ export default function Timesheet() {
                     weekNumber: ts.weekNumber,
                     comment: ts.comment,
                     status: ts.status,
-                    tsEntries: ts.tsEntries,
+                    tsEntries: cleanEntries,
                     daysInWeek: ts.tsEntries.length,
                     startDate: ts.tsEntries.length > 0
                         ? toLocalDateString(new Date(ts.tsEntries[0].workDate))
@@ -307,13 +323,13 @@ export default function Timesheet() {
                                                 <td key={i} data-label={mobileLabel} style={{ padding: '8px' }}>
                                                     <input
                                                         type="text"
-                                                        min="0" max="24" step="0.5"
+                                                        min="0" max="24" step="any"
                                                         onFocus={(e) => { if (val === 0) e.target.value = ''; }}
                                                         onBlur={(e) => { if (val === 0) e.target.value = '0'; }}
                                                         value={val}
                                                         onChange={(e) => handleHoursChange(ts.id, dateIso, e.target.value)}
                                                         disabled={isLocked}
-                                                        maxLength={3}
+                                                        maxLength={5}
                                                         style={{
                                                             width: '100%', padding: '6px', textAlign: 'center', boxSizing: 'border-box',
                                                             border: '1px solid var(--border-color)', borderRadius: '4px',
