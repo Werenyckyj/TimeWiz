@@ -7,11 +7,13 @@ import { RoleRepository } from "../../roles/services/RoleRepository";
 import { Modal } from "../../../shared/components/Modal";
 import { CompaniesRepository } from "../../companies/services/CompaniesRepository"; // Přidán import
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../auth/hooks/useAuth";
 
 
 
 export default function Users() {
     const navigate = useNavigate();
+    const { user } = useAuth();
     const { users, getUsers, editUser, deleteUser, addUser } = useUsers();
     const [isAdding, setIsAdding] = useState(false);
     const [message, setMessage] = useState<string>("");
@@ -132,7 +134,7 @@ export default function Users() {
                 <h2 style={{ marginBottom: '1.5rem' }}>Users</h2>
 
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
-                    {!isAdding && (
+                    {(!isAdding && user?.role === 'Admin') && (
                         <button
                             className="primary-button-2"
                             onClick={() => setIsModalOpen(true)}
@@ -156,8 +158,7 @@ export default function Users() {
             {message && (
                 <div style={{ marginBottom: '1rem', padding: '10px', backgroundColor: message.includes("Error") ? 'var(--reject)' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
                     {message}
-                </div>
-            )}
+                </div>)}
 
             <EditableTable<User>
                 columns={columns}
@@ -165,8 +166,8 @@ export default function Users() {
                 setIsAdding={setIsAdding}
                 data={tableData}
                 onAdd={async () => { }}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
+                onEdit={user?.role === "Admin" ? handleEdit : undefined}
+                onDelete={user?.role === "Admin" ? handleDelete : undefined}
                 extraRowActions={(row) => [
                     {
                         label: "View Details", onClick: () => navigate(`/users/${row.id}`)

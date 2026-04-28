@@ -41,10 +41,10 @@ function App() {
                         <Route element={<ProtectedRoute allowedRoles={['Admin', 'Manager']} />} >
                             <Route path="/approvals" element={<ProjectsProvider><TimesheetProvider><Approval /></TimesheetProvider></ProjectsProvider>} />
                             <Route path="/projects" element={<ProjectsProvider><Projects /></ProjectsProvider>} />
+                            <Route path="/users" element={<UsersProvider><Users /></UsersProvider>} />
                             <Route path="/users/:id" element={<UserDetail />} />
                         </Route>
                         <Route element={<ProtectedRoute allowedRoles={['Admin']} />} >
-                            <Route path="/users" element={<UsersProvider><Users /></UsersProvider>} />
                             <Route path="/companies" element={<CompaniesProvider><Companies /></CompaniesProvider>} />
                         </Route>
                     </Route>

@@ -75,16 +75,15 @@ export default function Dashboard() {
                             <h2 style={titleStyle}><img style={{ width: '30px', filter: theme === 'dark' ? 'invert(1)' : 'none' }} src={projectIcon} alt="Projects" /> Projects</h2>
                             <p style={descStyle}>Manage projects, assign members.</p>
                         </Link>
+                        <Link to="/users" style={cardStyle} className="dashboard-card">
+                            <h2 style={titleStyle}><img style={{ width: '30px', filter: theme === 'dark' ? 'invert(1)' : 'none' }} src={userIcon} alt="Users" /> Users</h2>
+                            <p style={descStyle}>Manage employee accounts, roles, and system access.</p>
+                        </Link>
                     </>
                 )}
 
                 {user?.role === 'Admin' && (
                     <>
-                        <Link to="/users" style={cardStyle} className="dashboard-card">
-                            <h2 style={titleStyle}><img style={{ width: '30px', filter: theme === 'dark' ? 'invert(1)' : 'none' }} src={userIcon} alt="Users" /> Users</h2>
-                            <p style={descStyle}>Manage employee accounts, roles, and system access.</p>
-                        </Link>
-
                         <Link to="/companies" style={cardStyle} className="dashboard-card">
                             <h2 style={titleStyle}><img style={{ width: '30px', filter: theme === 'dark' ? 'invert(1)' : 'none' }} src={companyIcon} alt="Companies" /> Companies</h2>
                             <p style={descStyle}>Manage company profiles and organizational settings.</p>

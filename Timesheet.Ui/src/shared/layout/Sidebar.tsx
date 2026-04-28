@@ -71,11 +71,7 @@ export const Sidebar = ({ isOpen, closeMenu }: SidebarProps) => {
                         >
                             Projects
                         </Link>
-                    </>
-                )}
 
-                {user?.role === 'Admin' && (
-                    <>
                         <Link
                             to="/users"
                             className="list-group-item list-group-item-action py-3 border-0 primary-button"
@@ -84,7 +80,11 @@ export const Sidebar = ({ isOpen, closeMenu }: SidebarProps) => {
                         >
                             Users
                         </Link>
+                    </>
+                )}
 
+                {user?.role === 'Admin' && (
+                    <>
                         <Link
                             to="/companies"
                             className="list-group-item list-group-item-action py-3 border-0 primary-button"
