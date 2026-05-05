@@ -1,0 +1,78 @@
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { AuthRepository } from "../services/AuthRepository";
+
+export default function Forgot() {
+    const [email, setEmail] = useState("");
+    const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
+
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setIsLoading(true);
+        setMessage(null);
+
+        try {
+            await AuthRepository.forgotPassword({ email });
+            setMessage({ text: "If that email is in our database, we will send you a link to reset your password.", type: 'success' });
+            setEmail("")
+        } catch {
+            setMessage({ text: "If that email is in our database, we will send you a link to reset your password.", type: 'success' });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    return (
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', color: 'var(--text-primary)' }}>
+            <div className="container">
+                <div className="row">
+                    <div className="col">
+                    </div>
+                    <div className="col border border-secondary-subtle gap-3 rounded-4 p-2" style={{ minWidth: '270px', backgroundColor: 'var(--bg-secondary)' }}>
+                        <h2 style={{ textAlign: 'center', marginBottom: '1.5rem' }}>Forgot Password</h2>
+
+                        {message && (
+                            <div style={{ marginBottom: '1rem', padding: '10px', backgroundColor: message.text.includes("Error") ? 'var(--reject)' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
+                                {message.text}
+                            </div>
+                        )}
+
+                        <form onSubmit={handleSubmit}>
+                            <div className="mb-3">
+                                <label htmlFor="emailInput" className="form-label" style={{ fontWeight: '500' }}>Email address</label>
+                                <input
+                                    type="email"
+                                    className="form-control"
+                                    id="emailInput"
+                                    placeholder="Enter your email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    required
+                                    disabled={isLoading}
+                                    style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-secondary)', borderColor: 'var(--border-color)' }}
+                                />
+                            </div>
+                            <button
+                                type="submit"
+                                className="btn w-100 primary-button"
+                                disabled={isLoading || !email}
+                                style={{ fontWeight: 'bold', padding: '10px', backgroundColor: "var(--primary-button)", color: "white", border: "1px solid var(--primary-button-border)" }}
+                            >
+                                {isLoading ? "Sending..." : "Send Reset Link"}
+                            </button>
+                        </form>
+
+                        <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
+                            <Link to="/login" style={{ color: 'var(--text-primary)', textDecoration: 'none' }}>
+                                Back to Login
+                            </Link>
+                        </div>
+                    </div>
+                    <div className="col">
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}

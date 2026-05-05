@@ -38,11 +38,16 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             new Role { Id = 1, Name = "Admin", Privilege = RoleTypes.Admin, Users = [] },
             new Role { Id = 2, Name = "Manager", Privilege = RoleTypes.Manager, Users = [] },
             new Role { Id = 3, Name = "Employee", Privilege = RoleTypes.Employee, Users = [] },
-            new Role { Id = 4, Name = "External", Privilege = RoleTypes.External, Users = [] }
+            new Role { Id = 4, Name = "Externist", Privilege = RoleTypes.Externist, Users = [] }
         );
 
         modelBuilder.Entity<Company>().HasData(
             new Company { Id = 1, Name = "IBM Česká republika, spol. s r.o.", CIN = "14890992", Employees = [] }
         );
+
+        modelBuilder.Entity<TsApproval>()
+            .HasMany(a => a.Managers)
+            .WithMany(u => u.TsApprovals)
+            .UsingEntity(j => j.ToTable("TsApprovalManagers"));
     }
 }

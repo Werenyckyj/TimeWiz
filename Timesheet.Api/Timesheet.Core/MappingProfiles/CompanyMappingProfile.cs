@@ -11,5 +11,6 @@ public class CompanyMappingProfile : Profile
     {
         CreateMap<Company, CompanyRDto>();
         CreateMap<CompanyWDto, Company>();
+        CreateMap<Company, CompanySimpleRDto>();
     }
 }

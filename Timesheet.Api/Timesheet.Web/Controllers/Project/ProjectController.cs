@@ -13,7 +13,7 @@ namespace Timesheet.Web.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Produces("application/json")]
-[Authorize(Roles = "Manager, Admin")]
+[Authorize(Roles = "Manager, Admin, Employee, Externist")]
 public class ProjectController(ILogger<ProjectController> logger, ITRepository<Project> tRepository, IMapper mapper, UnitOfWork unitOfWork) : GenericController<Project, ProjectWDto, ProjectRDto>(logger, tRepository, mapper)
 {
     private readonly UnitOfWork _unitOfWork = unitOfWork;
@@ -75,6 +75,58 @@ public class ProjectController(ILogger<ProjectController> logger, ITRepository<P
         return Ok($"User with ID {userId} unassigned from project with ID {id}.");
     }
 
+    [HttpPost("{id:int}/set-as-manager")]
+    [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public IActionResult SetUserAsProjectManager(int id, [FromBody] int userId)
+    {
+        var project = _unitOfWork.ProjectRepository.Query()
+        .Include(p => p.UserProjects)
+        .FirstOrDefault(p => p.Id == id);
+        if (project == null) return NotFound($"Project with ID {id} not found.");
+
+        var user = _unitOfWork.UserRepository.GetById(userId);
+        if (user == null) return NotFound($"User with ID {userId} not found.");
+
+        var userProject = project.UserProjects.FirstOrDefault(u => u.UserId == userId);
+        if (userProject == null)
+        {
+            return BadRequest($"User with ID {userId} is not assigned to project with ID {id}.");
+        }
+
+        userProject.ProjectRole = RoleTypes.Manager;
+        _unitOfWork.UserProjectRepository.Update(userProject);
+        _unitOfWork.SaveChanges();
+
+        return Ok($"User with ID {userId} set as manager for project with ID {id}.");
+    }
+
+    [HttpPost("{id:int}/set-as-employee")]
+    [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public IActionResult SetUserAsProjectEmployee(int id, [FromBody] int userId)
+    {
+        var project = _unitOfWork.ProjectRepository.Query()
+        .Include(p => p.UserProjects)
+        .FirstOrDefault(p => p.Id == id);
+        if (project == null) return NotFound($"Project with ID {id} not found.");
+
+        var user = _unitOfWork.UserRepository.GetById(userId);
+        if (user == null) return NotFound($"User with ID {userId} not found.");
+
+        var userProject = project.UserProjects.FirstOrDefault(u => u.UserId == userId);
+        if (userProject == null)
+        {
+            return BadRequest($"User with ID {userId} is not assigned to project with ID {id}.");
+        }
+
+        userProject.ProjectRole = RoleTypes.Employee;
+        _unitOfWork.UserProjectRepository.Update(userProject);
+        _unitOfWork.SaveChanges();
+
+        return Ok($"User with ID {userId} set as employee for project with ID {id}.");
+    }
+
     [HttpGet("{id:int}/users")]
     [ProducesResponseType(typeof(List<UserRDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -92,19 +144,34 @@ public class ProjectController(ILogger<ProjectController> logger, ITRepository<P
         return Ok(response);
     }
 
+    [HttpGet("{id:int}/managers")]
+    [ProducesResponseType(typeof(List<UserRDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public IActionResult GetProjectManagers(int id)
+    {
+        var project = _unitOfWork.ProjectRepository
+        .Query()
+        .Include(p => p.UserProjects)
+        .ThenInclude(up => up.User)
+        .FirstOrDefault(p => p.Id == id);
+        if (project == null) return NotFound($"Project with ID {id} not found.");
+
+        var managers = project.UserProjects.Where(up => up.ProjectRole == RoleTypes.Manager).Select(up => up.User).ToList();
+        var response = _mapper.Map<List<UserRDto>>(managers);
+        return Ok(response);
+    }
+
     [HttpGet("{id:int}/pending-timesheets")]
     [ProducesResponseType(typeof(List<TsWeekRDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public IActionResult GetProjectPendingTimesheets(int id)
     {
-        var project = _unitOfWork.ProjectRepository
-        .Query()
-        .Include(p => p.TsWeeks)
-        .ThenInclude(t => t.Approval)
-        .FirstOrDefault(p => p.Id == id);
-        if (project == null) return NotFound($"Project with ID {id} not found.");
-
-        var pendingTimesheets = project.TsWeeks.Where(t => t.Approval.Action == TsApprovalStatus.Pending).ToList();
+        var pendingTimesheets = _unitOfWork.TsWeekRepository.Query()
+            .Include(t => t.User)
+            .Include(t => t.TsEntries)
+            .Include(t => t.Project)
+            .Where(t => t.ProjectId == id && t.Approval != null && t.Approval.Action == TsApprovalStatus.Pending)
+            .ToList();
         var response = _mapper.Map<List<TsWeekRDto>>(pendingTimesheets);
         return Ok(response);
     }

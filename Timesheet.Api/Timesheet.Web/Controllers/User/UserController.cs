@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Timesheet.Core;
 using Timesheet.Data.Dtos;
 using Timesheet.Data.Dtos.Page;
+using Timesheet.Data.Enums;
 using Timesheet.Data.Models;
 
 namespace Timesheet.Web.Controllers;
@@ -13,15 +14,51 @@ namespace Timesheet.Web.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Produces("application/json")]
-[Authorize(Roles = "Admin")]
+[Authorize(Roles = "Admin, Manager, Employee, Externist")]
 public class UserController(ILogger<UserController> logger, ITRepository<User> tRepository, IMapper mapper, UnitOfWork unitOfWork) : GenericController<User, UserWDto, UserRDto>(logger, tRepository, mapper)
 {
     private readonly UnitOfWork _unitOfWork = unitOfWork;
 
+    [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public override IActionResult GetAll()
+    {
+        var entities = _tRepository.GetAll()
+                                .Include(u => u.Role)
+                                .Include(u => u.UserProjects)
+                                .Include(u => u.Company)
+                                .AsEnumerable();
+
+        var responses = _mapper.Map<IEnumerable<UserRDto>>(entities).ToList();
+        return Ok(new { count = responses.Count, data = responses });
+    }
+
+    [HttpPut("{id:int}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Authorize(Roles = "Admin, Manager, Employee, Externist")]
+    public override IActionResult Update(int id, [FromBody] UserWDto dto)
+    {
+        var existingUser = _unitOfWork.UserRepository.GetById(id);
+        if (existingUser is null)
+        {
+            return NotFound();
+        }
+
+        var updatedUser = _mapper.Map(dto, existingUser);
+        updatedUser.CompanyId = dto.CompanyId == 0 ? null : dto.CompanyId;
+
+        _unitOfWork.UserRepository.Update(updatedUser);
+        _unitOfWork.SaveChanges();
+
+        var response = _mapper.Map<UserRDto>(updatedUser);
+        return Ok(response);
+    }
+
     [HttpGet("{id:int}/timesheets")]
     [ProducesResponseType(typeof(List<TsWeekRDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [Authorize(Roles = "Admin, Manager, Emploeyee, Externist")]
+    [Authorize(Roles = "Admin, Manager, Employee, Externist")]
     public IActionResult GetUserTimesheets(int id, [FromQuery] int year, [FromQuery] int week)
     {
         if (_unitOfWork.UserRepository.GetById(id) is null)
@@ -32,6 +69,7 @@ public class UserController(ILogger<UserController> logger, ITRepository<User> t
         var timesheets = _unitOfWork.TsWeekRepository
             .Query()
             .Include(t => t.TsEntries)
+            .Include(t => t.Project)
             .Where(t => t.UserId == id && t.Year == year && t.WeekNumber == week)
             .ToList();
 
@@ -53,7 +91,7 @@ public class UserController(ILogger<UserController> logger, ITRepository<User> t
 
         var query = _unitOfWork.TsWeekRepository.Query()
         .Include(t => t.TsEntries)
-        .Where(ts => ts.UserId == id && ts.ProjectId == projectId);
+        .Where(ts => ts.UserId == id && ts.ProjectId == projectId && ts.Status == TsWeekStatus.Approved);
 
         if (year.HasValue) query = query.Where(ts => ts.Year == year.Value);
         if (week.HasValue) query = query.Where(ts => ts.WeekNumber == week.Value);
@@ -84,7 +122,7 @@ public class UserController(ILogger<UserController> logger, ITRepository<User> t
     [HttpGet("{id:int}/projects")]
     [ProducesResponseType(typeof(List<ProjectRDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [Authorize(Roles = "Admin, Manager, Emploeyee, Externist")]
+    [Authorize(Roles = "Admin, Manager, Employee, Externist")]
     public IActionResult GetUserProjects(int id)
     {
         if (_unitOfWork.UserRepository.GetById(id) is null)
@@ -101,5 +139,29 @@ public class UserController(ILogger<UserController> logger, ITRepository<User> t
 
         var response = _mapper.Map<List<ProjectRDto>>(projects);
         return Ok(response);
+    }
+
+    [HttpPost("{id:int}/change-password")]
+    [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Authorize(Roles = "Admin, Manager, Employee, Externist")]
+    public IActionResult ChangePassword(int id, [FromBody] ChangePasswordDto dto)
+    {
+        var user = _unitOfWork.UserRepository.GetById(id);
+        if (user is null)
+        {
+            return NotFound();
+        }
+
+        if (!BCrypt.Net.BCrypt.Verify(dto.OldPassword, user.PasswordHash))
+        {
+            return BadRequest(false);
+        }
+
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+        _unitOfWork.UserRepository.Update(user);
+        _unitOfWork.SaveChanges();
+        _logger.LogInformation("User with ID {UserId} changed their password.", id);
+        return Ok(true);
     }
 }

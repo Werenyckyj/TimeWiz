@@ -12,6 +12,7 @@ public partial class MailService : IMailService, IDisposable
     private readonly int smtpPort = int.Parse(Environment.GetEnvironmentVariable("SMTP_PORT")!);
     private readonly string smtpUser = Environment.GetEnvironmentVariable("SMTP_USER")!;
     private readonly string smtpPassword = Environment.GetEnvironmentVariable("SMTP_PASSWORD")!;
+    private bool isConfigured = false;
     private readonly SmtpClient _smtpClient;
     private readonly ILogger<MailService> _logger = LoggerFactory.Create(builder => builder.AddConsole()).CreateLogger<MailService>();
     [GeneratedRegex(@"^[\w-\.]+@([\w-]+\.)+[\w-]{2,8}$", RegexOptions.Compiled)]
@@ -20,6 +21,11 @@ public partial class MailService : IMailService, IDisposable
     public MailService()
     {
         _smtpClient = new SmtpClient();
+    }
+
+    private void ConfigureSmtpClient()
+    {
+        if (isConfigured) return;
 
         if (smtpUser == null || smtpPassword == null)
         {
@@ -33,6 +39,8 @@ public partial class MailService : IMailService, IDisposable
         {
             _smtpClient.Authenticate(smtpUser, smtpPassword);
         }
+
+        isConfigured = true;
     }
 
     public void Dispose()
@@ -43,6 +51,11 @@ public partial class MailService : IMailService, IDisposable
 
     public async Task<bool> SendAsync(string to, string subject, string body)
     {
+        if (!isConfigured)
+        {
+            ConfigureSmtpClient();
+        }
+
         if (!EmailRegex().IsMatch(to))
         {
             _logger.LogError($"Invalid email address: {to}");

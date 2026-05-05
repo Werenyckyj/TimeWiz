@@ -40,7 +40,8 @@ public class DbSeeder
                     TsWeeks = new List<TsWeek>(),
                     UserProjects = new List<UserProject>(),
                     PasswordResetTokens = new List<PasswordResetToken>(),
-                    TokenInfos = new List<TokenInfo>()
+                    TokenInfos = new List<TokenInfo>(),
+                    IsActive = true
                 };
 
                 var result = unitOfWork.UserRepository.Add(user);
@@ -61,6 +62,7 @@ public class DbSeeder
                     return;
                 }
                 unitOfWork.SaveChanges();
+                logger.LogInformation("Admin user created successfully.");
             }
         }
         catch (Exception ex)

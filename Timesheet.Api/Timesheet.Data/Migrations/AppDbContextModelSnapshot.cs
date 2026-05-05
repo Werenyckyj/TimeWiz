@@ -155,7 +155,7 @@ namespace Timesheet.Data.Migrations
                         new
                         {
                             Id = 4,
-                            Name = "External",
+                            Name = "Externist",
                             Privilege = 2
                         });
                 });
@@ -207,15 +207,10 @@ namespace Timesheet.Data.Migrations
                     b.Property<int>("TsWeekId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
-
                     b.HasKey("Id");
 
                     b.HasIndex("TsWeekId")
                         .IsUnique();
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("TsApprovals");
                 });
@@ -230,10 +225,6 @@ namespace Timesheet.Data.Migrations
 
                     b.Property<double>("Hours")
                         .HasColumnType("double precision");
-
-                    b.Property<string>("Notes")
-                        .HasMaxLength(1024)
-                        .HasColumnType("character varying(1024)");
 
                     b.Property<int>("TsWeekId")
                         .HasColumnType("integer");
@@ -255,6 +246,10 @@ namespace Timesheet.Data.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Comment")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<int>("ProjectId")
                         .HasColumnType("integer");
@@ -288,7 +283,7 @@ namespace Timesheet.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("CompanyId")
+                    b.Property<int?>("CompanyId")
                         .HasColumnType("integer");
 
                     b.Property<string>("Email")
@@ -317,9 +312,6 @@ namespace Timesheet.Data.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.Property<int?>("TsApprovalId")
-                        .HasColumnType("integer");
-
                     b.Property<string>("Username")
                         .IsRequired()
                         .HasMaxLength(120)
@@ -333,8 +325,6 @@ namespace Timesheet.Data.Migrations
                         .IsUnique();
 
                     b.HasIndex("RoleId");
-
-                    b.HasIndex("TsApprovalId");
 
                     b.HasIndex("Username")
                         .IsUnique();
@@ -364,6 +354,21 @@ namespace Timesheet.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("UserProjects");
+                });
+
+            modelBuilder.Entity("TsApprovalUser", b =>
+                {
+                    b.Property<int>("ManagersId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TsApprovalsId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("ManagersId", "TsApprovalsId");
+
+                    b.HasIndex("TsApprovalsId");
+
+                    b.ToTable("TsApprovalManagers", (string)null);
                 });
 
             modelBuilder.Entity("Timesheet.Data.Models.PasswordResetToken", b =>
@@ -396,15 +401,7 @@ namespace Timesheet.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Timesheet.Data.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("TsWeek");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Timesheet.Data.Models.TsEntry", b =>
@@ -441,19 +438,13 @@ namespace Timesheet.Data.Migrations
                 {
                     b.HasOne("Timesheet.Data.Models.Company", "Company")
                         .WithMany("Employees")
-                        .HasForeignKey("CompanyId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("CompanyId");
 
                     b.HasOne("Timesheet.Data.Models.Role", "Role")
                         .WithMany("Users")
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("Timesheet.Data.Models.TsApproval", null)
-                        .WithMany("Managers")
-                        .HasForeignKey("TsApprovalId");
 
                     b.Navigation("Company");
 
@@ -479,6 +470,21 @@ namespace Timesheet.Data.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("TsApprovalUser", b =>
+                {
+                    b.HasOne("Timesheet.Data.Models.User", null)
+                        .WithMany()
+                        .HasForeignKey("ManagersId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Timesheet.Data.Models.TsApproval", null)
+                        .WithMany()
+                        .HasForeignKey("TsApprovalsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Timesheet.Data.Models.Company", b =>
                 {
                     b.Navigation("Employees");
@@ -494,11 +500,6 @@ namespace Timesheet.Data.Migrations
             modelBuilder.Entity("Timesheet.Data.Models.Role", b =>
                 {
                     b.Navigation("Users");
-                });
-
-            modelBuilder.Entity("Timesheet.Data.Models.TsApproval", b =>
-                {
-                    b.Navigation("Managers");
                 });
 
             modelBuilder.Entity("Timesheet.Data.Models.TsWeek", b =>

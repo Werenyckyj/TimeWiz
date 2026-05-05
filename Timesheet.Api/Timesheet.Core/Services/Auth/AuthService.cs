@@ -30,8 +30,9 @@ public class AuthService(UnitOfWork unitOfWork, IMapper mapper, ILogger<AuthServ
             }
 
             List<Claim> claims = [
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Name, user.Username),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
         ];
 
             var userRole = _unitOfWork.RoleRepository.GetById(user.RoleId);
@@ -112,10 +113,12 @@ public class AuthService(UnitOfWork unitOfWork, IMapper mapper, ILogger<AuthServ
 
             List<Claim> claims = [
                 new Claim(ClaimTypes.Name, user.Username),
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Role, user.Role!.Name),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
         ];
 
-            var newAccessToken = _tokenService.GenerateAccessToken(principal.Claims);
+            var newAccessToken = _tokenService.GenerateAccessToken(claims);
             var newRefreshToken = _tokenService.GenerateRefreshToken();
 
             tokenInfo.RefreshToken = newRefreshToken;
@@ -155,7 +158,7 @@ public class AuthService(UnitOfWork unitOfWork, IMapper mapper, ILogger<AuthServ
         }
 
         var company = _unitOfWork.CompanyRepository.GetById(dto.CompanyId);
-        if (company == null)
+        if (company == null && dto.RoleId == 2)
         {
             _logger.LogWarning($"Company not found with ID: {dto.CompanyId}");
             return null!;
@@ -171,7 +174,7 @@ public class AuthService(UnitOfWork unitOfWork, IMapper mapper, ILogger<AuthServ
             Role = role,
             RoleId = dto.RoleId,
             Company = company,
-            CompanyId = dto.CompanyId,
+            CompanyId = dto.CompanyId == 0 ? null : dto.CompanyId,
             TsWeeks = new List<TsWeek>(),
             UserProjects = new List<UserProject>(),
             PasswordResetTokens = new List<PasswordResetToken>(),
