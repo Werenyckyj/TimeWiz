@@ -1,0 +1,44 @@
+stages:
+  - test
+  - build
+
+test-backend:
+  stage: test
+  image: mcr.microsoft.com/dotnet/sdk:9.0
+  script:
+    - echo "Starting backend tests..."
+    - cd Timesheet.Api
+    - dotnet restore
+    - dotnet test Timesheet.Testing/Timesheet.Testing.csproj --no-restore --verbosity normal
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == "dev"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+test-frontend:
+  stage: test
+  image: node:20-alpine
+  script:
+    - echo "Verifying frontend build..."
+    - cd Timesheet.Ui
+    - npm install
+    - npm run build
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == "dev"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+build-production-docker:
+  stage: build
+  image: docker:24.0.5
+  services:
+    - docker:24.0.5-dind
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
+  script:
+    - echo "Verifying production Docker image builds..."
+    - echo "DB_USER=test DB_PASSWORD=test DB_NAME=test DB_PORT=5432" > ./Timesheet.Api/.env
+    - docker compose -f docker-compose.prod.yml build
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
