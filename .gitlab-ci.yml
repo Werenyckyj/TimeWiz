@@ -8,7 +8,7 @@ test-backend:
   script:
     - echo "Starting backend tests..."
     - cd Timesheet.Api
-    - dotnet restore
+    - dotnet restore Timesheet.Testing/Timesheet.Testing.csproj
     - dotnet test Timesheet.Testing/Timesheet.Testing.csproj --no-restore --verbosity normal
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
