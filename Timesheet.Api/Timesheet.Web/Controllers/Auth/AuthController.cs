@@ -52,7 +52,6 @@ public class AuthController(IAuthService authService, IMapper mapper, UnitOfWork
     }
 
     [HttpPost("revoke")]
-    [Authorize(Roles = "Admin, Manager, Employee, External")]
     [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public IActionResult Revoke([FromBody] RefreshTokenWDto dto)
