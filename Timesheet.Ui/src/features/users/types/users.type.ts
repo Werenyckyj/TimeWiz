@@ -16,7 +16,7 @@ export interface User {
     isActive: boolean
     role: Role;
     roleId?: number | null;
-    company: Company;
+    company?: Company;
     companyId?: number | null;
     projectMemberships?: UserProject[];
 }
@@ -29,7 +29,7 @@ export interface EditUser {
     email: string;
     isActive: boolean
     roleId: number | null;
-    companyId: number | null;
+    companyId?: number | null;
 }
 
 export interface AddUser {
@@ -39,7 +39,7 @@ export interface AddUser {
     email: string;
     password: string;
     roleId: number | null;
-    companyId: number | null;
+    companyId?: number | null;
 }
 
 export interface ChangeUserPassword {

@@ -14,7 +14,7 @@ export const UsersProvider = ({ children }: { children: ReactNode }) => {
     const editUser = async (user: EditUser) => {
         if (user.roleId === 0) {
             throw new Error("Invalid role");
-        } else if (user.companyId === 0) {
+        } else if (user.companyId === 0 && user.roleId === 4) {
             throw new Error("Invalid company");
         }
         const updated = await UsersRepository.editUser(user);

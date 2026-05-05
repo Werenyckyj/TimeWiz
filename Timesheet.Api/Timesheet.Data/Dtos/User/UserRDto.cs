@@ -9,5 +9,5 @@ public class UserRDto : UserDtoBase, IEntity
     public required int Id { get; set; }
     public required ICollection<UserProjectRDto> UserProjects { get; set; }
     public required RoleRDto Role { get; set; }
-    public required CompanySimpleRDto Company { get; set; }
+    public CompanySimpleRDto Company { get; set; } = null!;
 }

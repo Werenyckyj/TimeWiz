@@ -5,7 +5,7 @@ import { EditableTable, type ColumnDef } from "../../../shared/components/Editab
 import type { SelectOptions } from "../../../shared/components/EditableTable";
 import { RoleRepository } from "../../roles/services/RoleRepository";
 import { Modal } from "../../../shared/components/Modal";
-import { CompaniesRepository } from "../../companies/services/CompaniesRepository"; // Přidán import
+import { CompaniesRepository } from "../../companies/services/CompaniesRepository"
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/hooks/useAuth";
 
@@ -23,10 +23,22 @@ export default function Users() {
     const [showActiveOnly, setShowActiveOnly] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const [isCompanyModalOpen, setIsCompanyModalOpen] = useState(false);
 
     const [formData, setFormData] = useState({
         name: "", surname: "", username: "", email: "", password: "", roleId: "", companyId: ""
     });
+
+    const [companyFormData, setCompanyFormData] = useState({ name: "", cin: "" });
+
+    const fatchCompanies = async () => {
+        const fetchedCompanies = await CompaniesRepository.getCompanies();
+        const oOptions = fetchedCompanies.data.map(company => ({
+            value: company.id,
+            label: company.name
+        }));
+        setOrganizationOptions(oOptions);
+    };
 
     useEffect(() => {
         getUsers().catch(error => console.error("Failed to load users", error));
@@ -40,12 +52,7 @@ export default function Users() {
                 }));
                 setRoleOptions(options);
 
-                const fetchedCompanies = await CompaniesRepository.getCompanies();
-                const oOptions = fetchedCompanies.data.map(company => ({
-                    value: company.id,
-                    label: company.name
-                }));
-                setOrganizationOptions(oOptions);
+                await fatchCompanies();
 
             } catch (error) {
                 console.error("Nepodařilo se načíst role nebo organizace", error);
@@ -62,7 +69,7 @@ export default function Users() {
         { header: "Email", accessor: "email", type: "text", maxLength: 100 },
         { header: "Is Active", accessor: "isActive", type: "checkbox", renderCell: (row) => row.isActive ? "✔️" : "❌" },
         { header: "Role", accessor: "roleId", type: "select", options: roleOptions, renderCell: (row) => row.role ? row.role.name : "No role" },
-        { header: "Organization", accessor: "companyId", type: "select", options: organizationOptions, renderCell: (row) => row.company ? row.company.name : "No organization" },
+        { header: "Company", accessor: "companyId", type: "select", options: organizationOptions, renderCell: (row) => row.company ? row.company.name : "No company" },
     ];
 
     const handleEdit = async (draft: User) => {
@@ -126,6 +133,21 @@ export default function Users() {
             setMessage("Error adding user." + (error instanceof Error ? ` Detail: ${error.message}` : ""));
         }
     };
+
+    const handleCompanyFormSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        try {
+            await CompaniesRepository.addCompany({ name: companyFormData.name, cin: companyFormData.cin });
+
+            await fatchCompanies();
+            setMessage("Company successfully added.");
+        } catch (error) {
+            setMessage("Error adding company." + (error instanceof Error ? ` Detail: ${error.message}` : ""));
+        }
+        setIsCompanyModalOpen(false);
+        setCompanyFormData({ name: "", cin: "" });
+    }
 
     return (
         <div className="main-content"
@@ -246,16 +268,28 @@ export default function Users() {
                             </select>
                         </div>
 
-                        <div style={{ flex: '1 1 calc(50% - 8px)', minWidth: '150px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                            <label style={{ fontSize: '0.875rem', fontWeight: 500 }}>Organization</label>
-                            <select value={formData.companyId} onChange={e => setFormData({ ...formData, companyId: e.target.value })} style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)', width: '100%', boxSizing: 'border-box' }}>
-                                <option value="">-- Select --</option>
-                                {organizationOptions.map(opt => (
-                                    <option key={opt.value} value={opt.value}>{opt.label}</option>
-                                ))}
-                            </select>
-                        </div>
+                        {roleOptions.find(opt => String(opt.value) === String(formData.roleId))?.label === "Externist" && (
+                            <div style={{ flex: '1 1 calc(50% - 8px)', minWidth: '150px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                <label style={{ fontSize: '0.875rem', fontWeight: 500 }}>Company</label>
+                                <select value={formData.companyId} onChange={e => setFormData({ ...formData, companyId: e.target.value })} style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)', width: '100%', boxSizing: 'border-box' }}>
+                                    <option value="">-- Select --</option>
+                                    {organizationOptions.map(opt => (
+                                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
                     </div>
+
+                    {roleOptions.find(opt => String(opt.value) === String(formData.roleId))?.label === "Externist" && (
+                        <button
+                            type="button"
+                            onClick={() => setIsCompanyModalOpen(true)}
+                            style={{ padding: '4px 0px', border: 'none', backgroundColor: 'transparent', color: 'var(--primary-button)', cursor: 'pointer', fontWeight: 700, alignSelf: 'flex-end' }}
+                        >
+                            Add new company
+                        </button>
+                    )}
 
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--border-color)' }}>
                         <button className="reject-button" type="button" onClick={() => setIsModalOpen(false)} style={{ padding: '8px 16px', backgroundColor: 'var(--reject)', border: '1px solid var(--reject-border)', borderRadius: '4px', cursor: 'pointer', color: "--reject-text" }}>Cancel</button>
@@ -263,6 +297,26 @@ export default function Users() {
                     </div>
                 </form>
             </Modal >
+
+            <Modal isOpen={isCompanyModalOpen} onClose={() => setIsCompanyModalOpen(false)} title="Add New Company">
+                <form onSubmit={handleCompanyFormSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <label style={{ fontSize: '0.875rem', fontWeight: 500 }}>Company Name *</label>
+                        <input required type="text" value={companyFormData.name} onChange={e => setCompanyFormData({ ...companyFormData, name: e.target.value })} style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)', width: '100%', boxSizing: 'border-box' }} />
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <label style={{ fontSize: '0.875rem', fontWeight: 500 }}>CIN *</label>
+                        <input required type="text" value={companyFormData.cin} onChange={e => setCompanyFormData({ ...companyFormData, cin: e.target.value })} style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)', width: '100%', boxSizing: 'border-box' }} />
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--border-color)' }}>
+                        <button className="reject-button" type="button" onClick={() => setIsCompanyModalOpen(false)} style={{ padding: '8px 16px', backgroundColor: 'var(--reject)', border: '1px solid var(--reject-border)', borderRadius: '4px', cursor: 'pointer', color: "--reject-text" }}>Cancel</button>
+                        <button className="primary-button-2" type="submit" style={{ padding: '8px 16px', backgroundColor: 'var(--primary-button)', color: 'white', border: '1px solid var(--primary-button-border)', borderRadius: '4px', cursor: 'pointer', fontWeight: 500 }}>Create Company</button>
+                    </div>
+                </form>
+            </Modal>
         </div >
     );
 }

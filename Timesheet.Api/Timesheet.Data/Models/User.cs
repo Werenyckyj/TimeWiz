@@ -30,8 +30,8 @@ public class User : Entity
     public int RoleId { get; set; }
     public required Role Role { get; set; }
 
-    public int CompanyId { get; set; }
-    public required Company Company { get; set; }
+    public int? CompanyId { get; set; }
+    public Company? Company { get; set; }
 
     // Collections
     public required ICollection<TsWeek> TsWeeks { get; set; }

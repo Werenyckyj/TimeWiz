@@ -33,6 +33,28 @@ public class UserController(ILogger<UserController> logger, ITRepository<User> t
         return Ok(new { count = responses.Count, data = responses });
     }
 
+    [HttpPut("{id:int}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Authorize(Roles = "Admin, Manager, Employee, Externist")]
+    public override IActionResult Update(int id, [FromBody] UserWDto dto)
+    {
+        var existingUser = _unitOfWork.UserRepository.GetById(id);
+        if (existingUser is null)
+        {
+            return NotFound();
+        }
+
+        var updatedUser = _mapper.Map(dto, existingUser);
+        updatedUser.CompanyId = dto.CompanyId == 0 ? null : dto.CompanyId;
+
+        _unitOfWork.UserRepository.Update(updatedUser);
+        _unitOfWork.SaveChanges();
+
+        var response = _mapper.Map<UserRDto>(updatedUser);
+        return Ok(response);
+    }
+
     [HttpGet("{id:int}/timesheets")]
     [ProducesResponseType(typeof(List<TsWeekRDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
