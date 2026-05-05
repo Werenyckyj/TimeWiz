@@ -22,18 +22,18 @@ export default function Companies() {
     const handleAdd = async (draft: Partial<Company>) => {
         try {
             await addCompany(draft as Company);
-            setMessage("Společnost úspěšně přidána.");
+            setMessage("Company successfully added.");
         } catch (error) {
-            setMessage("Chyba při přidávání společnosti." + (error instanceof Error ? ` Detail: ${error.message}` : ""));
+            setMessage("Error adding company." + (error instanceof Error ? ` Detail: ${error.message}` : ""));
         }
     };
 
     const handleEdit = async (draft: Company) => {
         try {
             await editCompany(draft);
-            setMessage("Společnost úspěšně upravena.");
+            setMessage("Company successfully updated.");
         } catch (error) {
-            setMessage("Chyba při úpravě společnosti." + (error instanceof Error ? ` Detail: ${error.message}` : ""));
+            setMessage("Error updating company." + (error instanceof Error ? ` Detail: ${error.message}` : ""));
         }
     };
 
@@ -41,9 +41,9 @@ export default function Companies() {
         if (!window.confirm("Are you sure you want to delete this company?")) return;
         try {
             await deleteCompany(id as number);
-            setMessage("Společnost smazána.");
+            setMessage("Company successfully deleted.");
         } catch (error) {
-            setMessage("Chyba při mazání." + (error instanceof Error ? ` Detail: ${error.message}` : ""));
+            setMessage("Error deleting company." + (error instanceof Error ? ` Detail: ${error.message}` : ""));
         }
     };
 
