@@ -2,6 +2,8 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../../features/auth/hooks/useAuth";
 import logoutIcon from "../../assets/logout.png";
 import { useTheme } from "../context/ThemeContext";
+import { canApprove } from "../others/canApprove";
+import { useEffect, useState } from "react";
 
 interface SidebarProps {
     isOpen: boolean;
@@ -11,6 +13,13 @@ interface SidebarProps {
 export const Sidebar = ({ isOpen, closeMenu }: SidebarProps) => {
     const { user, logout } = useAuth();
     const { theme } = useTheme();
+    const [userCanApprove, setUserCanApprove] = useState(false);
+
+    useEffect(() => {
+        if (user?.nameid) {
+            canApprove(Number(user.nameid)).then(setUserCanApprove);
+        }
+    }, [user?.nameid]);
 
     const close = () => {
         closeMenu();
@@ -52,17 +61,19 @@ export const Sidebar = ({ isOpen, closeMenu }: SidebarProps) => {
                     Reports
                 </Link>
 
+                {(user?.role === 'Admin' || user?.role === 'Manager' || userCanApprove) && (
+                    <Link
+                        to="/approvals"
+                        className="list-group-item list-group-item-action py-3 border-0 primary-button"
+                        onClick={close}
+                        style={{ backgroundColor: 'transparent', color: 'var(--text-primary)' }}
+                    >
+                        Approvals
+                    </Link>
+                )}
+
                 {(user?.role === 'Admin' || user?.role === 'Manager') && (
                     <>
-                        <Link
-                            to="/approvals"
-                            className="list-group-item list-group-item-action py-3 border-0 primary-button"
-                            onClick={close}
-                            style={{ backgroundColor: 'transparent', color: 'var(--text-primary)' }}
-                        >
-                            Approvals
-                        </Link>
-
                         <Link
                             to="/projects"
                             className="list-group-item list-group-item-action py-3 border-0 primary-button"
