@@ -20,6 +20,10 @@ public class TokenServiceTests
             {"JWT:ValidAudience", "TimesheetAppTest"}
         };
 
+        Environment.SetEnvironmentVariable("JWT_SECRET", "ThisIsASecretKeyForTestingPurposesOnly!");
+        Environment.SetEnvironmentVariable("JWT_ISSUER", "TimesheetApiTest");
+        Environment.SetEnvironmentVariable("JWT_AUDIENCE", "TimesheetAppTest");
+
         _configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(inMemorySettings)
             .Build();

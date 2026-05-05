@@ -9,6 +9,7 @@ import type { Companies } from "../../companies/types/companies.type";
 import { ProjectsRepository } from "../../projects/services/ProjectsRepository";
 import { UsersRepository } from "../../users/services/UsersRepository";
 import { CompaniesRepository } from "../../companies/services/CompaniesRepository";
+import { canApprove } from "../../../shared/others/canApprove";
 
 interface MultiSelectProps {
     options: { value: string; label: string }[];
@@ -436,7 +437,8 @@ const ReportBlock = ({ title, isTeamReport, currentUser, projectsList, usersList
 
 export default function Reports() {
     const { user } = useAuth();
-    const canSeeTeamReport = user?.role === 'Admin' || user?.role === 'Manager';
+    const [userCanApprove, setUserCanApprove] = useState(false);
+    const canSeeTeamReport = user?.role === 'Admin' || user?.role === 'Manager' || (user?.role === 'Externist' && userCanApprove);
 
     const [projects, setProjects] = useState<Projects>({ count: 0, data: [] });
     const [users, setUsers] = useState<Users>({ count: 0, data: [] });
@@ -444,9 +446,13 @@ export default function Reports() {
 
     useEffect(() => {
         const loadFiltersData = async () => {
+            if (user?.nameid) {
+                canApprove(Number(user.nameid)).then(setUserCanApprove);
+            }
+
             try {
-                const projectsData = await ProjectsRepository.getProjects();
-                setProjects(projectsData ?? { count: 0, data: [] });
+                const projectsData = { data: await ProjectsRepository.getUserProjects(Number(user?.nameid)) };
+                setProjects(projectsData ? { count: projectsData.data.length, data: projectsData.data } : { count: 0, data: [] });
 
                 if (canSeeTeamReport) {
                     const usersData = await UsersRepository.getUsers();
@@ -466,7 +472,7 @@ export default function Reports() {
         };
 
         loadFiltersData();
-    }, [canSeeTeamReport]);
+    }, [canSeeTeamReport, user?.nameid]);
 
     return (
         <div className="main-content">

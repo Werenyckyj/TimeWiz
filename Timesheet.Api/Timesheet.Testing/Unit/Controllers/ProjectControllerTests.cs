@@ -25,6 +25,9 @@ public class ProjectControllerTests : TestBase
                 cfg.CreateMap<User, UserRDto>();
                 cfg.CreateMap<TsWeek, TsWeekRDto>();
                 cfg.CreateMap<UserProject, UserProjectRDto>();
+                cfg.CreateMap<Role, RoleRDto>();
+                cfg.CreateMap<Company, CompanyRDto>();
+                cfg.CreateMap<Company, CompanySimpleRDto>();
             });
         var realMapper = mapperProfile.CreateMapper();
         var project = new Project
@@ -218,7 +221,6 @@ public class ProjectControllerTests : TestBase
                 Action = TsApprovalStatus.Pending,
                 ActionTime = DateTime.UtcNow,
                 TsWeek = null!,
-                User = _unitOfWork.UserRepository.GetById(99)!,
                 Managers = []
             },
             TsEntries = []

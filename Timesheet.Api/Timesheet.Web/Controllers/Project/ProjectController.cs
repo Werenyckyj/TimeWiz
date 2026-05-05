@@ -21,6 +21,7 @@ public class ProjectController(ILogger<ProjectController> logger, ITRepository<P
     [HttpPost("{id:int}/assign")]
     [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Authorize(Roles = "Admin, Manager")]
     public IActionResult AssignUserToProject(int id, [FromBody] int userId)
     {
         var project = _unitOfWork.ProjectRepository.Query()
@@ -53,6 +54,7 @@ public class ProjectController(ILogger<ProjectController> logger, ITRepository<P
     [HttpPost("{id:int}/unassign")]
     [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Authorize(Roles = "Admin, Manager")]
     public IActionResult UnassignUserFromProject(int id, [FromBody] int userId)
     {
         var project = _unitOfWork.ProjectRepository.Query()
@@ -78,6 +80,7 @@ public class ProjectController(ILogger<ProjectController> logger, ITRepository<P
     [HttpPost("{id:int}/set-as-manager")]
     [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Authorize(Roles = "Admin, Manager")]
     public IActionResult SetUserAsProjectManager(int id, [FromBody] int userId)
     {
         var project = _unitOfWork.ProjectRepository.Query()
@@ -85,13 +88,26 @@ public class ProjectController(ILogger<ProjectController> logger, ITRepository<P
         .FirstOrDefault(p => p.Id == id);
         if (project == null) return NotFound($"Project with ID {id} not found.");
 
-        var user = _unitOfWork.UserRepository.GetById(userId);
+        var user = _unitOfWork.UserRepository.Query().Include(u => u.Role).FirstOrDefault(u => u.Id == userId);
         if (user == null) return NotFound($"User with ID {userId} not found.");
 
         var userProject = project.UserProjects.FirstOrDefault(u => u.UserId == userId);
         if (userProject == null)
         {
             return BadRequest($"User with ID {userId} is not assigned to project with ID {id}.");
+        }
+
+        if (user.Role.Privilege == RoleTypes.Employee)
+        {
+            var managerRole = _unitOfWork.RoleRepository.Query().FirstOrDefault(r => r.Privilege == RoleTypes.Manager);
+
+            if (managerRole != null)
+            {
+                user.RoleId = managerRole.Id;
+                user.Role = managerRole;
+                _unitOfWork.UserRepository.Update(user);
+                _unitOfWork.SaveChanges();
+            }
         }
 
         userProject.ProjectRole = RoleTypes.Manager;
@@ -104,6 +120,7 @@ public class ProjectController(ILogger<ProjectController> logger, ITRepository<P
     [HttpPost("{id:int}/set-as-employee")]
     [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Authorize(Roles = "Admin, Manager")]
     public IActionResult SetUserAsProjectEmployee(int id, [FromBody] int userId)
     {
         var project = _unitOfWork.ProjectRepository.Query()
@@ -147,6 +164,7 @@ public class ProjectController(ILogger<ProjectController> logger, ITRepository<P
     [HttpGet("{id:int}/managers")]
     [ProducesResponseType(typeof(List<UserRDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Authorize(Roles = "Admin, Manager, Employee, Externist")]
     public IActionResult GetProjectManagers(int id)
     {
         var project = _unitOfWork.ProjectRepository
@@ -164,8 +182,14 @@ public class ProjectController(ILogger<ProjectController> logger, ITRepository<P
     [HttpGet("{id:int}/pending-timesheets")]
     [ProducesResponseType(typeof(List<TsWeekRDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Authorize(Roles = "Admin, Manager, Externist")]
     public IActionResult GetProjectPendingTimesheets(int id)
     {
+        if (!_unitOfWork.ProjectRepository.Query().Any(p => p.Id == id))
+        {
+            return NotFound($"Project with ID {id} not found.");
+        }
+
         var pendingTimesheets = _unitOfWork.TsWeekRepository.Query()
             .Include(t => t.User)
             .Include(t => t.TsEntries)

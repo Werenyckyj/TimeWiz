@@ -12,7 +12,7 @@ namespace Timesheet.Web.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Produces("application/json")]
-[Authorize(Roles = "Admin")]
+[Authorize(Roles = "Admin, Manager, Externist")]
 public class CompanyController(ILogger<CompanyController> logger, ITRepository<Company> tRepository, IMapper mapper) : GenericController<Company, CompanyWDto, CompanyRDto>(logger, tRepository, mapper)
 {
     [HttpGet]

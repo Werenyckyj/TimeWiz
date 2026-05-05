@@ -15,19 +15,11 @@ using Timesheet.Core.Services.Mail;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using System.Security.Claims;
 
-Env.TraversePath().Load();
-
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 var builder = WebApplication.CreateBuilder(args);
 
-var host = Environment.GetEnvironmentVariable("DB_HOST");
-var port = Environment.GetEnvironmentVariable("DB_PORT");
-var db = Environment.GetEnvironmentVariable("DB_NAME");
-var user = Environment.GetEnvironmentVariable("DB_USER");
-var pass = Environment.GetEnvironmentVariable("DB_PASSWORD");
-
-var connectionString = $"Host={host};Port={port};Database={db};Username={user};Password={pass}";
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 if (builder.Environment.EnvironmentName != "Testing")
 {
@@ -162,7 +154,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 DbSeeder.SeedData(app);
-
 
 app.Run();
 

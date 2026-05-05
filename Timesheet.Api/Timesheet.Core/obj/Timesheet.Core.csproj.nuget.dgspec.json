@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "/home/werenvoj/Documents/CVUT/timesheet-app/Timesheet.Api/Timesheet.Core/Timesheet.Core.csproj": {}
+    "/src/Timesheet.Core/Timesheet.Core.csproj": {}
   },
   "projects": {
-    "/home/werenvoj/Documents/CVUT/timesheet-app/Timesheet.Api/Timesheet.Core/Timesheet.Core.csproj": {
+    "/src/Timesheet.Core/Timesheet.Core.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/home/werenvoj/Documents/CVUT/timesheet-app/Timesheet.Api/Timesheet.Core/Timesheet.Core.csproj",
+        "projectUniqueName": "/src/Timesheet.Core/Timesheet.Core.csproj",
         "projectName": "Timesheet.Core",
-        "projectPath": "/home/werenvoj/Documents/CVUT/timesheet-app/Timesheet.Api/Timesheet.Core/Timesheet.Core.csproj",
-        "packagesPath": "/home/werenvoj/.nuget/packages/",
-        "outputPath": "/home/werenvoj/Documents/CVUT/timesheet-app/Timesheet.Api/Timesheet.Core/obj/",
+        "projectPath": "/src/Timesheet.Core/Timesheet.Core.csproj",
+        "packagesPath": "/root/.nuget/packages/",
+        "outputPath": "/src/Timesheet.Core/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/home/werenvoj/.nuget/NuGet/NuGet.Config"
+          "/root/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net9.0"
@@ -26,8 +26,8 @@
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "/home/werenvoj/Documents/CVUT/timesheet-app/Timesheet.Api/Timesheet.Data/Timesheet.Data.csproj": {
-                "projectPath": "/home/werenvoj/Documents/CVUT/timesheet-app/Timesheet.Api/Timesheet.Data/Timesheet.Data.csproj"
+              "/src/Timesheet.Data/Timesheet.Data.csproj": {
+                "projectPath": "/src/Timesheet.Data/Timesheet.Data.csproj"
               }
             }
           }
@@ -42,7 +42,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "10.0.100"
+        "SdkAnalysisLevel": "9.0.300"
       },
       "frameworks": {
         "net9.0": {
@@ -76,36 +76,26 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
-          "downloadDependencies": [
-            {
-              "name": "Microsoft.AspNetCore.App.Ref",
-              "version": "[9.0.14, 9.0.14]"
-            },
-            {
-              "name": "Microsoft.NETCore.App.Host.linux-x64",
-              "version": "[9.0.14, 9.0.14]"
-            }
-          ],
           "frameworkReferences": {
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/10.0.104/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/9.0.313/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "/home/werenvoj/Documents/CVUT/timesheet-app/Timesheet.Api/Timesheet.Data/Timesheet.Data.csproj": {
+    "/src/Timesheet.Data/Timesheet.Data.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/home/werenvoj/Documents/CVUT/timesheet-app/Timesheet.Api/Timesheet.Data/Timesheet.Data.csproj",
+        "projectUniqueName": "/src/Timesheet.Data/Timesheet.Data.csproj",
         "projectName": "Timesheet.Data",
-        "projectPath": "/home/werenvoj/Documents/CVUT/timesheet-app/Timesheet.Api/Timesheet.Data/Timesheet.Data.csproj",
-        "packagesPath": "/home/werenvoj/.nuget/packages/",
-        "outputPath": "/home/werenvoj/Documents/CVUT/timesheet-app/Timesheet.Api/Timesheet.Data/obj/",
+        "projectPath": "/src/Timesheet.Data/Timesheet.Data.csproj",
+        "packagesPath": "/root/.nuget/packages/",
+        "outputPath": "/src/Timesheet.Data/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/home/werenvoj/.nuget/NuGet/NuGet.Config"
+          "/root/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net9.0"
@@ -129,7 +119,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "10.0.100"
+        "SdkAnalysisLevel": "9.0.300"
       },
       "frameworks": {
         "net9.0": {
@@ -183,22 +173,12 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
-          "downloadDependencies": [
-            {
-              "name": "Microsoft.AspNetCore.App.Ref",
-              "version": "[9.0.14, 9.0.14]"
-            },
-            {
-              "name": "Microsoft.NETCore.App.Host.linux-x64",
-              "version": "[9.0.14, 9.0.14]"
-            }
-          ],
           "frameworkReferences": {
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/10.0.104/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/9.0.313/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

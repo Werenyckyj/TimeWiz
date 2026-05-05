@@ -158,7 +158,7 @@ public class AuthService(UnitOfWork unitOfWork, IMapper mapper, ILogger<AuthServ
         }
 
         var company = _unitOfWork.CompanyRepository.GetById(dto.CompanyId);
-        if (company == null && dto.RoleId == 2)
+        if (company == null && dto.RoleId != 2)
         {
             _logger.LogWarning($"Company not found with ID: {dto.CompanyId}");
             return null!;

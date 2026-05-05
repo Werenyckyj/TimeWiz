@@ -7,10 +7,19 @@ import projectIcon from "../../../assets/folder.png";
 import userIcon from "../../../assets/user.png";
 import companyIcon from "../../../assets/office.png";
 import { useTheme } from "../../../shared/context/ThemeContext";
+import { useEffect, useState } from "react";
+import { canApprove } from "../../../shared/others/canApprove";
 
 export default function Dashboard() {
     const { user } = useAuth();
     const { theme } = useTheme();
+    const [userCanApprove, setUserCanApprove] = useState(false);
+
+    useEffect(() => {
+        if (user?.nameid) {
+            canApprove(Number(user.nameid)).then(setUserCanApprove);
+        }
+    }, [user?.nameid]);
 
     const cardStyle = {
         backgroundColor: 'var(--bg-secondary)',
@@ -63,6 +72,13 @@ export default function Dashboard() {
                     <h2 style={titleStyle}><img style={{ width: '30px', filter: theme === 'dark' ? 'invert(1)' : 'none' }} src={reporticon} alt="Reports" /> Reports</h2>
                     <p style={descStyle}>View summaries and detailed reports of your tracked time.</p>
                 </Link>
+
+                {(userCanApprove && user?.role === 'Externist') && (
+                    <Link to="/approvals" style={cardStyle} className="dashboard-card">
+                        <h2 style={titleStyle}><img style={{ width: '30px', filter: theme === 'dark' ? 'invert(1)' : 'none' }} src={approvalIcon} alt="Approvals" /> Pending Approvals</h2>
+                        <p style={descStyle}>Review and approve or reject timesheets submitted by your team.</p>
+                    </Link>
+                )}
 
                 {(user?.role === 'Admin' || user?.role === 'Manager') && (
                     <>
