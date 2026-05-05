@@ -73,13 +73,16 @@ const getMonthDates = (monthOffset: number = 0) => {
     return { dateFrom: formatDate(firstDay), dateTo: formatDate(lastDay) };
 };
 
+type GroupByOption = "none" | "date" | "projectName" | "status" | "userName" | "companyName";
+
 type ReportRow = {
-    id: number;
+    id: string | number;
     date: string;
     isoDate: string;
     projectName: string;
     userId: number;
     userName: string;
+    companyName: string;
     status: string;
     hours: number;
 };
@@ -109,12 +112,15 @@ const ReportBlock = ({ title, isTeamReport, currentUser, projectsList, usersList
     const [sortField, setSortField] = useState<keyof ReportRow | "">("");
     const [order, setOrder] = useState<'asc' | 'desc'>("asc");
     const [tableData, setTableData] = useState<ReportRow[]>([]);
+    const [groupBy, setGroupBy] = useState<GroupByOption>("none");
 
     useEffect(() => { handleTimeSpanChange('this'); }, []);
 
-    const detailedData = useMemo<ReportRow[]>(() => {
-        return reportData.flatMap(ts => {
+    const detailedData = useMemo(() => {
+        const flatData = reportData.flatMap(ts => {
             const userinfo = usersList.data.find(u => u.id === ts.userId) ?? null;
+            const companyinfo = companiesList.data.find(c => c.id === userinfo?.companyId) ?? null;
+
             return (ts.tsEntries || [])
                 .filter(entry => {
                     const eDate = new Date(entry.workDate).toISOString().split('T')[0];
@@ -128,11 +134,38 @@ const ReportBlock = ({ title, isTeamReport, currentUser, projectsList, usersList
                     projectName: ts.project?.name || "Unknown",
                     userId: ts.userId,
                     userName: userinfo ? `${userinfo.name} ${userinfo.surname}` : "Unknown",
+                    companyName: companyinfo?.name || "N/A",
                     status: ts.status,
                     hours: entry.hours
                 }));
-        }).sort((a, b) => a.isoDate.localeCompare(b.isoDate));
-    }, [reportData, dateFrom, dateTo, usersList]);
+        });
+
+        if (groupBy === "none") return flatData.sort((a, b) => a.isoDate.localeCompare(b.isoDate));
+
+        const groups: Record<string, ReportRow> = {};
+
+        flatData.forEach(row => {
+            const groupKey = row[groupBy as keyof ReportRow]?.toString() || "Unknown";
+
+            if (!groups[groupKey]) {
+                groups[groupKey] = {
+                    ...row,
+                    id: `group-${groupKey}`,
+                    date: groupBy === "date" ? row.date : "---",
+                    projectName: groupBy === "projectName" ? row.projectName : "---",
+                    userName: groupBy === "userName" ? row.userName : "---",
+                    companyName: groupBy === "companyName" ? row.companyName : "---",
+                    status: groupBy === "status" ? row.status : "---",
+                    hours: 0
+                };
+            }
+            groups[groupKey].hours += row.hours;
+        });
+
+        return Object.values(groups).sort((a, b) => b.hours - a.hours);
+    }, [reportData, dateFrom, dateTo, usersList, companiesList, groupBy]);
+
+    useEffect(() => { setTableData(detailedData); }, [detailedData]);
 
     useEffect(() => { setTableData(detailedData); }, [detailedData]);
 
@@ -220,6 +253,7 @@ const ReportBlock = ({ title, isTeamReport, currentUser, projectsList, usersList
         { header: "Date", accessor: "date", type: "text" },
         { header: "Project", accessor: "projectName", type: "text" },
         { header: "Employee Name", accessor: "userName", type: "text" },
+        { header: "Company name", accessor: "companyName", type: "text" },
         { header: "Status", accessor: "status", type: "text" },
         { header: "Hours", accessor: "hours", type: "number" }
     ];
@@ -243,7 +277,7 @@ const ReportBlock = ({ title, isTeamReport, currentUser, projectsList, usersList
                 <button className={(timeSpanMode === 'custom' ? 'primary-button-2' : 'primary-button')} onClick={() => handleTimeSpanChange('custom')} style={{ padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', border: '1px solid', ...(timeSpanMode === 'custom' ? activeBtnStyle : inactiveBtnStyle) }}>Own time span</button>
             </div>
 
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', marginBottom: '1.5rem', backgroundColor: 'var(--bg-secondary)', padding: '16px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', marginBottom: '1.5rem', backgroundColor: 'var(--bg-secondary)', padding: '16px', borderRadius: '8px', border: '1px solid var(--border-color)', alignItems: 'flex-end' }}>
                 <div className="date-wrapper" style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1 }}>
                         <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Date From</label>
@@ -304,8 +338,56 @@ const ReportBlock = ({ title, isTeamReport, currentUser, projectsList, usersList
                     </>
                 )}
 
-                <div style={{ display: 'flex', alignItems: 'flex-end' }}>
-                    <button className="primary-button-2" onClick={fetchReport} disabled={isLoading} style={{ padding: '8px 24px', backgroundColor: 'var(--primary-button)', color: 'white', border: '1px solid var(--primary-button-borderf)', borderRadius: '6px', cursor: 'pointer', height: '38px', fontWeight: 'bold' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1, minWidth: '150px' }}>
+                    <label style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Group By</label>
+                    <select
+                        value={groupBy}
+                        onChange={(e) => setGroupBy(e.target.value as GroupByOption)}
+                        style={{
+                            padding: '8px',
+                            borderRadius: '4px',
+                            border: '1px solid var(--border-color)',
+                            backgroundColor: 'var(--bg-primary)',
+                            color: 'var(--text-primary)',
+                            width: '100%',
+                            height: '42px',
+                            boxSizing: 'border-box',
+                            outline: 'none',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        <option value="none">No Grouping</option>
+                        <option value="date">Date</option>
+                        <option value="projectName">Project</option>
+                        <option value="status">Status</option>
+                        {isTeamReport && (
+                            <>
+                                <option value="userName">Employee Name</option>
+                                <option value="companyName">Company Name</option>
+                            </>
+                        )}
+                    </select>
+                </div>
+
+                <div style={{ display: 'flex' }}>
+                    <button
+                        className="primary-button-2"
+                        onClick={fetchReport}
+                        disabled={isLoading}
+                        style={{
+                            padding: '0 24px',
+                            backgroundColor: 'var(--primary-button)',
+                            color: 'white',
+                            border: '1px solid var(--primary-button-border)',
+                            borderRadius: '6px',
+                            cursor: 'pointer',
+                            height: '42px',
+                            fontWeight: 'bold',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}
+                    >
                         {isLoading ? 'Loading...' : 'Generate'}
                     </button>
                 </div>
@@ -316,7 +398,7 @@ const ReportBlock = ({ title, isTeamReport, currentUser, projectsList, usersList
                     <thead style={{ backgroundColor: 'var(--bg-secondary)' }}>
                         <tr>
                             {columns.map(col => {
-                                if (!isTeamReport && col.accessor === 'userName') return null;
+                                if (!isTeamReport && (col.accessor === 'userName' || col.accessor === 'companyName')) return null;
                                 return (
                                     <th className="secondary-button" key={col.accessor} style={{ padding: '12px', color: 'var(--text-primary)', borderBottom: '1px solid var(--border-color)', cursor: 'pointer' }} onClick={() => handleSortingChange(col.accessor)}>
                                         {col.header}
@@ -333,7 +415,7 @@ const ReportBlock = ({ title, isTeamReport, currentUser, projectsList, usersList
                                 <tr key={data.id} style={{ backgroundColor: 'var(--bg-primary)' }}>
                                     {columns.map(({ accessor }) => {
                                         const tData = data[accessor];
-                                        if (!isTeamReport && accessor === 'userName') return null;
+                                        if (!isTeamReport && (accessor === 'userName' || accessor === 'companyName')) return null;
                                         return <td key={accessor} style={{ padding: '12px', color: 'var(--text-primary)', borderBottom: '1px solid var(--border-color)' }}>{tData !== null ? tData : "N/A"}</td>
                                     })}
                                 </tr>
@@ -371,7 +453,12 @@ export default function Reports() {
                     setUsers(usersData ?? { count: 0, data: [] });
 
                     const companiesData = await CompaniesRepository.getCompanies();
-                    setCompanies(companiesData ?? { count: 0, data: [] });
+                    setCompanies(companiesData
+                        ? {
+                            ...companiesData,
+                            data: [...companiesData.data, { name: "No Company", id: 0, cin: "" }]
+                        }
+                        : { count: 0, data: [{ name: "No Company", id: 0, cin: "" }] });
                 }
             } catch (error) {
                 console.error("Failed to load filter options", error);

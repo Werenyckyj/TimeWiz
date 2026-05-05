@@ -168,7 +168,14 @@ public class TimesheetController(ILogger<TimesheetController> logger, ITReposito
             query = query.Where(t => userIds.Contains(t.UserId));
 
         if (companyIds != null && companyIds.Any())
-            query = query.Where(t => t.User.CompanyId.HasValue && companyIds.Contains(t.User.CompanyId.Value));
+        {
+            var includeNoCompany = companyIds.Contains(0);
+            var filteredCompanyIds = companyIds.Where(id => id != 0).ToList();
+
+            query = query.Where(t =>
+                (includeNoCompany && !t.User.CompanyId.HasValue)
+                || (t.User.CompanyId.HasValue && filteredCompanyIds.Contains(t.User.CompanyId.Value)));
+        }
 
         if (dateFrom.HasValue)
             query = query.Where(t => t.TsEntries.Any(e => e.WorkDate >= dateFrom.Value));
