@@ -451,8 +451,8 @@ export default function Reports() {
             }
 
             try {
-                const projectsData = await ProjectsRepository.getProjects();
-                setProjects(projectsData ?? { count: 0, data: [] });
+                const projectsData = { data: await ProjectsRepository.getUserProjects(Number(user?.nameid)) };
+                setProjects(projectsData ? { count: projectsData.data.length, data: projectsData.data } : { count: 0, data: [] });
 
                 if (canSeeTeamReport) {
                     const usersData = await UsersRepository.getUsers();
@@ -472,7 +472,7 @@ export default function Reports() {
         };
 
         loadFiltersData();
-    }, [canSeeTeamReport]);
+    }, [canSeeTeamReport, user?.nameid]);
 
     return (
         <div className="main-content">

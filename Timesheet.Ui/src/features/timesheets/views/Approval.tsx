@@ -7,6 +7,7 @@ import { UsersRepository } from "../../users/services/UsersRepository";
 import { useProjects } from "../../projects/hooks/useProjects";
 import { Modal } from "../../../shared/components/Modal";
 import { useAuth } from "../../auth/hooks/useAuth";
+import { ProjectMembersRepository } from "../../projects/services/ProjectMembersRepository";
 
 const toLocalDateString = (date: Date) => {
     const y = date.getFullYear();
@@ -56,11 +57,28 @@ export default function Approval() {
     }, [getUserProjects, user?.nameid]);
 
     useEffect(() => {
-        const rawProjects = Array.isArray(projects?.data) ? projects.data : [];
-        rawProjects.forEach(project => {
-            getPendingTimesheets(project.id).catch(err => console.error(err));
-        });
-    }, [projects, getPendingTimesheets]);
+        const fetchManagedProjects = async () => {
+            try {
+                const managedProjects = await Promise.all(
+                    (projects.data || []).map(async (project) => {
+                        const managers = await ProjectMembersRepository.getProjectManagers(project.id);
+                        return managers.some(m => m.id === Number(user?.nameid)) ? project : null;
+                    })
+                );
+
+                const rawProjects = Array.isArray(managedProjects) ? managedProjects.filter(p => p) : [];
+                rawProjects.forEach(project => {
+                    if (project) getPendingTimesheets(Number(project.id)).catch(err => console.error(err));
+                });
+            } catch (error) {
+                console.error("Failed to load managed projects", error);
+            }
+        };
+
+        if (projects?.data && projects.data.length > 0) {
+            fetchManagedProjects();
+        }
+    }, [projects, getPendingTimesheets, user?.nameid]);
 
     useEffect(() => {
         if (!pending || pending.length === 0) return;
