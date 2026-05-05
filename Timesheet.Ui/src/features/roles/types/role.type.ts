@@ -1,7 +1,7 @@
 export interface Role {
     id: number;
     name: string;
-    Privileges: string;
+    privilege: string;
 }
 
 export interface Roles {

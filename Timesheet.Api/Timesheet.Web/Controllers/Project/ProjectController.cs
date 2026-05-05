@@ -164,7 +164,7 @@ public class ProjectController(ILogger<ProjectController> logger, ITRepository<P
     [HttpGet("{id:int}/managers")]
     [ProducesResponseType(typeof(List<UserRDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [Authorize(Roles = "Admin, Manager")]
+    [Authorize(Roles = "Admin, Manager, Employee, Externist")]
     public IActionResult GetProjectManagers(int id)
     {
         var project = _unitOfWork.ProjectRepository
@@ -182,7 +182,7 @@ public class ProjectController(ILogger<ProjectController> logger, ITRepository<P
     [HttpGet("{id:int}/pending-timesheets")]
     [ProducesResponseType(typeof(List<TsWeekRDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [Authorize(Roles = "Admin, Manager")]
+    [Authorize(Roles = "Admin, Manager, Externist")]
     public IActionResult GetProjectPendingTimesheets(int id)
     {
         var pendingTimesheets = _unitOfWork.TsWeekRepository.Query()

@@ -19,6 +19,26 @@ public class UserController(ILogger<UserController> logger, ITRepository<User> t
 {
     private readonly UnitOfWork _unitOfWork = unitOfWork;
 
+    [HttpGet("{id:int}")]
+    [ProducesResponseType(typeof(UserRDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public override IActionResult GetById(int id)
+    {
+        var entity = _tRepository.Query()
+                                .Include(u => u.Role)
+                                .Include(u => u.UserProjects)
+                                .Include(u => u.Company)
+                                .FirstOrDefault(e => e.Id == id);
+
+        if (entity is null)
+        {
+            return NotFound();
+        }
+
+        var response = _mapper.Map<UserRDto>(entity);
+        return Ok(response);
+    }
+
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public override IActionResult GetAll()

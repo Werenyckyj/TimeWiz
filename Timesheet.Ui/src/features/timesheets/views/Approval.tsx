@@ -6,6 +6,7 @@ import type { User } from "../../users/types/users.type";
 import { UsersRepository } from "../../users/services/UsersRepository";
 import { useProjects } from "../../projects/hooks/useProjects";
 import { Modal } from "../../../shared/components/Modal";
+import { useAuth } from "../../auth/hooks/useAuth";
 
 const toLocalDateString = (date: Date) => {
     const y = date.getFullYear();
@@ -35,23 +36,24 @@ const getDaysOfWeek = (year: number, week: number): Date[] => {
 
 export default function Approval() {
     const { pending, getPendingTimesheets, editTimesheet } = useTimesheet();
-    const { projects, getProjects } = useProjects();
+    const { projects, getUserProjects } = useProjects();
     const [message, setMessage] = useState<string | null>(null);
     const [users, setUsers] = useState<User[]>([]);
     const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
     const [timesheetToReject, setTimesheetToReject] = useState<TsWeek | null>(null);
     const [rejectComment, setRejectComment] = useState("");
+    const { user } = useAuth();
 
     useEffect(() => {
         const fetchInitialData = async () => {
             try {
-                await getProjects();
+                await getUserProjects(Number(user?.nameid));
             } catch (error) {
                 console.error("Failed to load initial data", error);
             }
         };
         fetchInitialData();
-    }, [getProjects]);
+    }, [getUserProjects, user?.nameid]);
 
     useEffect(() => {
         const rawProjects = Array.isArray(projects?.data) ? projects.data : [];
