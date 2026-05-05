@@ -99,15 +99,17 @@ body {
 
 .dashboard-card {
   transition:
-    transform 0.2s ease-in-out,
-    box-shadow 0.2s ease-in-out;
+    transform 0.32s cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 0.32s cubic-bezier(0.2, 0.8, 0.2, 1),
+    background-color 0.24s ease-in-out;
+  will-change: transform, box-shadow, background-color;
 }
 
 .dashboard-card:hover {
   transform: translateY(-4px);
   box-shadow:
-    0 10px 15px -3px rgba(0, 0, 0, 0.1),
-    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    0 12px 20px -6px rgba(0, 0, 0, 0.12),
+    0 6px 10px -4px rgba(0, 0, 0, 0.06);
   background-color: var(--bg-hover) !important;
 }
 
