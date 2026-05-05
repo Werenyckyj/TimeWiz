@@ -154,6 +154,9 @@ public class TimesheetController(ILogger<TimesheetController> logger, ITReposito
             return BadRequest("Both dateFrom and dateTo query parameters are required.");
         }
 
+        var currentUserId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "0");
+        var currentUserRole = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+
         var query = _unitOfWork.TsWeekRepository.Query()
             .AsNoTracking()
             .Include(t => t.TsEntries)
@@ -161,8 +164,46 @@ public class TimesheetController(ILogger<TimesheetController> logger, ITReposito
             .Include(t => t.User)
             .AsQueryable();
 
-        if (projectIds != null && projectIds.Any())
-            query = query.Where(t => projectIds.Contains(t.ProjectId));
+        if (currentUserRole != "Admin")
+        {
+            bool isPersonalReportOnly = userIds != null && userIds.Count == 1 && userIds.Contains(currentUserId);
+
+            if (isPersonalReportOnly)
+            {
+                query = query.Where(t => t.UserId == currentUserId);
+
+                if (projectIds != null && projectIds.Any())
+                {
+                    query = query.Where(t => projectIds.Contains(t.ProjectId));
+                }
+            }
+            else
+            {
+                var managedProjectIds = _unitOfWork.UserProjectRepository.Query()
+                    .Where(up => up.UserId == currentUserId && up.ProjectRole == RoleTypes.Manager)
+                    .Select(up => up.ProjectId)
+                    .ToList();
+
+                if (projectIds != null && projectIds.Any())
+                {
+                    projectIds = projectIds.Intersect(managedProjectIds).ToList();
+                    if (!projectIds.Any()) return Ok(new List<TsWeekRDto>());
+                }
+                else
+                {
+                    projectIds = managedProjectIds;
+                }
+
+                query = query.Where(t => projectIds.Contains(t.ProjectId));
+            }
+        }
+        else
+        {
+            if (projectIds != null && projectIds.Any())
+            {
+                query = query.Where(t => projectIds.Contains(t.ProjectId));
+            }
+        }
 
         if (userIds != null && userIds.Any())
             query = query.Where(t => userIds.Contains(t.UserId));
@@ -187,7 +228,6 @@ public class TimesheetController(ILogger<TimesheetController> logger, ITReposito
             query = query.Where(t => statuses.Contains(t.Status));
 
         var timesheets = query.ToList();
-
         var response = _mapper.Map<List<TsWeekRDto>>(timesheets);
         return Ok(response);
     }
