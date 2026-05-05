@@ -21,17 +21,17 @@ public partial class MailService : IMailService, IDisposable
     public MailService()
     {
         _smtpClient = new SmtpClient();
+
+        if (string.IsNullOrEmpty(smtpUser) || string.IsNullOrEmpty(smtpPassword))
+        {
+            _logger.LogError("SMTP_USER or SMTP_PASSWORD environment variables are not set.");
+            throw new InvalidOperationException("SMTP_USER and SMTP_PASSWORD must be set in environment variables.");
+        }
     }
 
     private void ConfigureSmtpClient()
     {
         if (isConfigured) return;
-
-        if (smtpUser == null || smtpPassword == null)
-        {
-            _logger.LogError("SMTP_USER or SMTP_PASSWORD environment variables are not set.");
-            throw new InvalidOperationException("SMTP_USER and SMTP_PASSWORD must be set in environment variables.");
-        }
 
         _smtpClient.Connect(smtpHost, smtpPort, MailKit.Security.SecureSocketOptions.Auto);
 
@@ -51,11 +51,6 @@ public partial class MailService : IMailService, IDisposable
 
     public async Task<bool> SendAsync(string to, string subject, string body)
     {
-        if (!isConfigured)
-        {
-            ConfigureSmtpClient();
-        }
-
         if (!EmailRegex().IsMatch(to))
         {
             _logger.LogError($"Invalid email address: {to}");
@@ -70,6 +65,11 @@ public partial class MailService : IMailService, IDisposable
 
         try
         {
+            if (!isConfigured)
+            {
+                ConfigureSmtpClient();
+            }
+
             await _smtpClient.SendAsync(message);
             _logger.LogInformation($"Email sent to {to}");
             return true;

@@ -44,13 +44,13 @@ public class UserApiTests : ApiTestsBase
         };
 
         var companyResponse = await _client.PostAsJsonAsync("api/company", companyReq);
-        _testCompany = await companyResponse.Content.ReadFromJsonAsync<CompanyRDto>();
+        _testCompany = await companyResponse.Content.ReadFromJsonAsync<CompanyRDto>(JsonOptions);
 
         var roleResponse = await _client.PostAsJsonAsync("api/role", roleReq);
-        _testRole = await roleResponse.Content.ReadFromJsonAsync<RoleRDto>();
+        _testRole = await roleResponse.Content.ReadFromJsonAsync<RoleRDto>(JsonOptions);
 
         var projectResponse = await _client.PostAsJsonAsync("api/project", projectReq);
-        _testProject = await projectResponse.Content.ReadFromJsonAsync<ProjectRDto>();
+        _testProject = await projectResponse.Content.ReadFromJsonAsync<ProjectRDto>(JsonOptions);
 
 
         var registerUser = new RegisterWDto
@@ -64,7 +64,7 @@ public class UserApiTests : ApiTestsBase
             RoleId = _testRole?.Id ?? 0
         };
         var registerResponse = await _client.PostAsJsonAsync("api/auth/register", registerUser);
-        _testUser = await registerResponse.Content.ReadFromJsonAsync<UserRDto>();
+        _testUser = await registerResponse.Content.ReadFromJsonAsync<UserRDto>(JsonOptions);
     }
 
     [Fact]
@@ -75,7 +75,7 @@ public class UserApiTests : ApiTestsBase
 
         // Assert
         Assert.Equal(System.Net.HttpStatusCode.OK, response.StatusCode);
-        var timesheets = await response.Content.ReadFromJsonAsync<List<TsWeekRDto>>();
+        var timesheets = await response.Content.ReadFromJsonAsync<List<TsWeekRDto>>(JsonOptions);
         Assert.NotNull(timesheets);
         Assert.Empty(timesheets);
     }
@@ -104,7 +104,7 @@ public class UserApiTests : ApiTestsBase
 
         // Assert
         Assert.Equal(System.Net.HttpStatusCode.OK, response.StatusCode);
-        var timesheets = await response.Content.ReadFromJsonAsync<List<TsWeekRDto>>();
+        var timesheets = await response.Content.ReadFromJsonAsync<List<TsWeekRDto>>(JsonOptions);
         Assert.NotNull(timesheets);
         Assert.Single(timesheets);
         Assert.Equal(5, timesheets?.First().TsEntries.Count);
@@ -132,7 +132,7 @@ public class UserApiTests : ApiTestsBase
             ProjectId = _testProject?.Id ?? 0,
             Year = 2024,
             WeekNumber = 1,
-            Status = TsWeekStatus.Draft,
+            Status = TsWeekStatus.Approved,
             DaysInWeek = 5,
             StartDate = new DateTime(2024, 1, 1),
             TsEntries = []
@@ -145,7 +145,7 @@ public class UserApiTests : ApiTestsBase
 
         // Assert
         Assert.Equal(System.Net.HttpStatusCode.OK, response.StatusCode);
-        var timesheets = await response.Content.ReadFromJsonAsync<PaginatedResponse<TsWeekRDto>>();
+        var timesheets = await response.Content.ReadFromJsonAsync<PaginatedResponse<TsWeekRDto>>(JsonOptions);
         Assert.NotNull(timesheets);
         Assert.Single(timesheets.Data);
         Assert.Equal(5, timesheets?.Data.First().TsEntries.Count);
@@ -163,7 +163,7 @@ public class UserApiTests : ApiTestsBase
             IsActive = true
         };
         var anotherProjectResponse = await _client.PostAsJsonAsync("api/project", anotherProjectReq);
-        var anotherProject = await anotherProjectResponse.Content.ReadFromJsonAsync<ProjectRDto>();
+        var anotherProject = await anotherProjectResponse.Content.ReadFromJsonAsync<ProjectRDto>(JsonOptions);
         var assignResponse = await _client.PostAsJsonAsync($"api/project/{anotherProject?.Id}/assign", _testUser?.Id);
         await _client.PostAsJsonAsync($"api/project/{_testProject?.Id}/assign", _testUser?.Id);
         assignResponse.EnsureSuccessStatusCode();
@@ -186,7 +186,7 @@ public class UserApiTests : ApiTestsBase
 
         // Assert
         Assert.Equal(System.Net.HttpStatusCode.OK, response.StatusCode);
-        var timesheets = await response.Content.ReadFromJsonAsync<PaginatedResponse<TsWeekRDto>>();
+        var timesheets = await response.Content.ReadFromJsonAsync<PaginatedResponse<TsWeekRDto>>(JsonOptions);
         Assert.NotNull(timesheets);
         Assert.Empty(timesheets.Data);
     }
@@ -223,7 +223,7 @@ public class UserApiTests : ApiTestsBase
 
         // Assert
         Assert.Equal(System.Net.HttpStatusCode.OK, response.StatusCode);
-        var projects = await response.Content.ReadFromJsonAsync<List<ProjectRDto>>();
+        var projects = await response.Content.ReadFromJsonAsync<List<ProjectRDto>>(JsonOptions);
         Assert.NotNull(projects);
         Assert.Single(projects);
         Assert.Equal(_testProject?.Id, projects?.First().Id);
