@@ -185,6 +185,11 @@ public class ProjectController(ILogger<ProjectController> logger, ITRepository<P
     [Authorize(Roles = "Admin, Manager, Externist")]
     public IActionResult GetProjectPendingTimesheets(int id)
     {
+        if (!_unitOfWork.ProjectRepository.Query().Any(p => p.Id == id))
+        {
+            return NotFound($"Project with ID {id} not found.");
+        }
+
         var pendingTimesheets = _unitOfWork.TsWeekRepository.Query()
             .Include(t => t.User)
             .Include(t => t.TsEntries)

@@ -41,13 +41,13 @@ public class TimesheetApiTests : ApiTestsBase
         };
 
         var companyResponse = await _client.PostAsJsonAsync("api/company", companyReq);
-        _testCompany = await companyResponse.Content.ReadFromJsonAsync<CompanyRDto>();
+        _testCompany = await companyResponse.Content.ReadFromJsonAsync<CompanyRDto>(JsonOptions);
 
         var roleResponse = await _client.PostAsJsonAsync("api/role", roleReq);
-        _testRole = await roleResponse.Content.ReadFromJsonAsync<RoleRDto>();
+        _testRole = await roleResponse.Content.ReadFromJsonAsync<RoleRDto>(JsonOptions);
 
         var projectResponse = await _client.PostAsJsonAsync("api/project", projectReq);
-        _testProject = await projectResponse.Content.ReadFromJsonAsync<ProjectRDto>();
+        _testProject = await projectResponse.Content.ReadFromJsonAsync<ProjectRDto>(JsonOptions);
 
 
         var registerUser = new RegisterWDto
@@ -61,7 +61,7 @@ public class TimesheetApiTests : ApiTestsBase
             RoleId = _testRole?.Id ?? 0
         };
         var registerResponse = await _client.PostAsJsonAsync("api/auth/register", registerUser);
-        _testUser = await registerResponse.Content.ReadFromJsonAsync<UserRDto>();
+        _testUser = await registerResponse.Content.ReadFromJsonAsync<UserRDto>(JsonOptions);
         await _client.PostAsJsonAsync($"api/project/{_testProject?.Id}/assign", _testUser?.Id);
     }
 
@@ -108,7 +108,7 @@ public class TimesheetApiTests : ApiTestsBase
 
         // Assert
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-        var createdTimesheet = await response.Content.ReadFromJsonAsync<TsWeekRDto>();
+        var createdTimesheet = await response.Content.ReadFromJsonAsync<TsWeekRDto>(JsonOptions);
         Assert.NotNull(createdTimesheet);
         Assert.Equal(tsWeek.UserId, createdTimesheet?.UserId);
         Assert.Equal(tsWeek.ProjectId, createdTimesheet?.Project.Id);
@@ -228,7 +228,7 @@ public class TimesheetApiTests : ApiTestsBase
             Status = TsWeekStatus.Draft
         };
         var createResponse = await _client.PostAsJsonAsync("/api/timesheet", tsWeek);
-        var createdTsWeek = await createResponse.Content.ReadFromJsonAsync<TsWeekRDto>();
+        var createdTsWeek = await createResponse.Content.ReadFromJsonAsync<TsWeekRDto>(JsonOptions);
 
         var updateTsWeek = new TsWeekWDto
         {
@@ -251,7 +251,7 @@ public class TimesheetApiTests : ApiTestsBase
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, updateResponse.StatusCode);
-        var updatedTsWeek = await updateResponse.Content.ReadFromJsonAsync<TsWeekRDto>();
+        var updatedTsWeek = await updateResponse.Content.ReadFromJsonAsync<TsWeekRDto>(JsonOptions);
         Assert.NotNull(updatedTsWeek);
         Assert.Equal(updateTsWeek.Status, updatedTsWeek?.Status);
         Assert.Equal(updateTsWeek.TsEntries.Count, updatedTsWeek?.TsEntries.Count);
@@ -300,7 +300,7 @@ public class TimesheetApiTests : ApiTestsBase
             Status = TsWeekStatus.Draft
         };
         var createResponse = await _client.PostAsJsonAsync("/api/timesheet", tsWeek);
-        var createdTsWeek = await createResponse.Content.ReadFromJsonAsync<TsWeekRDto>();
+        var createdTsWeek = await createResponse.Content.ReadFromJsonAsync<TsWeekRDto>(JsonOptions);
 
         var updateTsWeek = new TsWeekWDto
         {
@@ -335,7 +335,7 @@ public class TimesheetApiTests : ApiTestsBase
             Status = TsWeekStatus.Draft
         };
         var createResponse = await _client.PostAsJsonAsync("/api/timesheet", tsWeek);
-        var createdTsWeek = await createResponse.Content.ReadFromJsonAsync<TsWeekRDto>();
+        var createdTsWeek = await createResponse.Content.ReadFromJsonAsync<TsWeekRDto>(JsonOptions);
 
         var updateTsWeek = new TsWeekWDto
         {

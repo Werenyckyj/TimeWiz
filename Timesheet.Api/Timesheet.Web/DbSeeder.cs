@@ -1,10 +1,6 @@
-using Microsoft.AspNetCore.Builder;
-using Microsoft.EntityFrameworkCore;
 using Timesheet.Data.Models;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.AspNetCore.Identity;
 using Timesheet.Core;
+using Timesheet.Data.Enums;
 
 namespace Timesheet.Web;
 
@@ -20,11 +16,23 @@ public class DbSeeder
 
         try
         {
-
             if (unitOfWork.UserRepository.Count() == 0)
             {
-                var role = unitOfWork.RoleRepository.GetById(1)!;
-                var company = unitOfWork.CompanyRepository.GetById(1)!;
+                var role = unitOfWork.RoleRepository.GetById(1);
+                if (role == null)
+                {
+                    role = new Role { Name = "Admin", Privilege = RoleTypes.Admin, Users = [] };
+                    unitOfWork.RoleRepository.Add(role);
+                    unitOfWork.SaveChanges();
+                }
+
+                var company = unitOfWork.CompanyRepository.GetById(1);
+                if (company == null)
+                {
+                    company = new Company { Name = "Main Company", CIN = "12345678", Employees = [] };
+                    unitOfWork.CompanyRepository.Add(company);
+                    unitOfWork.SaveChanges();
+                }
 
                 var user = new User
                 {
@@ -32,8 +40,8 @@ public class DbSeeder
                     Name = "Admin",
                     Surname = "Admin",
                     Email = "admin@gmail.com",
-                    RoleId = 1,
-                    CompanyId = 1,
+                    RoleId = role.Id,
+                    CompanyId = company.Id,
                     PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin123!"),
                     Role = role,
                     Company = company,
@@ -47,20 +55,10 @@ public class DbSeeder
                 var result = unitOfWork.UserRepository.Add(user);
                 if (result == null)
                 {
-                    logger.LogError(
-                        $"Failed to create admin user."
-                    );
+                    logger.LogError("Failed to create admin user.");
                     return;
                 }
 
-                var addToRoleResult = unitOfWork.UserRepository.Add(user);
-                if (addToRoleResult == null)
-                {
-                    logger.LogError(
-                        $"Failed to add admin user to Admin role."
-                    );
-                    return;
-                }
                 unitOfWork.SaveChanges();
                 logger.LogInformation("Admin user created successfully.");
             }

@@ -82,17 +82,26 @@ public class MailServiceTests : IDisposable
         Assert.Contains("SMTP_USER and SMTP_PASSWORD must be set", exception.Message);
     }
 
+
     [Fact]
     public async Task SendAsync_ShouldReturnFalse_WhenSmtpServerFailsDuringSend()
     {
         // Arrange
-        var mailService = new MailService();
-        mailService.Dispose();
+        var originalPort = Environment.GetEnvironmentVariable("SMTP_PORT");
+        try
+        {
+            Environment.SetEnvironmentVariable("SMTP_PORT", "12345");
+            var mailService = new MailService();
 
-        // Act
-        var result = await mailService.SendAsync("john.doe@example.com", "Test výpadku", "Tohle neprojde");
+            // Act
+            var result = await mailService.SendAsync("john.doe@example.com", "Test výpadku", "Tohle neprojde");
 
-        // Assert
-        Assert.False(result);
+            // Assert
+            Assert.False(result);
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("SMTP_PORT", originalPort);
+        }
     }
 }

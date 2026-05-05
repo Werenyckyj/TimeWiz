@@ -31,10 +31,10 @@ public class AuthApiTests : ApiTestsBase
         };
 
         var companyResponse = await _client.PostAsJsonAsync("api/company", companyReq);
-        _testCompany = await companyResponse.Content.ReadFromJsonAsync<CompanyRDto>();
+        _testCompany = await companyResponse.Content.ReadFromJsonAsync<CompanyRDto>(JsonOptions);
 
         var roleResponse = await _client.PostAsJsonAsync("api/role", roleReq);
-        _testRole = await roleResponse.Content.ReadFromJsonAsync<RoleRDto>();
+        _testRole = await roleResponse.Content.ReadFromJsonAsync<RoleRDto>(JsonOptions);
     }
 
     [Fact]
@@ -57,7 +57,7 @@ public class AuthApiTests : ApiTestsBase
 
         // Assert
         registerResponse.EnsureSuccessStatusCode();
-        var result = await registerResponse.Content.ReadFromJsonAsync<UserRDto>();
+        var result = await registerResponse.Content.ReadFromJsonAsync<UserRDto>(JsonOptions);
         Assert.NotNull(result);
         Assert.Equal(registerUser.Email, result!.Email);
     }
@@ -112,7 +112,7 @@ public class AuthApiTests : ApiTestsBase
 
         // Assert
         logInResponse.EnsureSuccessStatusCode();
-        var result = await logInResponse.Content.ReadFromJsonAsync<LogInRDto>();
+        var result = await logInResponse.Content.ReadFromJsonAsync<LogInRDto>(JsonOptions);
         Assert.NotNull(result);
         Assert.Equal(registerUser.Username, result!.Username);
     }
@@ -167,7 +167,7 @@ public class AuthApiTests : ApiTestsBase
             Password = registerUser.Password
         });
         logInResponse.EnsureSuccessStatusCode();
-        var logInResult = await logInResponse.Content.ReadFromJsonAsync<LogInRDto>();
+        var logInResult = await logInResponse.Content.ReadFromJsonAsync<LogInRDto>(JsonOptions);
         Assert.NotNull(logInResult!.Token!.RefreshToken);
 
         // Act
@@ -179,7 +179,7 @@ public class AuthApiTests : ApiTestsBase
 
         // Assert
         refreshResponse.EnsureSuccessStatusCode();
-        var refreshResult = await refreshResponse.Content.ReadFromJsonAsync<TokenDto>();
+        var refreshResult = await refreshResponse.Content.ReadFromJsonAsync<TokenDto>(JsonOptions);
         Assert.NotNull(refreshResult);
         Assert.NotEqual(logInResult.Token.AccessToken, refreshResult!.AccessToken);
     }
@@ -206,7 +206,7 @@ public class AuthApiTests : ApiTestsBase
             Password = registerUser.Password
         });
         logInResponse.EnsureSuccessStatusCode();
-        var logInResult = await logInResponse.Content.ReadFromJsonAsync<LogInRDto>();
+        var logInResult = await logInResponse.Content.ReadFromJsonAsync<LogInRDto>(JsonOptions);
         Assert.NotNull(logInResult!.Token!.RefreshToken);
 
         // Act
@@ -242,7 +242,7 @@ public class AuthApiTests : ApiTestsBase
             Password = registerUser.Password
         });
         logInResponse.EnsureSuccessStatusCode();
-        var logInResult = await logInResponse.Content.ReadFromJsonAsync<LogInRDto>();
+        var logInResult = await logInResponse.Content.ReadFromJsonAsync<LogInRDto>(JsonOptions);
         Assert.NotNull(logInResult!.Token!.RefreshToken);
 
         // Act
@@ -254,7 +254,7 @@ public class AuthApiTests : ApiTestsBase
 
         // Assert
         revokeResponse.EnsureSuccessStatusCode();
-        var revokeResult = await revokeResponse.Content.ReadFromJsonAsync<string>();
+        var revokeResult = await revokeResponse.Content.ReadFromJsonAsync<string>(JsonOptions);
         Assert.Equal("Token revoked successfully.", revokeResult);
 
         // Verify the token is revoked
@@ -288,7 +288,7 @@ public class AuthApiTests : ApiTestsBase
             Password = registerUser.Password
         });
         logInResponse.EnsureSuccessStatusCode();
-        var logInResult = await logInResponse.Content.ReadFromJsonAsync<LogInRDto>();
+        var logInResult = await logInResponse.Content.ReadFromJsonAsync<LogInRDto>(JsonOptions);
         Assert.NotNull(logInResult!.Token!.RefreshToken);
 
         // Act
@@ -327,7 +327,7 @@ public class AuthApiTests : ApiTestsBase
 
         // Assert
         forgotPasswordResponse.EnsureSuccessStatusCode();
-        var forgotPasswordResult = await forgotPasswordResponse.Content.ReadFromJsonAsync<string>();
+        var forgotPasswordResult = await forgotPasswordResponse.Content.ReadFromJsonAsync<string>(JsonOptions);
         Assert.Equal("Password reset link has been sent.", forgotPasswordResult);
     }
 
@@ -342,7 +342,7 @@ public class AuthApiTests : ApiTestsBase
 
         // Assert
         forgotPasswordResponse.EnsureSuccessStatusCode();
-        var forgotPasswordResult = await forgotPasswordResponse.Content.ReadFromJsonAsync<string>();
+        var forgotPasswordResult = await forgotPasswordResponse.Content.ReadFromJsonAsync<string>(JsonOptions);
         Assert.Equal("Password reset link has been sent.", forgotPasswordResult);
     }
 
@@ -367,7 +367,7 @@ public class AuthApiTests : ApiTestsBase
             Email = registerUser.Email
         });
         forgotPasswordResponse.EnsureSuccessStatusCode();
-        var forgotPasswordResult = await forgotPasswordResponse.Content.ReadFromJsonAsync<string>();
+        var forgotPasswordResult = await forgotPasswordResponse.Content.ReadFromJsonAsync<string>(JsonOptions);
         Assert.Equal("Password reset link has been sent.", forgotPasswordResult);
 
         // Act
@@ -389,7 +389,7 @@ public class AuthApiTests : ApiTestsBase
 
         // Assert
         resetPasswordResponse.EnsureSuccessStatusCode();
-        var resetPasswordResult = await resetPasswordResponse.Content.ReadFromJsonAsync<string>();
+        var resetPasswordResult = await resetPasswordResponse.Content.ReadFromJsonAsync<string>(JsonOptions);
         Assert.Equal("Password has been reset successfully.", resetPasswordResult);
 
         // Verify the user can log in with the new password

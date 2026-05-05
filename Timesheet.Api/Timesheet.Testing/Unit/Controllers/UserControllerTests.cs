@@ -2,7 +2,6 @@ using System;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Timesheet.Data.Dtos;
 using Timesheet.Data.Enums;
@@ -48,7 +47,7 @@ public class UserControllerTests : TestBase
             Status = TsWeekStatus.Draft,
             User = user,
             Project = new Project { Id = 1, Name = "Test Project", Code = "TP", IsActive = true, TsWeeks = [], UserProjects = [] },
-            Approval = new TsApproval { Id = 1, Action = TsApprovalStatus.Pending, TsWeekId = 1, ActionTime = DateTime.Now, TsWeek = null!, User = user, Managers = [] },
+            Approval = new TsApproval { Id = 1, Action = TsApprovalStatus.Pending, TsWeekId = 1, ActionTime = DateTime.Now, TsWeek = null!, Managers = [] },
             TsEntries = []
         };
         _unitOfWork.UserRepository.Add(user);
@@ -137,12 +136,13 @@ public class UserControllerTests : TestBase
         {
             Id = 2,
             UserId = 101,
+            ProjectId = 2,
             Year = 2024,
             WeekNumber = 1,
-            Status = TsWeekStatus.Draft,
+            Status = TsWeekStatus.Approved,
             User = user,
             Project = project,
-            Approval = new TsApproval { Id = 2, Action = TsApprovalStatus.Pending, TsWeekId = 1, ActionTime = DateTime.Now, TsWeek = null!, User = user, Managers = [] },
+            Approval = new TsApproval { Id = 2, Action = TsApprovalStatus.Approved, TsWeekId = 1, ActionTime = DateTime.Now, TsWeek = null!, Managers = [] },
             TsEntries = []
         };
         _unitOfWork.ProjectRepository.Add(project);

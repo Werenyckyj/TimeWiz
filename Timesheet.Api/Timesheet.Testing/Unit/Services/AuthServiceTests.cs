@@ -44,6 +44,9 @@ public class AuthServiceTests : TestBase
         var mapperConfig = new MapperConfiguration(cfg =>
         {
             cfg.CreateMap<User, UserRDto>();
+            cfg.CreateMap<Role, RoleRDto>();
+            cfg.CreateMap<Company, CompanyRDto>();
+            cfg.CreateMap<Company, CompanySimpleRDto>();
 
         });
         var realMapper = mapperConfig.CreateMapper();
