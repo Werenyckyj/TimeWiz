@@ -268,7 +268,7 @@ export default function Projects() {
 
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
                         <span>Total assigned: <strong>{projectMembers.length}</strong>, Managers: <strong>{projectManagers.length}</strong></span>
-                        <button className="secondary-button" onClick={() => setIsMembersModalOpen(false)} style={{ padding: '8px 16px', backgroundColor: 'var(--bg-secondary)', border: 'none', borderRadius: '4px', cursor: 'pointer', color: 'var(--text-secondary)', fontWeight: 500 }}>
+                        <button className="success-button" onClick={() => setIsMembersModalOpen(false)} style={{ padding: '8px 16px', backgroundColor: 'var(--success-2)', border: 'none', borderRadius: '4px', cursor: 'pointer', color: 'var(--text-primary)', fontWeight: 500 }}>
                             Done
                         </button>
                     </div>

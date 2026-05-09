@@ -350,11 +350,11 @@ export default function Timesheet() {
                                                 </span>
                                             ) : (
                                                 <button
-                                                    className="secondary-button"
+                                                    className="success-button"
                                                     onClick={() => handleSubmitRow(ts)}
-                                                    style={{ padding: '6px 12px', backgroundColor: 'var(--bg-secondary)', color: 'var(--text-color)', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.85rem' }}
+                                                    style={{ padding: '6px 12px', backgroundColor: 'var(--success-2)', color: 'var(--text-primary)', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.85rem' }}
                                                 >
-                                                    Send
+                                                    Submit
                                                 </button>
                                             )}
                                         </td>
