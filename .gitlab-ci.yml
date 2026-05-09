@@ -1,6 +1,7 @@
 stages:
   - test
   - build
+  - publish
 
 test-backend:
   stage: test
@@ -40,5 +41,20 @@ build-production-docker:
     - echo "Verifying production Docker image builds..."
     - echo "DB_USER=test DB_PASSWORD=test DB_NAME=test DB_PORT=5432" > ./Timesheet.Api/.env
     - docker compose -f docker-compose.prod.yml build
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+create-main-artifact:
+  stage: publish
+  image: mcr.microsoft.com/dotnet/sdk:9.0
+  script:
+    - echo "Vytvářím záložní artefakt backendu po merge do main..."
+    - cd Timesheet.Api
+    - dotnet publish Timesheet.Web/Timesheet.Web.csproj -c Release -o ../publish-output
+  artifacts:
+    name: "timesheet-backend-v$CI_PIPELINE_IID"
+    paths:
+      - publish-output/
+    expire_in: 30 days
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
