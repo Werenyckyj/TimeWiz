@@ -137,7 +137,7 @@ public class AuthServiceTests : TestBase
             Name = "Test",
             Surname = "User1",
             Password = "password123",
-            RoleId = 1,
+            RoleId = 4,
             CompanyId = 999
         };
 
