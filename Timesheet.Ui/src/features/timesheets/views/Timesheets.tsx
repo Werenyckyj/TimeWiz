@@ -128,15 +128,18 @@ export default function Timesheet() {
     const handleHoursChange = (tsId: number, dateIso: string, val: string) => {
         if (!/^[0-9.,]*$/.test(val)) return;
 
-        const safeVal = val.replace(',', '.');
+        let safeVal = val.replace(',', '.');
         const parts = safeVal.split('.');
         if (parts.length > 2) return;
 
-        let finalValue: number | string = safeVal;
+        if (/^0[0-9]/.test(safeVal)) {
+            safeVal = safeVal.replace(/^0/, '');
+        }
 
-        if (safeVal !== "" && !safeVal.endsWith('.')) {
+        if (safeVal !== "" && safeVal !== ".") {
             const parsedHours = parseFloat(safeVal);
-            finalValue = isNaN(parsedHours) ? 0 : parsedHours;
+            if (parsedHours > 24) safeVal = "24";
+            if (parsedHours < 0) safeVal = "0";
         }
 
         setDrafts(prev => prev.map(ts => {
@@ -145,9 +148,9 @@ export default function Timesheet() {
             const existingIdx = newEntries.findIndex(e => toLocalDateString(new Date(e.workDate)) === dateIso);
 
             if (existingIdx >= 0) {
-                (newEntries[existingIdx] as { hours: number | string }).hours = finalValue;
+                (newEntries[existingIdx] as { hours: number | string }).hours = safeVal;
             } else {
-                newEntries.push({ id: 0, tsWeekId: ts.id, workDate: new Date(dateIso) as Date, hours: finalValue as unknown as number, notes: "" });
+                newEntries.push({ id: 0, tsWeekId: ts.id, workDate: new Date(dateIso) as Date, hours: safeVal as unknown as number, notes: "" });
             }
             return { ...ts, tsEntries: newEntries };
         }));
@@ -209,12 +212,15 @@ export default function Timesheet() {
 
     const colSums = days.map(d => {
         const dateIso = toLocalDateString(d);
-        return drafts.reduce((acc, ts) => {
+        const sumRaw = drafts.reduce((acc, ts) => {
             const entry = ts.tsEntries?.find(e => toLocalDateString(new Date(e.workDate)) === dateIso);
-            return acc + (entry?.hours || 0);
+            const hours = parseFloat(entry?.hours as unknown as string) || 0;
+            return acc + hours;
         }, 0);
+        return Number(sumRaw.toFixed(3));
     });
-    const grandTotal = colSums.reduce((acc, val) => acc + val, 0);
+
+    const grandTotal = Number(colSums.reduce((acc, val) => acc + val, 0).toFixed(3));
 
     return (
         <div className="main-content">
@@ -298,7 +304,8 @@ export default function Timesheet() {
                             drafts.map(ts => {
                                 const isLocked = ts.status === "Submitted" || ts.status === "Approved";
                                 const isRejected = ts.status === "Rejected";
-                                const rowSum = ts.tsEntries?.reduce((acc, e) => acc + (e.hours || 0), 0) || 0;
+                                const rowSumRaw = ts.tsEntries?.reduce((acc, e) => acc + (parseFloat(e.hours as unknown as string) || 0), 0) || 0;
+                                const rowSum = Number(rowSumRaw.toFixed(2));
 
                                 return (
                                     <tr key={ts.id} style={{ borderBottom: '1px solid var(--border-color)', backgroundColor: isRejected ? 'var(--bg-secondary)' : 'transparent' }}>
@@ -324,12 +331,16 @@ export default function Timesheet() {
                                                     <input
                                                         type="text"
                                                         min="0" max="24" step="any"
-                                                        onFocus={(e) => { if (val === 0) e.target.value = ''; }}
-                                                        onBlur={(e) => { if (val === 0) e.target.value = '0'; }}
+                                                        onFocus={(e) => { if (val === 0 || String(val) === '0') e.target.value = ''; }}
+                                                        onBlur={() => {
+                                                            let currentVal = parseFloat(val as unknown as string);
+                                                            if (isNaN(currentVal)) currentVal = 0;
+                                                            handleHoursChange(ts.id, dateIso, currentVal.toString());
+                                                        }}
                                                         value={val}
                                                         onChange={(e) => handleHoursChange(ts.id, dateIso, e.target.value)}
                                                         disabled={isLocked}
-                                                        maxLength={5}
+                                                        maxLength={6}
                                                         style={{
                                                             width: '100%', padding: '6px', textAlign: 'center', boxSizing: 'border-box',
                                                             border: '1px solid var(--border-color)', borderRadius: '4px',

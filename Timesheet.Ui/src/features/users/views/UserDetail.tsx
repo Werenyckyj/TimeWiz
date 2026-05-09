@@ -72,6 +72,18 @@ export default function UserDetail() {
         fetchData();
     }, [id, userId]);
 
+    const sanitizeHours = (val: string | number | undefined): number => {
+        if (val === null || val === undefined || val === '') return 0;
+
+        const safeVal = String(val).replace(',', '.');
+        let parsed = parseFloat(safeVal);
+
+        if (isNaN(parsed)) return 0;
+        if (parsed > 24) parsed = 24;
+        if (parsed < 0) parsed = 0;
+
+        return Number(parsed.toFixed(3));
+    };
 
     const handleLoadMore = async (projectId: number) => {
         const currentData = userProjectTimesheets[projectId];
@@ -117,13 +129,13 @@ export default function UserDetail() {
 
             const updatedEntries: TsEntry[] = [];
             const daysMap = [
-                { dayNum: 1, val: parseFloat(String(row.Mo)) || 0 },
-                { dayNum: 2, val: parseFloat(String(row.Tu)) || 0 },
-                { dayNum: 3, val: parseFloat(String(row.We)) || 0 },
-                { dayNum: 4, val: parseFloat(String(row.Th)) || 0 },
-                { dayNum: 5, val: parseFloat(String(row.Fr)) || 0 },
-                { dayNum: 6, val: parseFloat(String(row.Sa)) || 0 },
-                { dayNum: 0, val: parseFloat(String(row.Su)) || 0 },
+                { dayNum: 1, val: sanitizeHours(row.Mo) },
+                { dayNum: 2, val: sanitizeHours(row.Tu) },
+                { dayNum: 3, val: sanitizeHours(row.We) },
+                { dayNum: 4, val: sanitizeHours(row.Th) },
+                { dayNum: 5, val: sanitizeHours(row.Fr) },
+                { dayNum: 6, val: sanitizeHours(row.Sa) },
+                { dayNum: 0, val: sanitizeHours(row.Su) },
             ];
 
             for (const { dayNum, val } of daysMap) {
@@ -185,7 +197,8 @@ export default function UserDetail() {
         return timesheets.map(ts => {
             const getHoursForDay = (targetDayOfWeek: number) => {
                 const entry = ts.tsEntries?.find(e => new Date(e.workDate).getDay() === targetDayOfWeek);
-                return entry ? entry.hours : 0;
+                if (!entry || entry.hours === undefined || entry.hours === null) return 0;
+                return Number(parseFloat(String(entry.hours)).toFixed(3));
             };
 
             return {

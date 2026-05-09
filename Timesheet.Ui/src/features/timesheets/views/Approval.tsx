@@ -192,14 +192,14 @@ export default function Approval() {
                 date ? date.toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit" }).replace(/\//g, "-") : "--/--";
 
             return [
-                { header: `${formatDate(days[0])} (Mon)`, accessor: "id", renderCell: (row: TsWeek) => renderDayCell(row, 0) },
-                { header: `${formatDate(days[1])} (Tue)`, accessor: "id", renderCell: (row: TsWeek) => renderDayCell(row, 1) },
-                { header: `${formatDate(days[2])} (Wed)`, accessor: "id", renderCell: (row: TsWeek) => renderDayCell(row, 2) },
-                { header: `${formatDate(days[3])} (Thu)`, accessor: "id", renderCell: (row: TsWeek) => renderDayCell(row, 3) },
-                { header: `${formatDate(days[4])} (Fri)`, accessor: "id", renderCell: (row: TsWeek) => renderDayCell(row, 4) },
-                { header: `${formatDate(days[5])} (Sat)`, accessor: "id", renderCell: (row: TsWeek) => renderDayCell(row, 5) },
-                { header: `${formatDate(days[6])} (Sun)`, accessor: "id", renderCell: (row: TsWeek) => renderDayCell(row, 6) },
-            ] as ColumnDef<TsWeek>[];
+                { header: <span style={{ display: 'inline-block', whiteSpace: 'pre-line' }}>{formatDate(days[0])}<br />(Mon)</span>, accessor: "id", renderCell: (row: TsWeek) => renderDayCell(row, 0) },
+                { header: <span style={{ display: 'inline-block', whiteSpace: 'pre-line' }}>{formatDate(days[1])}<br />(Tue)</span>, accessor: "id", renderCell: (row: TsWeek) => renderDayCell(row, 1) },
+                { header: <span style={{ display: 'inline-block', whiteSpace: 'pre-line' }}>{formatDate(days[2])}<br />(Wed)</span>, accessor: "id", renderCell: (row: TsWeek) => renderDayCell(row, 2) },
+                { header: <span style={{ display: 'inline-block', whiteSpace: 'pre-line' }}>{formatDate(days[3])}<br />(Thu)</span>, accessor: "id", renderCell: (row: TsWeek) => renderDayCell(row, 3) },
+                { header: <span style={{ display: 'inline-block', whiteSpace: 'pre-line' }}>{formatDate(days[4])}<br />(Fri)</span>, accessor: "id", renderCell: (row: TsWeek) => renderDayCell(row, 4) },
+                { header: <span style={{ display: 'inline-block', whiteSpace: 'pre-line' }}>{formatDate(days[5])}<br />(Sat)</span>, accessor: "id", renderCell: (row: TsWeek) => renderDayCell(row, 5) },
+                { header: <span style={{ display: 'inline-block', whiteSpace: 'pre-line' }}>{formatDate(days[6])}<br />(Sun)</span>, accessor: "id", renderCell: (row: TsWeek) => renderDayCell(row, 6) },
+            ] as unknown as ColumnDef<TsWeek>[];
         })(),
         {
             header: "Total",
