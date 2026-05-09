@@ -5,6 +5,7 @@ import type { ChangeUserPassword, User } from "../../features/users/types/users.
 import { Modal } from "../components/Modal";
 import { useTheme } from "../context/ThemeContext";
 import switchIcon from "../../assets/night-mode.png";
+import { PasswordField } from "../components/PassworField";
 
 interface NavbarProps {
     toggleMenu: () => void;
@@ -16,6 +17,9 @@ export const Navbar = ({ toggleMenu }: NavbarProps) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isChangePassword, setIsChangePassword] = useState(false);
     const [message, setMessage] = useState<string>("");
+    const [oldPassword, setOldPassword] = useState({ password: "" });
+    const [newPassword, setNewPassword] = useState({ password: "" });
+    const [confirmPassword, setConfirmPassword] = useState({ password: "" });
     const { theme, toggleTheme } = useTheme();
 
     useEffect(() => {
@@ -30,16 +34,15 @@ export const Navbar = ({ toggleMenu }: NavbarProps) => {
 
     const handleChangePassword = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        setIsChangePassword(false);
 
         try {
             const payload = {
                 userId: userInfo?.id,
-                oldPassword: (e.currentTarget.elements[0] as HTMLInputElement).value,
-                newPassword: (e.currentTarget.elements[1] as HTMLInputElement).value
+                oldPassword: oldPassword.password,
+                newPassword: newPassword.password
             };
 
-            if (payload.newPassword !== (e.currentTarget.elements[2] as HTMLInputElement).value) {
+            if (payload.newPassword !== confirmPassword.password) {
                 alert("New password and confirmation do not match.");
                 return;
             }
@@ -52,6 +55,9 @@ export const Navbar = ({ toggleMenu }: NavbarProps) => {
             await UsersRepository.changeUserPassword(payload as ChangeUserPassword);
             setIsChangePassword(false);
             setMessage("Password changed successfully.");
+            setOldPassword({ password: "" });
+            setNewPassword({ password: "" });
+            setConfirmPassword({ password: "" });
         } catch (error) {
             console.error("Error updating user information:", error);
             setMessage("Failed to change password.");
@@ -156,28 +162,16 @@ export const Navbar = ({ toggleMenu }: NavbarProps) => {
                             <form onSubmit={handleChangePassword} style={{ display: 'flex', flexDirection: 'column', gap: '16px', width: '100%' }}>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                                     <label style={{ fontSize: '0.875rem', fontWeight: 500 }}>Old Password *</label>
-                                    <input
-                                        required
-                                        type="password"
-                                        style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', width: '100%', boxSizing: 'border-box' }}
-                                    />
+                                    <PasswordField formData={oldPassword} setFormData={setOldPassword} />
                                 </div>
                                 <div style={{ display: 'flex', gap: '16px' }}>
                                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
                                         <label style={{ fontSize: '0.875rem', fontWeight: 500 }}>New Password *</label>
-                                        <input
-                                            required
-                                            type="password"
-                                            style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', width: '100%', boxSizing: 'border-box' }}
-                                        />
+                                        <PasswordField formData={newPassword} setFormData={setNewPassword} />
                                     </div>
                                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
                                         <label style={{ fontSize: '0.875rem', fontWeight: 500 }}>Confirm Password *</label>
-                                        <input
-                                            required
-                                            type="password"
-                                            style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', width: '100%', boxSizing: 'border-box' }}
-                                        />
+                                        <PasswordField formData={confirmPassword} setFormData={setConfirmPassword} />
                                     </div>
                                 </div>
                                 <button
