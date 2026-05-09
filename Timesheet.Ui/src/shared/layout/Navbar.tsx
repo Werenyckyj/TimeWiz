@@ -194,7 +194,7 @@ export const Navbar = ({ toggleMenu }: NavbarProps) => {
                         ) : (
                             <button
                                 type="button"
-                                className="secondary-button"
+                                className="primary-button-2"
                                 onClick={() => {
                                     setMessage("");
                                     setIsChangePassword(true);
@@ -202,10 +202,11 @@ export const Navbar = ({ toggleMenu }: NavbarProps) => {
                                 style={{
                                     padding: "8px 12px",
                                     cursor: "pointer",
-                                    backgroundColor: 'var(--bg-secondary)',
-                                    border: '1px solid var(--border-color)',
-                                    color: 'var(--text-primary)',
-                                    borderRadius: "6px"
+                                    backgroundColor: 'var(--primary-button)',
+                                    border: '1px solid var(--primary-button-border)',
+                                    color: 'white',
+                                    borderRadius: "6px",
+                                    fontWeight: "bold",
                                 }}
                             >
                                 Change password
