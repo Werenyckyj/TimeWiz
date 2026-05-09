@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { AuthRepository } from '../services/AuthRepository';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { PasswordField } from '../../../shared/components/PassworField';
 
 export default function Login() {
     const [username, setUsername] = useState('');
@@ -10,6 +11,15 @@ export default function Login() {
 
     const navigate = useNavigate();
     const { login } = useAuth();
+
+    const setPasswordObj: React.Dispatch<React.SetStateAction<{ password: string }>> = (val) => {
+        if (typeof val === 'function') {
+            const res = (val as (prev: { password: string }) => { password: string })({ password });
+            setPassword(res.password);
+        } else {
+            setPassword(val.password);
+        }
+    };
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -41,7 +51,7 @@ export default function Login() {
                             </div>
                             <div className="mb-3">
                                 <label htmlFor="passwordInput" className="form-label">Password</label>
-                                <input type="password" className="form-control" id="passwordInput" value={password} onChange={(e) => setPassword(e.target.value)} />
+                                <PasswordField formData={{ password }} setFormData={setPasswordObj} />
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.5rem' }}>
                                 <button type="submit" className="btn btn-primary" style={{ backgroundColor: "var(--primary-button)", borderColor: "var(--primary-button-border)", color: "white" }}>Login</button>
