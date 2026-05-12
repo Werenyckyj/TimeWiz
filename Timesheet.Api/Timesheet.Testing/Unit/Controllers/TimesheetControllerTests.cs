@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Timesheet.Core.Services.Mail;
+using Timesheet.Core.Services.Timesheet;
 using Timesheet.Data.Dtos;
 using Timesheet.Data.Enums;
 using Timesheet.Data.Models;
@@ -64,7 +65,18 @@ public class TimesheetControllerTests : TestBase
         _unitOfWork.UserRepository.Add(user);
         _unitOfWork.SaveChanges();
 
-        _controller = new TimesheetController(new Mock<ILogger<TimesheetController>>().Object, _unitOfWork.TsWeekRepository, realMapper, _unitOfWork, new Mock<IMailService>().Object);
+        var timesheetServiceMock = new Mock<ITimesheetService>();
+        timesheetServiceMock
+            .Setup(s => s.ManageApproval(It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<TsWeek>(), It.IsAny<TsWeekWDto>()))
+            .Callback<bool, bool, TsWeek, TsWeekWDto>((_, _, tsWeek, tsWeekDto) =>
+            {
+                tsWeek.Status = tsWeekDto.Status;
+            })
+            .Returns(true);
+        timesheetServiceMock.Setup(s => s.SendMailToManager(It.IsAny<TsWeek>())).Returns(Task.CompletedTask);
+        timesheetServiceMock.Setup(s => s.SendMailToEmployee(It.IsAny<TsWeek>())).Returns(Task.CompletedTask);
+
+        _controller = new TimesheetController(new Mock<ILogger<TimesheetController>>().Object, _unitOfWork.TsWeekRepository, realMapper, _unitOfWork, timesheetServiceMock.Object);
     }
 
     [Fact]

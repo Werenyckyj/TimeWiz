@@ -18,7 +18,7 @@ public class TokenService(IConfiguration config, ILogger<TokenService> logger) :
     {
         var tokenHandler = new JwtSecurityTokenHandler();
 
-        var secret = Environment.GetEnvironmentVariable("JWT_SECRET") ?? throw new InvalidOperationException("Chybí JWT_SECRET v .env");
+        var secret = Environment.GetEnvironmentVariable("JWT_SECRET") ?? throw new InvalidOperationException("Missing JWT_SECRET in .env");
         var issuer = Environment.GetEnvironmentVariable("JWT_ISSUER");
         var audience = Environment.GetEnvironmentVariable("JWT_AUDIENCE");
 
@@ -68,7 +68,7 @@ public class TokenService(IConfiguration config, ILogger<TokenService> logger) :
 
     public ClaimsPrincipal? GetPrincipalFromExpiredToken(string token)
     {
-        var secret = Environment.GetEnvironmentVariable("JWT_SECRET") ?? throw new InvalidOperationException("Chybí JWT_SECRET v .env");
+        var secret = Environment.GetEnvironmentVariable("JWT_SECRET") ?? throw new InvalidOperationException("Missing JWT_SECRET in .env");
         var issuer = Environment.GetEnvironmentVariable("JWT_ISSUER");
         var audience = Environment.GetEnvironmentVariable("JWT_AUDIENCE");
 
