@@ -9,6 +9,7 @@ import { CompaniesRepository } from "../../companies/services/CompaniesRepositor
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/hooks/useAuth";
 import { PasswordField } from "../../../shared/components/PassworField";
+import { ConfirmationModal } from "../../../shared/components/ConfirmationModal";
 
 
 
@@ -24,6 +25,9 @@ export default function Users() {
     const [showActiveOnly, setShowActiveOnly] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isCompanyModalOpen, setIsCompanyModalOpen] = useState(false);
+
+    const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
+    const [pendingUserEdit, setPendingUserEdit] = useState<User | null>(null);
 
     const [formData, setFormData] = useState({
         name: "", surname: "", username: "", email: "", roleId: "", companyId: ""
@@ -73,7 +77,7 @@ export default function Users() {
         { header: "Company", accessor: "companyId", type: "select", options: organizationOptions, renderCell: (row) => row.company ? row.company.name : "No company" },
     ];
 
-    const handleEdit = async (draft: User) => {
+    const executeEdit = async (draft: User) => {
         try {
             await editUser({
                 id: draft.id,
@@ -91,6 +95,23 @@ export default function Users() {
         } catch (error) {
             setMessage("Error editing user." + (error instanceof Error ? ` Detail: ${error.message}` : ""));
         }
+        setPendingUserEdit(null);
+    };
+
+    const handleEdit = async (draft: User) => {
+        const originalUser = rawUsers.find(u => u.id === draft.id);
+        const originalRoleId = originalUser?.role ? originalUser.role.id : originalUser?.roleId;
+
+        if (originalRoleId && String(originalRoleId) !== String(draft.roleId)) {
+
+            if (String(draft.id) === String(user?.nameid)) {
+                setPendingUserEdit(draft);
+                setIsRoleModalOpen(true);
+                return;
+            }
+        }
+
+        await executeEdit(draft);
     };
 
     const rawUsers = Array.isArray(users?.data) ? users.data : [];
@@ -99,7 +120,6 @@ export default function Users() {
         : rawUsers;
 
     const handleDelete = async (id: string | number) => {
-        if (!window.confirm("Are you sure you want to delete this user?")) return;
         try {
             await deleteUser(id as number);
             setMessage("User deleted.");
@@ -198,6 +218,8 @@ export default function Users() {
                         label: "View Details", onClick: () => navigate(`/users/${row.id}`)
                     }
                 ]}
+                nameAccessor="name"
+                entityName="user"
             />
             < Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Create New User" >
                 <form onSubmit={handleFormSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -289,6 +311,22 @@ export default function Users() {
                     </div>
                 </form>
             </Modal>
+
+            <ConfirmationModal
+                isOpen={isRoleModalOpen}
+                onClose={() => {
+                    setIsRoleModalOpen(false);
+                    setPendingUserEdit(null);
+                }}
+                title="Confirm Role Change"
+                message="Changing your role will immediately log you out of the system. Are you sure you want to proceed?"
+                onConfirm={() => {
+                    if (pendingUserEdit) {
+                        executeEdit(pendingUserEdit);
+                    }
+                    setIsRoleModalOpen(false);
+                }}
+            />
         </div >
     );
 }

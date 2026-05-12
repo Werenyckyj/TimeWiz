@@ -38,7 +38,6 @@ export default function Companies() {
     };
 
     const handleDelete = async (id: string | number) => {
-        if (!window.confirm("Are you sure you want to delete this company?")) return;
         try {
             await deleteCompany(id as number);
             setMessage("Company successfully deleted.");
@@ -78,6 +77,8 @@ export default function Companies() {
                 onAdd={handleAdd}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
+                entityName="company"
+                nameAccessor="name"
             />
         </div>
     );

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { ConfirmationModal } from "./ConfirmationModal";
 
 export interface ColumnDef<T> {
     header: string;
@@ -25,6 +26,8 @@ export interface EditableTableProps<T extends { id: string | number }> {
     isAdding?: boolean;
     setIsAdding?: (val: boolean) => void;
     extraRowActions?: (row: T) => { label: string; onClick: () => void }[];
+    entityName?: string;
+    nameAccessor?: keyof T;
 }
 
 export function EditableTable<T extends { id: string | number }>({
@@ -35,12 +38,15 @@ export function EditableTable<T extends { id: string | number }>({
     onDelete,
     isAdding,
     setIsAdding,
-    extraRowActions
+    extraRowActions,
+    entityName = "item",
+    nameAccessor
 }: EditableTableProps<T>) {
 
     const [editingId, setEditingId] = useState<string | number | null>(null);
     const [draft, setDraft] = useState<Partial<T>>({});
     const [openMenuId, setOpenMenuId] = useState<string | number | null>(null);
+    const [openModalForId, setOpenModalForId] = useState<string | number | null>(null);
 
     const cancelAdd = () => {
         setIsAdding?.(false);
@@ -299,9 +305,7 @@ export function EditableTable<T extends { id: string | number }>({
                                                         <button
                                                             className="primary-button"
                                                             onClick={() => {
-                                                                if (onDelete) {
-                                                                    onDelete(row.id);
-                                                                }
+                                                                setOpenModalForId(row.id);
                                                                 setOpenMenuId(null);
                                                             }}
                                                             style={{ display: 'block', width: '100%', padding: '8px 16px', border: 'none', background: 'none', cursor: 'pointer', textAlign: 'left', color: '#ef4444' }}
@@ -336,6 +340,24 @@ export function EditableTable<T extends { id: string | number }>({
                     )}
                 </tbody>
             </table>
+            <ConfirmationModal
+                isOpen={openModalForId !== null}
+                onClose={() => setOpenModalForId(null)}
+                title={`Delete ${entityName} ${openModalForId !== null && nameAccessor
+                    ? String(data.find(r => r.id === openModalForId)?.[nameAccessor] || 'Unknown')
+                    : 'Unknown'
+                    }`}
+                message={`Are you sure you want to delete this ${entityName}?`}
+                onConfirm={async () => {
+                    const row = data.find(r => r.id === openModalForId);
+                    if (!row) return;
+
+                    if (onDelete) {
+                        await onDelete(row.id);
+                    }
+                    setOpenModalForId(null);
+                }}
+            />
         </div>
     );
 }
