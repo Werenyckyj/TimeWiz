@@ -67,8 +67,8 @@ public class TimesheetControllerTests : TestBase
 
         var timesheetServiceMock = new Mock<ITimesheetService>();
         timesheetServiceMock
-            .Setup(s => s.ManageApproval(It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<TsWeek>(), It.IsAny<TsWeekWDto>()))
-            .Callback<bool, bool, TsWeek, TsWeekWDto>((_, _, tsWeek, tsWeekDto) =>
+            .Setup(s => s.ManageApproval(It.IsAny<TsWeekStatus>(), It.IsAny<TsWeekStatus>(), It.IsAny<TsWeek>(), It.IsAny<TsWeekWDto>()))
+            .Callback<TsWeekStatus, TsWeekStatus, TsWeek, TsWeekWDto>((_, _, tsWeek, tsWeekDto) =>
             {
                 tsWeek.Status = tsWeekDto.Status;
             })

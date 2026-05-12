@@ -4,7 +4,7 @@
   --bg-hover-primary: #d1ebf8;
   --bg-hover-secondary: #daeafd;
 
-  --text-primary: #2a2723;
+  --text-primary: #484d4d;
   --text-secondary: #7a7671;
   --border-color: #d3dfe9;
 
@@ -21,6 +21,7 @@
   --reject-border: #f04438;
   --reject-text: #d92d20;
   --reject-hover: #fecdca;
+  --reject-timesheet-text: #eb3a3a;
 }
 
 [data-bs-theme="dark"] {
@@ -28,7 +29,7 @@
   --bg-secondary: #212731;
   --bg-hover-primary: #272d36;
   --bg-hover-secondary: #353c46;
-  --text-primary: #fafafa;
+  --text-primary: #d0dadf;
   --text-secondary: #738296;
   --border-color: #434d5a;
   --primary-button: #3a44a3;
@@ -42,6 +43,7 @@
   --reject-border: #964444;
   --reject-text: white;
   --reject-hover: #e76c6c;
+  --reject-timesheet-text: #ec4b4b;
 }
 
 body {

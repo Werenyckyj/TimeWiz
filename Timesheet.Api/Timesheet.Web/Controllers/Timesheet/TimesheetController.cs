@@ -110,8 +110,8 @@ public class TimesheetController(ILogger<TimesheetController> logger, ITReposito
         var project = _unitOfWork.ProjectRepository.GetById(dto.ProjectId);
         if (project == null) return NotFound($"Project with ID {dto.ProjectId} not found.");
 
-        var isNewlySubmitted = existingTsWeek.Status != TsWeekStatus.Submitted && dto.Status == TsWeekStatus.Submitted;
-        var isStatusChanged = existingTsWeek.Status != TsWeekStatus.Rejected && (dto.Status == TsWeekStatus.Rejected || dto.Status == TsWeekStatus.Approved);
+        var oldStatus = existingTsWeek.Status;
+        var newStatus = dto.Status;
 
         existingTsWeek.Status = dto.Status;
         existingTsWeek.Comment = dto.Comment;
@@ -128,12 +128,21 @@ public class TimesheetController(ILogger<TimesheetController> logger, ITReposito
 
         var updatedTsWeek = _unitOfWork.TsWeekRepository.Update(existingTsWeek);
 
-        if (!_timesheetService.ManageApproval(isNewlySubmitted, isStatusChanged, existingTsWeek, dto)) return NotFound("User not found when managing approval.");
-
+        if (oldStatus != newStatus)
+        {
+            if (!_timesheetService.ManageApproval(oldStatus, newStatus, existingTsWeek, dto))
+                return NotFound("User not found when managing approval.");
+        }
         _unitOfWork.SaveChanges();
 
-        if (isNewlySubmitted) await _timesheetService.SendMailToManager(existingTsWeek);
-        else if (isStatusChanged && dto.Status == TsWeekStatus.Rejected) await _timesheetService.SendMailToEmployee(existingTsWeek);
+        if (oldStatus != TsWeekStatus.Submitted && newStatus == TsWeekStatus.Submitted)
+        {
+            await _timesheetService.SendMailToManager(existingTsWeek);
+        }
+        else if (oldStatus != TsWeekStatus.Rejected && newStatus == TsWeekStatus.Rejected)
+        {
+            await _timesheetService.SendMailToEmployee(existingTsWeek);
+        }
 
         var responseDto = _mapper.Map<TsWeekRDto>(updatedTsWeek.Entity);
         return Ok(responseDto);

@@ -11,47 +11,61 @@ public class TimesheetService(UnitOfWork unitOfWork, IMailService mailService, I
     private readonly UnitOfWork _unitOfWork = unitOfWork;
     private readonly IMailService _mailService = mailService;
     private readonly ILogger<TimesheetService> _logger = logger;
-    public bool ManageApproval(bool isNewlySubmitted, bool isStatusChanged, TsWeek existingTsWeek, TsWeekWDto dto)
+    public bool ManageApproval(TsWeekStatus oldStatus, TsWeekStatus newStatus, TsWeek existingTsWeek, TsWeekWDto dto)
     {
-        if (isNewlySubmitted || isStatusChanged)
+        var user = _unitOfWork.UserRepository.GetById(dto.UserId);
+        if (user == null)
         {
-            var user = _unitOfWork.UserRepository.GetById(dto.UserId);
-            if (user == null)
+            _logger.LogError($"User with ID {dto.UserId} not found when managing approval.");
+            return false;
+        }
+
+        TsApprovalStatus? mappedAction = newStatus switch
+        {
+            TsWeekStatus.Submitted => TsApprovalStatus.Pending,
+            TsWeekStatus.Approved => TsApprovalStatus.Approved,
+            TsWeekStatus.Rejected => TsApprovalStatus.Rejected,
+            TsWeekStatus.Draft => TsApprovalStatus.Rejected,
+            _ => null
+        };
+
+        if (mappedAction == null) return true;
+
+        var currentManagers = _unitOfWork.UserRepository.Where(u => u.UserProjects
+            .Any(up => up.ProjectId == existingTsWeek.ProjectId && up.ProjectRole == RoleTypes.Manager)).ToList();
+
+        if (existingTsWeek.Approval != null)
+        {
+            existingTsWeek.Approval.ActionTime = DateTime.UtcNow;
+            existingTsWeek.Approval.Action = mappedAction.Value;
+
+            if (newStatus == TsWeekStatus.Rejected || newStatus == TsWeekStatus.Approved)
             {
-                _logger.LogError($"User with ID {dto.UserId} not found when managing approval.");
-                return false;
+                existingTsWeek.Approval.Comment = dto.Comment;
             }
 
-            var newStatus = isNewlySubmitted ? TsApprovalStatus.Pending : (isStatusChanged ? TsApprovalStatus.Rejected : TsApprovalStatus.Approved);
-
-            var currentManagers = _unitOfWork.UserRepository.Where(u => u.UserProjects
-                .Any(up => up.ProjectId == existingTsWeek.ProjectId && up.ProjectRole == RoleTypes.Manager)).ToList();
-
-            if (existingTsWeek.Approval != null)
+            existingTsWeek.Approval.Managers.Clear();
+            foreach (var manager in currentManagers)
             {
-                existingTsWeek.Approval.ActionTime = DateTime.UtcNow;
-                existingTsWeek.Approval.Action = newStatus;
-                existingTsWeek.Approval.Comment = isStatusChanged ? dto.Comment : null;
-
-                existingTsWeek.Approval.Managers.Clear();
-                foreach (var manager in currentManagers)
-                {
-                    existingTsWeek.Approval.Managers.Add(manager);
-                }
+                existingTsWeek.Approval.Managers.Add(manager);
             }
-            else
+        }
+        else
+        {
+            if (newStatus == TsWeekStatus.Submitted)
             {
                 existingTsWeek.Approval = new TsApproval
                 {
                     TsWeekId = existingTsWeek.Id,
                     ActionTime = DateTime.UtcNow,
-                    Action = newStatus,
-                    Comment = isStatusChanged ? dto.Comment : null,
+                    Action = mappedAction.Value,
+                    Comment = null,
                     Managers = currentManagers,
                     TsWeek = existingTsWeek,
                 };
             }
         }
+
         return true;
     }
 

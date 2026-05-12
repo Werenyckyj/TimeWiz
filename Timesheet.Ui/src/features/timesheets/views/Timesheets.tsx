@@ -4,7 +4,6 @@ import { useTimesheet } from "../hooks/useTimesheet";
 import { useProjects } from "../../projects/hooks/useProjects";
 import type { TsWeek } from "../types/tsWeek.type";
 import type { Project, Projects } from "../../projects/types/projects.type";
-import { ConfirmationModal } from "../../../shared/components/ConfirmationModal";
 
 const toLocalDateString = (date: Date) => {
     const y = date.getFullYear();
@@ -55,7 +54,7 @@ export default function Timesheet() {
 
     const { year, week } = getISOWeekInfo(currentDate);
     const days = useMemo(() => getDaysOfWeek(year, week), [year, week]);
-    const [openModalForId, setOpenModalForId] = useState<number | null>(null);
+    const [openCommentId, setOpenCommentId] = useState<number | null>(null);
 
     useEffect(() => {
         if (!user?.nameid) return;
@@ -212,6 +211,30 @@ export default function Timesheet() {
         }
     };
 
+    const handleRevertToDraft = async (ts: TsWeek) => {
+        try {
+            setMessage("Reverting to draft...");
+            await editTimesheet(ts.id, {
+                projectId: ts.project.id,
+                userId: ts.userId,
+                year: ts.year,
+                weekNumber: ts.weekNumber,
+                comment: ts.comment,
+                status: "Draft", // Vracíme zpět do stavu Draft
+                tsEntries: ts.tsEntries,
+                daysInWeek: ts.tsEntries.length,
+                startDate: ts.tsEntries.length > 0
+                    ? toLocalDateString(new Date(ts.tsEntries[0].workDate))
+                    : toLocalDateString(new Date(ts.year, 0, 1))
+            });
+            setMessage(`Timesheet for ${ts.project.name} is back in Draft and can be edited.`);
+
+            await getTimesheets(Number(user?.nameid), year, week);
+        } catch (error) {
+            setMessage("Error reverting timesheet: " + (error instanceof Error ? error.message : "Unknown error"));
+        }
+    };
+
     const colSums = days.map(d => {
         const dateIso = toLocalDateString(d);
         const sumRaw = drafts.reduce((acc, ts) => {
@@ -313,12 +336,47 @@ export default function Timesheet() {
                                     <tr key={ts.id} style={{ borderBottom: '1px solid var(--border-color)', backgroundColor: isRejected ? 'var(--bg-secondary)' : 'transparent' }}>
 
                                         <td className="mobile-card-header" data-label="Project" style={{ padding: '12px', textAlign: 'left', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                            {ts.project?.name || "Unknown Project"}
-                                            {isRejected && ts.comment && (
-                                                <span title={`Note from Manager: ${ts.comment}`} style={{ cursor: 'help', color: '#ef4444' }}>
-                                                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                                </span>
-                                            )}
+                                            <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                <span style={{ color: isRejected ? 'var(--reject-timesheet-text)' : 'var(--text-primary)' }}>{ts.project?.name || "Unknown Project"}</span>
+
+                                                {isRejected && ts.comment && (
+                                                    <button
+                                                        onClick={() => setOpenCommentId(openCommentId === ts.id ? null : ts.id)}
+                                                        onBlur={() => setOpenCommentId(null)}
+                                                        title="Click to view manager's note"
+                                                        style={{
+                                                            background: 'none', border: 'none', color: 'var(--text-primary)',
+                                                            cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center',
+                                                            borderRadius: '50%', backgroundColor: openCommentId === ts.id ? 'var(--reject)' : 'transparent',
+                                                            transition: 'background-color 0.2s'
+                                                        }}
+                                                    >
+                                                        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                                    </button>
+                                                )}
+
+                                                {openCommentId === ts.id && (
+                                                    <div style={{
+                                                        position: 'absolute',
+                                                        top: 'calc(100% + 4px)',
+                                                        left: 40,
+                                                        zIndex: 50,
+                                                        minWidth: '220px',
+                                                        maxWidth: '300px',
+                                                        padding: '12px',
+                                                        backgroundColor: 'var(--reject)',
+                                                        border: '1px solid var(--reject-border)',
+                                                        borderRadius: '6px',
+                                                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                                                        color: 'var(--text-primary)',
+                                                        fontSize: '0.85rem',
+                                                        fontWeight: 400
+                                                    }}>
+                                                        <strong style={{ display: 'block', marginBottom: '4px' }}>Manager's Note:</strong>
+                                                        {ts.comment}
+                                                    </div>
+                                                )}
+                                            </div>
                                         </td>
 
                                         {days.map((d, i) => {
@@ -358,13 +416,23 @@ export default function Timesheet() {
 
                                         <td data-label="Action" style={{ padding: '12px' }}>
                                             {isLocked ? (
-                                                <span style={{ fontSize: '0.85rem', color: ts.status === "Approved" ? '#10b981' : 'var(--primary-button-hover)', fontWeight: 'bold' }}>
-                                                    {ts.status}
-                                                </span>
+                                                ts.status === "Approved" ? (
+                                                    <span style={{ fontSize: '0.85rem', color: '#10b981', fontWeight: 'bold' }}>
+                                                        {ts.status}
+                                                    </span>
+                                                ) : (
+                                                    <button
+                                                        className="reject-button"
+                                                        onClick={() => handleRevertToDraft(ts)}
+                                                        style={{ padding: '6px 12px', backgroundColor: 'var(--reject)', color: 'var(--text-primary)', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.85rem' }}
+                                                    >
+                                                        Edit
+                                                    </button>
+                                                )
                                             ) : (
                                                 <button
                                                     className="success-button"
-                                                    onClick={() => setOpenModalForId(ts.id)}
+                                                    onClick={() => handleSubmitRow(ts)}
                                                     style={{ padding: '6px 12px', backgroundColor: 'var(--success-2)', color: 'var(--text-primary)', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.85rem' }}
                                                 >
                                                     Submit
@@ -396,21 +464,6 @@ export default function Timesheet() {
                     </tfoot>
                 </table>
             </div>
-            <ConfirmationModal
-                isOpen={openModalForId !== null}
-                onClose={() => setOpenModalForId(null)}
-                title={`Submit timesheet for ${openModalForId !== null
-                    ? String(drafts.find((r: TsWeek) => r.id === openModalForId)?.project?.name || 'Unknown')
-                    : 'Unknown'
-                    }`}
-                message={`Are you sure you want to submit this timesheet?`}
-                onConfirm={async () => {
-                    const row = drafts.find((r: TsWeek) => r.id === openModalForId);
-                    if (!row) return;
-
-                    await handleSubmitRow(row);
-                    setOpenModalForId(null);
-                }} />
         </div>
     );
 }
