@@ -38,7 +38,7 @@ export default function Users() {
 
     const [companyFormData, setCompanyFormData] = useState({ name: "", cin: "" });
 
-    const fatchCompanies = async () => {
+    const fetchCompanies = async () => {
         const fetchedCompanies = await CompaniesRepository.getCompanies();
         const oOptions = fetchedCompanies.data.map(company => ({
             value: company.id,
@@ -59,7 +59,7 @@ export default function Users() {
                 }));
                 setRoleOptions(options);
 
-                await fatchCompanies();
+                await fetchCompanies();
 
             } catch (error) {
                 console.error("Nepodařilo se načíst role nebo organizace", error);
@@ -114,6 +114,12 @@ export default function Users() {
     const handleEdit = async (draft: User) => {
         const originalUser = rawUsers.find(u => u.id === draft.id);
         const originalRoleId = originalUser?.role ? originalUser.role.id : originalUser?.roleId;
+
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if (draft.email && !emailRegex.test(draft.email)) {
+            setMessage({ text: "Please enter a valid email address.", type: "error" });
+            return;
+        }
 
         if (originalRoleId && String(originalRoleId) !== String(draft.roleId)) {
 
@@ -183,6 +189,12 @@ export default function Users() {
             return;
         }
 
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if (formData.email && !emailRegex.test(formData.email)) {
+            setAddUserMessage({ text: "Please enter a valid email address.", type: "error" });
+            return;
+        }
+
         try {
             const payload = {
                 ...formData,
@@ -209,7 +221,7 @@ export default function Users() {
         try {
             await CompaniesRepository.addCompany({ name: companyFormData.name, cin: companyFormData.cin });
 
-            await fatchCompanies();
+            await fetchCompanies();
             setAddCompanyMessage({ text: "Company successfully added.", type: "success" });
         } catch (error) {
             setAddCompanyMessage({ text: "Error " + (error instanceof Error ? ` Detail: ${error.message}` : ""), type: "error" });
@@ -263,7 +275,7 @@ export default function Users() {
             </div>
 
             {message && (
-                <div style={{ marginBottom: '1rem', padding: '10px', backgroundColor: message.type === "error" ? 'var(--reject)' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
+                <div style={{ marginBottom: '1rem', overflowWrap: 'break-word', padding: '10px', backgroundColor: message.type === "error" ? 'var(--reject)' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
                     {message.text}
                 </div>)}
 
@@ -285,7 +297,7 @@ export default function Users() {
             />
             < Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Create New User" >
                 {addUserMessage && (
-                    <div style={{ marginBottom: '1rem', padding: '10px', backgroundColor: addUserMessage.type === "error" ? 'var(--reject)' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
+                    <div style={{ marginBottom: '1rem', overflowWrap: 'break-word', padding: '10px', backgroundColor: addUserMessage.type === "error" ? 'var(--reject)' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
                         {addUserMessage.text}
                     </div>)}
 
@@ -334,7 +346,7 @@ export default function Users() {
                                 <select value={formData.companyId} onChange={e => setFormData({ ...formData, companyId: e.target.value })} style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)', width: '100%', boxSizing: 'border-box' }}>
                                     <option value="">-- Select --</option>
                                     {organizationOptions.map(opt => (
-                                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                        <option key={opt.value} value={opt.value}>{opt.label.length > 20 ? opt.label.substring(0, 20) + '...' : opt.label}</option>
                                     ))}
                                 </select>
                             </div>
@@ -360,7 +372,7 @@ export default function Users() {
 
             <Modal isOpen={isCompanyModalOpen} onClose={() => setIsCompanyModalOpen(false)} title="Add New Company">
                 {addCompanyMessage && (
-                    <div style={{ marginBottom: '1rem', padding: '10px', backgroundColor: addCompanyMessage.type === "error" ? 'var(--reject)' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
+                    <div style={{ marginBottom: '1rem', padding: '10px', overflowWrap: 'break-word', backgroundColor: addCompanyMessage.type === "error" ? 'var(--reject)' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
                         {addCompanyMessage.text}
                     </div>)}
 

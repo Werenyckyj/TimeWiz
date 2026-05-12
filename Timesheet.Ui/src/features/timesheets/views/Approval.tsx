@@ -249,7 +249,7 @@ export default function Approval() {
             </div>
 
             {message && (
-                <div style={{ marginBottom: '1rem', padding: '10px', backgroundColor: message.includes("Error") ? 'var(--reject)' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
+                <div style={{ marginBottom: '1rem', overflowWrap: 'break-word', padding: '10px', backgroundColor: message.includes("Error") ? 'var(--reject)' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
                     {message}
                 </div>
             )}
@@ -261,7 +261,7 @@ export default function Approval() {
             ) : (
                 Object.values(groupedPending).map(group => (
                     <div key={group.projectName} style={{ marginBottom: '3rem' }}>
-                        <h3 style={{ borderBottom: '2px solid var(--border-color)', paddingBottom: '8px', color: 'var(--text-primary)' }}>
+                        <h3 style={{ borderBottom: '2px solid var(--border-color)', paddingBottom: '8px', color: 'var(--text-primary)', overflowWrap: 'break-word' }}>
                             Project: {group.projectName}
                         </h3>
 

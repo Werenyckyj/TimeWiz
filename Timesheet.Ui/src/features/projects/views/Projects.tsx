@@ -193,7 +193,7 @@ export default function Projects() {
                 </div>
             </div>
             {message && (
-                <div style={{ marginBottom: '1rem', padding: '10px', backgroundColor: message.includes("Error") ? 'var(--reject)' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
+                <div style={{ marginBottom: '1rem', overflowWrap: 'break-word', padding: '10px', backgroundColor: message.includes("Error") ? 'var(--reject)' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
                     {message}
                 </div>
             )}
@@ -240,8 +240,8 @@ export default function Projects() {
                                     <div key={user.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', borderBottom: '1px solid var(--border-color)', backgroundColor: isMember ? 'var(--bg-secondary)' : 'transparent' }}>
 
                                         <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                            <span style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{user.name} {user.surname}</span>
-                                            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{user.email}</span>
+                                            <span style={{ fontWeight: 500, color: 'var(--text-primary)', whiteSpace: 'normal', overflowWrap: 'anywhere' }}>{user.name} {user.surname}</span>
+                                            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', whiteSpace: 'normal', overflowWrap: 'anywhere' }}>{user.email}</span>
                                         </div>
                                         <div className="manage-project-users-button-group">
                                             {isMember && (

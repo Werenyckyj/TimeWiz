@@ -8,7 +8,7 @@ export default function EmailValidator({ onChange, value, style }: { onChange?: 
         const value = e.target.value;
         setEmail(value);
 
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
         if (value && !emailRegex.test(value)) {
             setError("Please enter a valid email address.");

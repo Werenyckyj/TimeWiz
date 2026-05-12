@@ -15,7 +15,7 @@ export function ConfirmationModal({
 }) {
     return (
         <Modal isOpen={isOpen} onClose={onClose} title={title} maxWidth="400px">
-            <p style={{ marginBottom: '24px', color: 'var(--text-primary)' }}>{message}</p>
+            <p style={{ marginBottom: '24px', color: 'var(--text-primary)', overflowWrap: 'break-word' }}>{message}</p>
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
                 <button
                     className="reject-button"

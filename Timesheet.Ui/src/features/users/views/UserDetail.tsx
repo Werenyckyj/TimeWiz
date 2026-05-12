@@ -227,10 +227,10 @@ export default function UserDetail() {
         <div className="main-content"
             style={{ fontFamily: 'sans-serif', margin: '0 auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
-                <h2 style={{ margin: 0, color: 'var(--text-primary)' }}>{user?.name} {user?.surname}</h2>
+                <h2 style={{ margin: 0, color: 'var(--text-primary)', whiteSpace: 'normal', overflowWrap: 'anywhere' }}>{user?.name} {user?.surname}</h2>
             </div>
             {message && (
-                <div style={{ marginBottom: '1rem', padding: '10px', backgroundColor: message.includes("Error") ? 'var(--reject)' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
+                <div style={{ marginBottom: '1rem', overflowWrap: 'break-word', padding: '10px', backgroundColor: message.includes("Error") ? 'var(--reject)' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
                     {message}
                 </div>
             )}
@@ -243,7 +243,7 @@ export default function UserDetail() {
 
                     return (
                         <div key={project.id} style={{ marginBottom: '2rem' }}>
-                            <h3 style={{ color: 'var(--text-primary)', marginBottom: '1rem' }}>{project.name}</h3>
+                            <h3 style={{ color: 'var(--text-primary)', marginBottom: '1rem', overflowWrap: 'break-word' }}>{project.name}</h3>
                             {timesheetData ? (
                                 <div style={{ display: 'flex', flexDirection: 'column' }}>
 

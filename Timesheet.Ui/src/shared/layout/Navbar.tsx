@@ -155,7 +155,7 @@ export const Navbar = ({ toggleMenu }: NavbarProps) => {
                             width: "64px", height: "64px", borderRadius: "50%",
                             backgroundColor: "var(--primary-button)", color: "white",
                             display: "flex", alignItems: "center", justifyContent: "center",
-                            fontSize: "1.5rem", fontWeight: "bold", flexShrink: 0
+                            fontSize: "1.5rem", fontWeight: "bold", flexShrink: 0, whiteSpace: 'normal', overflowWrap: 'anywhere'
                         }}>
                             {(userInfo?.name?.[0] || "")}{(userInfo?.surname?.[0] || "")}
                         </div>
@@ -210,7 +210,7 @@ export const Navbar = ({ toggleMenu }: NavbarProps) => {
                     </div>
 
                     {message && (
-                        <div style={{ padding: '10px', backgroundColor: message.type === 'error' ? 'var(--reject)' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
+                        <div style={{ padding: '10px', overflowWrap: 'break-word', backgroundColor: message.type === 'error' ? 'var(--reject)' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
                             {message.text}
                         </div>
                     )}
