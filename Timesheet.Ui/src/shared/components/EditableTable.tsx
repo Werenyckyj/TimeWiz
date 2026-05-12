@@ -11,6 +11,7 @@ export interface ColumnDef<T> {
     options?: SelectOptions[];
     isRequired?: boolean;
     nowrap?: boolean;
+    nowrapHeader?: boolean;
 }
 
 export interface SelectOptions {
@@ -114,7 +115,8 @@ export function EditableTable<T extends { id: string | number }>({
                                 width: col.width || 'auto',
                                 borderBottom: '2px solid var(--border-color)',
                                 borderTopLeftRadius: idx === 0 ? '8px' : '0',
-                                borderTopRightRadius: (!hasActions && idx === columns.length - 1) ? '8px' : '0'
+                                borderTopRightRadius: (!hasActions && idx === columns.length - 1) ? '8px' : '0',
+                                whiteSpace: col.nowrapHeader ? 'nowrap' : 'normal'
                             }}>
                                 {col.header}
                             </th>
@@ -211,12 +213,14 @@ export function EditableTable<T extends { id: string | number }>({
                                     <td data-label={col.header} key={idx} style={{ padding: '12px 16px', width: col.width || 'auto', borderBottom: '1px solid var(--border-color)', whiteSpace: col.nowrap ? 'nowrap' : 'normal' }}>
                                         {isEditingThisRow && col.type !== 'readonly' ? (
                                             col.type === 'checkbox' ? (
-                                                <input
-                                                    type="checkbox"
-                                                    checked={!!draft[col.accessor]}
-                                                    onChange={e => handleDraftChange(col.accessor, e.target.checked as T[typeof col.accessor])}
-                                                    style={{ width: '20px', height: '20px', cursor: 'pointer', backgroundColor: 'var(--bg-primary)', borderColor: 'var(--border-color)' }}
-                                                />
+                                                <label className="custom-checkbox-container" style={{ margin: 0 }}>
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={!!draft[col.accessor]}
+                                                        onChange={e => handleDraftChange(col.accessor, e.target.checked as T[typeof col.accessor])}
+                                                    />
+                                                    <span className="checkmark"></span>
+                                                </label>
                                             ) : col.type === 'select' ? (
                                                 <select
                                                     required={col.isRequired}

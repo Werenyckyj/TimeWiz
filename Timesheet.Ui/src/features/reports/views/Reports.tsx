@@ -301,7 +301,7 @@ const ReportBlock = ({ title, isTeamReport, currentUser, projectsList, usersList
                 </button>
             </div>
 
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
                 <button className={(timeSpanMode === 'last' ? 'primary-button-2' : 'primary-button')} onClick={() => handleTimeSpanChange('last')} style={{ padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', border: '1px solid', ...(timeSpanMode === 'last' ? activeBtnStyle : inactiveBtnStyle) }}>Last month</button>
                 <button className={(timeSpanMode === 'this' ? 'primary-button-2' : 'primary-button')} onClick={() => handleTimeSpanChange('this')} style={{ padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', border: '1px solid', ...(timeSpanMode === 'this' ? activeBtnStyle : inactiveBtnStyle) }}>This month</button>
                 <button className={(timeSpanMode === 'custom' ? 'primary-button-2' : 'primary-button')} onClick={() => handleTimeSpanChange('custom')} style={{ padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', border: '1px solid', ...(timeSpanMode === 'custom' ? activeBtnStyle : inactiveBtnStyle) }}>Own time span</button>
