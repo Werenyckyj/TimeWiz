@@ -10,8 +10,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/hooks/useAuth";
 import { PasswordField } from "../../../shared/components/PassworField";
 import { ConfirmationModal } from "../../../shared/components/ConfirmationModal";
-
-
+import EmailValidator from "../../../shared/components/EmailValidator";
 
 export default function Users() {
     const navigate = useNavigate();
@@ -75,7 +74,7 @@ export default function Users() {
         { header: "Surname", accessor: "surname", type: "text", maxLength: 100 },
         { header: "Username", accessor: "username", type: "text", maxLength: 120 },
         { header: "Email", accessor: "email", type: "text", maxLength: 180 },
-        { header: "Is Active", accessor: "isActive", type: "checkbox", renderCell: (row) => row.isActive ? "✔️" : "❌" },
+        { header: "Is Active", accessor: "isActive", type: "checkbox", renderCell: (row) => row.isActive ? "✔️" : "❌", width: "10%" },
         { header: "Role", accessor: "roleId", type: "select", options: roleOptions, renderCell: (row) => row.role ? row.role.name : "No role" },
         { header: "Company", accessor: "companyId", type: "select", options: organizationOptions, renderCell: (row) => row.company ? row.company.name : "No company" },
     ];
@@ -280,8 +279,7 @@ export default function Users() {
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <label style={{ fontSize: '0.875rem', fontWeight: 500 }}>Email *</label>
-                        <input required type="email" maxLength={180} value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)', width: '100%', boxSizing: 'border-box' }} />
+                        <EmailValidator onChange={e => setFormData({ ...formData, email: e.target.value })} value={formData.email} style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)', width: '100%', boxSizing: 'border-box' }} />
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
