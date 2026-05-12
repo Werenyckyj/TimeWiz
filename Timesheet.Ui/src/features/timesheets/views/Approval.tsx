@@ -287,6 +287,7 @@ export default function Approval() {
                             required
                             value={rejectComment}
                             onChange={(e) => setRejectComment(e.target.value)}
+                            maxLength={1024}
                             style={{
                                 padding: '8px',
                                 borderRadius: '4px',

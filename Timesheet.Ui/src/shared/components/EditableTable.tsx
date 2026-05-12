@@ -160,6 +160,7 @@ export function EditableTable<T extends { id: string | number }>({
                                                     : (draft[col.accessor] as string) || ""
                                             }
                                             onChange={e => handleDraftChange(col.accessor, e.target.value as T[typeof col.accessor])}
+                                            maxLength={col.maxLength}
                                             style={{ width: '100%', padding: '6px', boxSizing: 'border-box', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', borderRadius: '4px' }}
                                         />
                                     )}
@@ -230,6 +231,7 @@ export function EditableTable<T extends { id: string | number }>({
                                                             ? String(draft[col.accessor]).split('T')[0]
                                                             : (draft[col.accessor] as string) || ""
                                                     }
+                                                    maxLength={col.maxLength}
                                                     onChange={e => handleDraftChange(col.accessor, e.target.value as T[typeof col.accessor])}
                                                     style={{ width: '100%', padding: '6px', boxSizing: 'border-box', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', borderRadius: '4px' }}
                                                 />

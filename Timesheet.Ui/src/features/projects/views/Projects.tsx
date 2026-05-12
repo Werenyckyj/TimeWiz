@@ -31,8 +31,8 @@ export default function Projects() {
     };
 
     const columns: ColumnDef<Project>[] = [
-        { header: "Code", accessor: "code", isRequired: true, type: "text", maxLength: 100 },
-        { header: "Name", accessor: "name", isRequired: true, type: "text", maxLength: 100 },
+        { header: "Code", accessor: "code", isRequired: true, type: "text", maxLength: 40 },
+        { header: "Name", accessor: "name", isRequired: true, type: "text", maxLength: 180 },
         { header: "Is Active", accessor: "isActive", type: "checkbox", renderCell: (row) => row.isActive ? "✔️" : "❌" },
         { header: "Valid From", accessor: "validFrom", type: "date", renderCell: (row) => formatDate(row.validFrom) },
         { header: "Valid To", accessor: "validTo", type: "date", renderCell: (row) => formatDate(row.validTo) },
