@@ -146,12 +146,68 @@ export const Navbar = ({ toggleMenu }: NavbarProps) => {
                 </div>
 
             </nav>
-            <Modal isOpen={isModalOpen} onClose={() => { setMessage(null); setIsModalOpen(false); }} title="User Information">
-                <div style={{ display: "flex", flexDirection: "column", gap: "12px", color: 'var(--text-primary)' }}>
-                    <div><strong>Name:</strong> {userInfo?.name} {userInfo?.surname}</div>
-                    <div><strong>Username:</strong> {userInfo?.username}</div>
-                    <div><strong>Email:</strong> {userInfo?.email}</div>
-                    <div><strong>Role:</strong> {userInfo?.role?.name ?? "N/A"}</div>
+            <Modal isOpen={isModalOpen} onClose={() => { setMessage(null); setIsModalOpen(false); }} title="User Profile">
+                <div style={{ display: "flex", flexDirection: "column", gap: "24px", color: 'var(--text-primary)' }}>
+
+                    <div style={{ display: "flex", alignItems: "center", gap: "16px", paddingBottom: "16px" }}>
+
+                        <div style={{
+                            width: "64px", height: "64px", borderRadius: "50%",
+                            backgroundColor: "var(--primary-button)", color: "white",
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                            fontSize: "1.5rem", fontWeight: "bold", flexShrink: 0
+                        }}>
+                            {(userInfo?.name?.[0] || "")}{(userInfo?.surname?.[0] || "")}
+                        </div>
+
+                        <div>
+                            <h3 style={{ margin: "0 0 6px 0", fontSize: "1.25rem", color: "var(--text-primary)" }}>
+                                {userInfo?.name} {userInfo?.surname}
+                            </h3>
+                            <span style={{
+                                display: "inline-block", padding: "4px 10px",
+                                backgroundColor: "var(--bg-secondary)", border: "1px solid var(--border-color)",
+                                borderRadius: "12px", fontSize: "0.8rem", fontWeight: "600", color: "var(--text-secondary)"
+                            }}>
+                                {userInfo?.role?.name ?? "N/A"}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "20px" }}>
+
+                        <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                            <span style={{ fontSize: "0.85rem", color: "var(--text-secondary)", fontWeight: "600" }}>Username</span>
+                            <span style={{ fontWeight: "500" }}>{userInfo?.username || "—"}</span>
+                        </div>
+
+                        <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                            <span style={{ fontSize: "0.85rem", color: "var(--text-secondary)", fontWeight: "600" }}>Email Address</span>
+                            {userInfo?.email ? (
+                                <a href={`mailto:${userInfo.email}`} style={{ color: "var(--text-primary)", textDecoration: "none", fontWeight: "500" }}>
+                                    {userInfo.email}
+                                </a>
+                            ) : (
+                                <span style={{ fontWeight: "500" }}>—</span>
+                            )}
+                        </div>
+
+                        <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                            <span style={{ fontSize: "0.85rem", color: "var(--text-secondary)", fontWeight: "600" }}>Company</span>
+                            <span style={{ fontWeight: "500" }}>{userInfo?.company?.name || "No Company"}</span>
+                        </div>
+
+                        <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                            <span style={{ fontSize: "0.85rem", color: "var(--text-secondary)", fontWeight: "600" }}>Status</span>
+                            <span style={{
+                                fontWeight: "600",
+                                color: userInfo?.isActive ? "var(--success-2)" : "var(--reject-text)"
+                            }}>
+                                {userInfo?.isActive ? "● Active" : "● Inactive"}
+                            </span>
+                        </div>
+
+                    </div>
 
                     {message && (
                         <div style={{ padding: '10px', backgroundColor: message.type === 'error' ? 'var(--reject)' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
