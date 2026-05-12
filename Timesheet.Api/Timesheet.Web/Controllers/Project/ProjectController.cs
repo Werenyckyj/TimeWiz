@@ -18,6 +18,20 @@ public class ProjectController(ILogger<ProjectController> logger, ITRepository<P
 {
     private readonly UnitOfWork _unitOfWork = unitOfWork;
 
+    [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public override IActionResult GetAll()
+    {
+        var entities = _tRepository.GetAll()
+                                .Include(p => p.UserProjects)
+                                .OrderBy(p => p.Code.ToLower())
+                                .AsEnumerable();
+
+        var responses = _mapper.Map<IEnumerable<ProjectRDto>>(entities).ToList();
+        return Ok(new { count = responses.Count, data = responses });
+    }
+
+
     [HttpPost("{id:int}/assign")]
     [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
