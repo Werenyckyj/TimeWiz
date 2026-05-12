@@ -178,6 +178,17 @@ body {
   max-width: 150px;
 }
 
+th,
+td,
+thead,
+tbody,
+tfoot,
+tr {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+}
+
 @media (max-width: 768px) {
   .mobile-only {
     display: flex !important;
@@ -267,6 +278,9 @@ body {
   tr {
     display: block;
     width: 100%;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: break-word;
   }
 
   thead tr {

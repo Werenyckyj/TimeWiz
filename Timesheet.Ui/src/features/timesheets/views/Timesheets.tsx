@@ -363,7 +363,7 @@ export default function Timesheet() {
                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center' }}>
                     <thead style={{ backgroundColor: 'var(--bg-secondary)', borderBottom: '2px solid var(--border-color)' }}>
                         <tr>
-                            <th style={{ padding: '12px', textAlign: 'left', width: '25%' }}>Project</th>
+                            <th style={{ padding: '12px', textAlign: 'left', width: '17%' }}>Project</th>
                             {days.map((d, i) => (
                                 <th key={i} style={{ padding: '12px', width: '9%' }}>
                                     <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>

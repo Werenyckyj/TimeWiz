@@ -117,8 +117,8 @@ const ReportBlock = ({ title, isTeamReport, currentUser, projectsList, usersList
 
     useEffect(() => { handleTimeSpanChange('this'); }, []);
 
-    const detailedData = useMemo(() => {
-        const flatData = reportData.flatMap(ts => {
+    const baseData = useMemo(() => {
+        return reportData.flatMap(ts => {
             const userinfo = usersList.data.find(u => u.id === ts.userId) ?? null;
             const companyinfo = companiesList.data.find(c => c.id === userinfo?.companyId) ?? null;
 
@@ -140,14 +140,16 @@ const ReportBlock = ({ title, isTeamReport, currentUser, projectsList, usersList
                     hours: entry.hours
                 }));
         });
+    }, [reportData, dateFrom, dateTo, usersList, companiesList]);
 
+    const detailedData = useMemo(() => {
         let finalData: ReportRow[] = [];
 
         if (groupBy === "none") {
-            finalData = flatData;
+            finalData = baseData;
         } else {
             const groups: Record<string, ReportRow> = {};
-            flatData.forEach(row => {
+            baseData.forEach(row => {
                 const groupKey = row[groupBy as keyof ReportRow]?.toString() || "Unknown";
 
                 if (!groups[groupKey]) {
@@ -196,7 +198,7 @@ const ReportBlock = ({ title, isTeamReport, currentUser, projectsList, usersList
 
             return 0;
         });
-    }, [reportData, dateFrom, dateTo, usersList, companiesList, groupBy, sortField, order]);
+    }, [groupBy, sortField, order, baseData]);
 
     useEffect(() => { setTableData(detailedData); }, [detailedData]);
 
@@ -267,6 +269,8 @@ const ReportBlock = ({ title, isTeamReport, currentUser, projectsList, usersList
         download_link.style.display = "none";
         document.body.appendChild(download_link);
         download_link.click();
+        document.body.removeChild(download_link);
+        window.URL.revokeObjectURL(download_link.href);
     };
 
     const handleSortingChange = (accessor: keyof ReportRow) => {

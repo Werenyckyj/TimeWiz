@@ -199,7 +199,7 @@ export function EditableTable<T extends { id: string | number }>({
                         return (
                             <tr key={row.id} style={{ backgroundColor: isEditingThisRow ? 'var(--bg-hover)' : 'transparent', color: 'var(--text-primary)' }}>
                                 {columns.map((col, idx) => (
-                                    <td data-label={col.header} key={idx} style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-color)' }}>
+                                    <td data-label={col.header} key={idx} style={{ padding: '12px 16px', width: col.width || 'auto', borderBottom: '1px solid var(--border-color)' }}>
                                         {isEditingThisRow && col.type !== 'readonly' ? (
                                             col.type === 'checkbox' ? (
                                                 <input
