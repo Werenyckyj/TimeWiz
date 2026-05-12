@@ -4,7 +4,6 @@ import { useTimesheet } from "../hooks/useTimesheet";
 import { useProjects } from "../../projects/hooks/useProjects";
 import type { TsWeek } from "../types/tsWeek.type";
 import type { Project, Projects } from "../../projects/types/projects.type";
-import { ConfirmationModal } from "../../../shared/components/ConfirmationModal";
 
 const toLocalDateString = (date: Date) => {
     const y = date.getFullYear();
@@ -55,7 +54,6 @@ export default function Timesheet() {
 
     const { year, week } = getISOWeekInfo(currentDate);
     const days = useMemo(() => getDaysOfWeek(year, week), [year, week]);
-    const [openModalForId, setOpenModalForId] = useState<number | null>(null);
 
     useEffect(() => {
         if (!user?.nameid) return;
@@ -212,6 +210,30 @@ export default function Timesheet() {
         }
     };
 
+    const handleRevertToDraft = async (ts: TsWeek) => {
+        try {
+            setMessage("Reverting to draft...");
+            await editTimesheet(ts.id, {
+                projectId: ts.project.id,
+                userId: ts.userId,
+                year: ts.year,
+                weekNumber: ts.weekNumber,
+                comment: ts.comment,
+                status: "Draft", // Vracíme zpět do stavu Draft
+                tsEntries: ts.tsEntries,
+                daysInWeek: ts.tsEntries.length,
+                startDate: ts.tsEntries.length > 0
+                    ? toLocalDateString(new Date(ts.tsEntries[0].workDate))
+                    : toLocalDateString(new Date(ts.year, 0, 1))
+            });
+            setMessage(`Timesheet for ${ts.project.name} is back in Draft and can be edited.`);
+
+            await getTimesheets(Number(user?.nameid), year, week);
+        } catch (error) {
+            setMessage("Error reverting timesheet: " + (error instanceof Error ? error.message : "Unknown error"));
+        }
+    };
+
     const colSums = days.map(d => {
         const dateIso = toLocalDateString(d);
         const sumRaw = drafts.reduce((acc, ts) => {
@@ -358,13 +380,23 @@ export default function Timesheet() {
 
                                         <td data-label="Action" style={{ padding: '12px' }}>
                                             {isLocked ? (
-                                                <span style={{ fontSize: '0.85rem', color: ts.status === "Approved" ? '#10b981' : 'var(--primary-button-hover)', fontWeight: 'bold' }}>
-                                                    {ts.status}
-                                                </span>
+                                                ts.status === "Approved" ? (
+                                                    <span style={{ fontSize: '0.85rem', color: '#10b981', fontWeight: 'bold' }}>
+                                                        {ts.status}
+                                                    </span>
+                                                ) : (
+                                                    <button
+                                                        className="reject-button"
+                                                        onClick={() => handleRevertToDraft(ts)}
+                                                        style={{ padding: '6px 12px', backgroundColor: 'var(--reject)', color: 'var(--text-primary)', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.85rem' }}
+                                                    >
+                                                        Edit
+                                                    </button>
+                                                )
                                             ) : (
                                                 <button
                                                     className="success-button"
-                                                    onClick={() => setOpenModalForId(ts.id)}
+                                                    onClick={() => handleSubmitRow(ts)}
                                                     style={{ padding: '6px 12px', backgroundColor: 'var(--success-2)', color: 'var(--text-primary)', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.85rem' }}
                                                 >
                                                     Submit
@@ -396,21 +428,6 @@ export default function Timesheet() {
                     </tfoot>
                 </table>
             </div>
-            <ConfirmationModal
-                isOpen={openModalForId !== null}
-                onClose={() => setOpenModalForId(null)}
-                title={`Submit timesheet for ${openModalForId !== null
-                    ? String(drafts.find((r: TsWeek) => r.id === openModalForId)?.project?.name || 'Unknown')
-                    : 'Unknown'
-                    }`}
-                message={`Are you sure you want to submit this timesheet?`}
-                onConfirm={async () => {
-                    const row = drafts.find((r: TsWeek) => r.id === openModalForId);
-                    if (!row) return;
-
-                    await handleSubmitRow(row);
-                    setOpenModalForId(null);
-                }} />
         </div>
     );
 }
