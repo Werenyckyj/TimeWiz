@@ -10,6 +10,7 @@ export interface ColumnDef<T> {
     maxLength?: number;
     options?: SelectOptions[];
     isRequired?: boolean;
+    nowrap?: boolean;
 }
 
 export interface SelectOptions {
@@ -101,7 +102,7 @@ export function EditableTable<T extends { id: string | number }>({
             backgroundColor: 'var(--bg-primary)',
             transition: 'padding 0.2s ease'
         }}>
-            <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0, textAlign: 'left', tableLayout: 'fixed' }}>
+            <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0, textAlign: 'left', tableLayout: 'auto' }}>
 
                 <thead style={{ backgroundColor: 'var(--bg-secondary)' }}>
                     <tr>
@@ -119,8 +120,16 @@ export function EditableTable<T extends { id: string | number }>({
                             </th>
                         ))}
                         {hasActions && (
-                            <th style={{ padding: '12px 16px', fontWeight: '600', color: 'var(--text-primary)', textAlign: 'right', width: '180px', borderBottom: '2px solid var(--border-color)', borderTopRightRadius: '8px' }}>Action</th>
-                        )}
+                            <th style={{
+                                padding: '12px 16px',
+                                fontWeight: '600',
+                                color: 'var(--text-primary)',
+                                textAlign: 'right',
+                                width: '1%',
+                                whiteSpace: 'nowrap',
+                                borderBottom: '2px solid var(--border-color)',
+                                borderTopRightRadius: '8px'
+                            }}>Action</th>)}
                     </tr>
                 </thead>
 
@@ -166,7 +175,7 @@ export function EditableTable<T extends { id: string | number }>({
                                     )}
                                 </td>
                             ))}
-                            {hasActions && <td data-label="Actions" style={{ padding: '12px 16px', textAlign: 'right', borderBottom: '1px solid var(--border-color)', alignItems: 'end' }}>
+                            {hasActions && <td data-label="Actions" style={{ padding: '12px 16px', textAlign: 'right', width: '1%', whiteSpace: 'nowrap', borderBottom: '1px solid var(--border-color)' }}>
                                 <div style={{ justifyContent: 'flex-end' }}>
                                     <button className="primary-button-2" onClick={commitAdd} style={{ marginRight: '8px', padding: '4px 8px', cursor: 'pointer', border: '1px solid var(--primary-button-border)', borderRadius: '4px', backgroundColor: 'var(--primary-button)', color: 'white' }}>
                                         Save
@@ -199,7 +208,7 @@ export function EditableTable<T extends { id: string | number }>({
                         return (
                             <tr key={row.id} style={{ backgroundColor: isEditingThisRow ? 'var(--bg-hover)' : 'transparent', color: 'var(--text-primary)' }}>
                                 {columns.map((col, idx) => (
-                                    <td data-label={col.header} key={idx} style={{ padding: '12px 16px', width: col.width || 'auto', borderBottom: '1px solid var(--border-color)' }}>
+                                    <td data-label={col.header} key={idx} style={{ padding: '12px 16px', width: col.width || 'auto', borderBottom: '1px solid var(--border-color)', whiteSpace: col.nowrap ? 'nowrap' : 'normal' }}>
                                         {isEditingThisRow && col.type !== 'readonly' ? (
                                             col.type === 'checkbox' ? (
                                                 <input
@@ -242,7 +251,7 @@ export function EditableTable<T extends { id: string | number }>({
                                     </td>
                                 ))}
 
-                                {hasActions ? <td data-label="Actions" style={{ padding: '12px 16px', textAlign: 'right', position: 'relative', borderBottom: '1px solid var(--border-color)' }}>
+                                {hasActions ? <td data-label="Actions" style={{ padding: '12px 16px', textAlign: 'right', position: 'relative', width: '1%', whiteSpace: 'nowrap', borderBottom: '1px solid var(--border-color)' }}>
                                     {isEditingThisRow ? (
                                         <div style={{ justifyContent: 'flex-end' }}>
                                             <button className="primary-button-2" onClick={() => commitEdit()} style={{ marginRight: '8px', padding: '4px 8px', cursor: 'pointer', border: '1px solid var(--primary-button-border)', borderRadius: '4px', backgroundColor: 'var(--primary-button)', color: 'white' }}>

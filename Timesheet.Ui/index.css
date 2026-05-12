@@ -178,12 +178,14 @@ body {
   max-width: 150px;
 }
 
-th,
+button {
+  white-space: nowrap !important;
+  flex-shrink: 0;
+}
+
 td,
-thead,
 tbody,
-tfoot,
-tr {
+tfoot {
   overflow-wrap: break-word;
   word-wrap: break-word;
   word-break: break-word;

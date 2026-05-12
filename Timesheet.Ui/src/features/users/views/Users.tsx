@@ -73,9 +73,9 @@ export default function Users() {
         { header: "Name", accessor: "name", type: "text", maxLength: 80 },
         { header: "Surname", accessor: "surname", type: "text", maxLength: 100 },
         { header: "Username", accessor: "username", type: "text", maxLength: 120 },
-        { header: "Email", accessor: "email", type: "text", maxLength: 180 },
-        { header: "Is Active", accessor: "isActive", type: "checkbox", renderCell: (row) => row.isActive ? "✔️" : "❌", width: "10%" },
-        { header: "Role", accessor: "roleId", type: "select", options: roleOptions, renderCell: (row) => row.role ? row.role.name : "No role" },
+        { header: "Email", accessor: "email", type: "text", maxLength: 180, },
+        { header: "Is Active", accessor: "isActive", type: "checkbox", renderCell: (row) => row.isActive ? "✔️" : "❌", nowrap: true },
+        { header: "Role", accessor: "roleId", type: "select", options: roleOptions, renderCell: (row) => row.role ? row.role.name : "No role", nowrap: true },
         { header: "Company", accessor: "companyId", type: "select", options: organizationOptions, renderCell: (row) => row.company ? row.company.name : "No company" },
     ];
 
