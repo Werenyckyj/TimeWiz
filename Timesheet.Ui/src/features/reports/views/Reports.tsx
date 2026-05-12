@@ -505,9 +505,16 @@ export default function Reports() {
             <ReportBlock title="My Personal Report" isTeamReport={false} currentUser={user} projectsList={projects} usersList={users} companiesList={companies} />
 
             {canSeeTeamReport && (
-                <div style={{ borderTop: '2px dashed var(--border-color)', paddingTop: '2rem' }}>
+                <>
+                    <div style={{
+                        height: '4px',
+                        background: 'linear-gradient(90deg, transparent 0%, var(--border-color) 15%, var(--border-color) 85%, transparent 100%)',
+                        margin: '4rem 0',
+                        opacity: 1
+                    }} />
+
                     <ReportBlock title="Team & Projects Report" isTeamReport={true} currentUser={user} projectsList={projects} usersList={users} companiesList={companies} />
-                </div>
+                </>
             )}
         </div>
     );

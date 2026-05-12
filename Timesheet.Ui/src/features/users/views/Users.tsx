@@ -127,6 +127,7 @@ export default function Users() {
         return (
             user.name.toLowerCase().includes(query) ||
             user.surname.toLowerCase().includes(query) ||
+            (user.name.toLowerCase() + ' ' + user.surname.toLowerCase()).includes(query) ||
             user.email.toLowerCase().includes(query) ||
             user.company?.name.toLowerCase().includes(query)
         );
