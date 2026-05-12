@@ -70,11 +70,22 @@ export default function Users() {
     }, [getUsers]);
 
     const columns: ColumnDef<User>[] = [
-        { header: "Name", accessor: "name", type: "text", maxLength: 80 },
-        { header: "Surname", accessor: "surname", type: "text", maxLength: 100 },
+        { header: "Name", accessor: "name", type: "text", maxLength: 80, nowrapHeader: true },
+        { header: "Surname", accessor: "surname", type: "text", maxLength: 100, nowrapHeader: true },
         { header: "Username", accessor: "username", type: "text", maxLength: 120 },
-        { header: "Email", accessor: "email", type: "text", maxLength: 180, },
-        { header: "Is Active", accessor: "isActive", type: "checkbox", renderCell: (row) => row.isActive ? "✔️" : "❌", nowrap: true },
+        { header: "Email", accessor: "email", type: "text", maxLength: 180, nowrapHeader: true },
+        {
+            header: "Is Active", accessor: "isActive", nowrapHeader: true, type: "checkbox", renderCell: (row) => (
+                <label className="custom-checkbox-container" style={{ margin: 0, cursor: 'default' }}>
+                    <input
+                        type="checkbox"
+                        checked={row.isActive}
+                        readOnly
+                    />
+                    <span className="checkmark"></span>
+                </label>
+            )
+        },
         { header: "Role", accessor: "roleId", type: "select", options: roleOptions, renderCell: (row) => row.role ? row.role.name : "No role", nowrap: true },
         { header: "Company", accessor: "companyId", type: "select", options: organizationOptions, renderCell: (row) => row.company ? row.company.name : "No company" },
     ];
@@ -238,12 +249,13 @@ export default function Users() {
                         </button>
                     )}
 
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.9rem', color: 'var(--text-secondary)', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                    <label className="custom-checkbox-container" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.9rem', color: 'var(--text-secondary)', cursor: 'pointer', whiteSpace: 'nowrap' }}>
                         <input
                             type="checkbox"
                             checked={showActiveOnly}
                             onChange={(e) => setShowActiveOnly(e.target.checked)}
                         />
+                        <span className="checkmark"></span>
                         Show active only
                     </label>
 

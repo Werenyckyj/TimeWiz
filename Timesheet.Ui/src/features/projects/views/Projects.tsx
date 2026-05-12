@@ -33,9 +33,19 @@ export default function Projects() {
     const columns: ColumnDef<Project>[] = [
         { header: "Code", accessor: "code", isRequired: true, type: "text", maxLength: 40 },
         { header: "Name", accessor: "name", isRequired: true, type: "text", maxLength: 180 },
-        { header: "Is Active", accessor: "isActive", type: "checkbox", renderCell: (row) => row.isActive ? "✔️" : "❌" },
+        {
+            header: "Is Active", accessor: "isActive", type: "checkbox", renderCell: (row) => (
+                <label className="custom-checkbox-container" style={{ margin: 0, cursor: 'default' }}>
+                    <input
+                        type="checkbox"
+                        checked={row.isActive}
+                        readOnly
+                    />
+                    <span className="checkmark"></span>
+                </label>)
+        },
         { header: "Valid From", accessor: "validFrom", type: "date", renderCell: (row) => formatDate(row.validFrom) },
-        { header: "Valid To", accessor: "validTo", type: "date", renderCell: (row) => formatDate(row.validTo) },
+        { header: "Valid To", accessor: "validTo", type: "date", renderCell: (row) => (formatDate(row.validTo)) },
     ];
 
     const handleAdd = async (draft: Partial<Project>) => {
@@ -171,12 +181,13 @@ export default function Projects() {
                         </button>
                     )}
 
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.9rem', color: 'var(--text-secondary)', cursor: 'pointer' }}>
+                    <label className="custom-checkbox-container" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.9rem', color: 'var(--text-primary)', cursor: 'pointer' }}>
                         <input
                             type="checkbox"
                             checked={showActiveOnly}
                             onChange={(e) => setShowActiveOnly(e.target.checked)}
                         />
+                        <span className="checkmark"></span>
                         Show active only
                     </label>
                 </div>

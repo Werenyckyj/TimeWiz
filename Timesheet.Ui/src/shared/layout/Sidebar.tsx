@@ -109,7 +109,7 @@ export const Sidebar = ({ isOpen, closeMenu }: SidebarProps) => {
             </div>
             <div style={{ marginTop: 'auto', alignItems: 'flex-start' }}>
                 <button onClick={logout} style={{
-                    width: '50px', height: '50px', margin: '20px 10px', border: 'none', backgroundColor: 'transparent', cursor: 'pointer'
+                    width: '35px', height: '35px', margin: '20px 10px', border: 'none', backgroundColor: 'transparent', cursor: 'pointer'
                 }}>
                     <img src={logoutIcon} alt="Logout" style={{
                         width: '100%', height: '100%', marginRight: '8px', filter: theme === 'dark' ? 'invert(1)' : 'none',
