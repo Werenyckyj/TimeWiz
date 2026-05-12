@@ -57,6 +57,17 @@ api.interceptors.response.use(
                 return Promise.reject(refreshError);
             }
         }
+
+        if (error.response?.status >= 500) {
+            console.error("Critical error:", error.response.data);
+
+            return Promise.reject(new Error("A critical server error occurred. Please try again later."));
+        }
+
+        if (error.response?.data?.detail) {
+            return Promise.reject(new Error(error.response.data.detail));
+        }
+
         return Promise.reject(error);
     }
 );

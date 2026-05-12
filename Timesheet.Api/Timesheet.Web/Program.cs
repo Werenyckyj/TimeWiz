@@ -15,6 +15,7 @@ using Timesheet.Core.Services.Mail;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using System.Security.Claims;
 using Timesheet.Core.Services.Timesheet;
+using Timesheet.Web.ExceptionHandler;
 
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
@@ -79,6 +80,10 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<UserRepository>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<ITimesheetService, TimesheetService>();
+
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
+
 if (builder.Environment.IsDevelopment())
 {
     builder.Services.AddScoped<IMailService, DummyMailService>();
@@ -155,6 +160,8 @@ app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+app.UseExceptionHandler();
+
 DbSeeder.SeedData(app);
 
 app.Run();
