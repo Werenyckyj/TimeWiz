@@ -190,6 +190,8 @@ export default function Projects() {
                 extraRowActions={(row) => [
                     { label: "Edit members", onClick: () => handleEditMembers(row) }
                 ]}
+                entityName="project"
+                nameAccessor="name"
             />
 
             <Modal

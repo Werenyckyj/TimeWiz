@@ -99,7 +99,6 @@ export default function Users() {
         : rawUsers;
 
     const handleDelete = async (id: string | number) => {
-        if (!window.confirm("Are you sure you want to delete this user?")) return;
         try {
             await deleteUser(id as number);
             setMessage("User deleted.");
@@ -198,6 +197,8 @@ export default function Users() {
                         label: "View Details", onClick: () => navigate(`/users/${row.id}`)
                     }
                 ]}
+                nameAccessor="name"
+                entityName="user"
             />
             < Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Create New User" >
                 <form onSubmit={handleFormSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>

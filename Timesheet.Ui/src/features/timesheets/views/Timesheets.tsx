@@ -4,6 +4,7 @@ import { useTimesheet } from "../hooks/useTimesheet";
 import { useProjects } from "../../projects/hooks/useProjects";
 import type { TsWeek } from "../types/tsWeek.type";
 import type { Project, Projects } from "../../projects/types/projects.type";
+import { ConfirmationModal } from "../../../shared/components/ConfirmationModal";
 
 const toLocalDateString = (date: Date) => {
     const y = date.getFullYear();
@@ -54,6 +55,7 @@ export default function Timesheet() {
 
     const { year, week } = getISOWeekInfo(currentDate);
     const days = useMemo(() => getDaysOfWeek(year, week), [year, week]);
+    const [openModalForId, setOpenModalForId] = useState<number | null>(null);
 
     useEffect(() => {
         if (!user?.nameid) return;
@@ -362,7 +364,7 @@ export default function Timesheet() {
                                             ) : (
                                                 <button
                                                     className="success-button"
-                                                    onClick={() => handleSubmitRow(ts)}
+                                                    onClick={() => setOpenModalForId(ts.id)}
                                                     style={{ padding: '6px 12px', backgroundColor: 'var(--success-2)', color: 'var(--text-primary)', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.85rem' }}
                                                 >
                                                     Submit
@@ -394,6 +396,21 @@ export default function Timesheet() {
                     </tfoot>
                 </table>
             </div>
+            <ConfirmationModal
+                isOpen={openModalForId !== null}
+                onClose={() => setOpenModalForId(null)}
+                title={`Submit timesheet for ${openModalForId !== null
+                    ? String(drafts.find((r: TsWeek) => r.id === openModalForId)?.project?.name || 'Unknown')
+                    : 'Unknown'
+                    }`}
+                message={`Are you sure you want to submit this timesheet?`}
+                onConfirm={async () => {
+                    const row = drafts.find((r: TsWeek) => r.id === openModalForId);
+                    if (!row) return;
+
+                    await handleSubmitRow(row);
+                    setOpenModalForId(null);
+                }} />
         </div>
     );
 }
