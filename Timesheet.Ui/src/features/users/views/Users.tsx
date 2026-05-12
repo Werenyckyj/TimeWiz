@@ -10,21 +10,20 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/hooks/useAuth";
 import { PasswordField } from "../../../shared/components/PassworField";
 import { ConfirmationModal } from "../../../shared/components/ConfirmationModal";
-
-
+import EmailValidator from "../../../shared/components/EmailValidator";
 
 export default function Users() {
     const navigate = useNavigate();
     const { user } = useAuth();
-    const { users, getUsers, editUser, deleteUser, addUser } = useUsers();
+    const { users, getUsers, editUser, addUser } = useUsers();
     const [isAdding, setIsAdding] = useState(false);
-    const [message, setMessage] = useState<string>("");
-    const [addUserMessage, setAddUserMessage] = useState<string>("");
-    const [addCompanyMessage, setAddCompanyMessage] = useState<string>("");
+    const [message, setMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
+    const [addUserMessage, setAddUserMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
+    const [addCompanyMessage, setAddCompanyMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
     const [roleOptions, setRoleOptions] = useState<SelectOptions[]>([]);
     const [organizationOptions, setOrganizationOptions] = useState<SelectOptions[]>([]);
 
-    const [showActiveOnly, setShowActiveOnly] = useState(false);
+    const [showActiveOnly, setShowActiveOnly] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isCompanyModalOpen, setIsCompanyModalOpen] = useState(false);
 
@@ -71,12 +70,12 @@ export default function Users() {
     }, [getUsers]);
 
     const columns: ColumnDef<User>[] = [
-        { header: "Name", accessor: "name", type: "text", maxLength: 100 },
+        { header: "Name", accessor: "name", type: "text", maxLength: 80 },
         { header: "Surname", accessor: "surname", type: "text", maxLength: 100 },
-        { header: "Username", accessor: "username", type: "text", maxLength: 100 },
-        { header: "Email", accessor: "email", type: "text", maxLength: 100 },
-        { header: "Is Active", accessor: "isActive", type: "checkbox", renderCell: (row) => row.isActive ? "✔️" : "❌" },
-        { header: "Role", accessor: "roleId", type: "select", options: roleOptions, renderCell: (row) => row.role ? row.role.name : "No role" },
+        { header: "Username", accessor: "username", type: "text", maxLength: 120 },
+        { header: "Email", accessor: "email", type: "text", maxLength: 180, },
+        { header: "Is Active", accessor: "isActive", type: "checkbox", renderCell: (row) => row.isActive ? "✔️" : "❌", nowrap: true },
+        { header: "Role", accessor: "roleId", type: "select", options: roleOptions, renderCell: (row) => row.role ? row.role.name : "No role", nowrap: true },
         { header: "Company", accessor: "companyId", type: "select", options: organizationOptions, renderCell: (row) => row.company ? row.company.name : "No company" },
     ];
 
@@ -94,9 +93,9 @@ export default function Users() {
             });
 
             await getUsers();
-            setMessage("User successfully edited.");
+            setMessage({ text: "User successfully edited.", type: "success" });
         } catch (error) {
-            setMessage("Error " + (error instanceof Error ? ` Detail: ${error.message}` : ""));
+            setMessage({ text: "Error " + (error instanceof Error ? ` Detail: ${error.message}` : ""), type: "error" });
         }
         setPendingUserEdit(null);
     };
@@ -127,6 +126,7 @@ export default function Users() {
         return (
             user.name.toLowerCase().includes(query) ||
             user.surname.toLowerCase().includes(query) ||
+            (user.name.toLowerCase() + ' ' + user.surname.toLowerCase()).includes(query) ||
             user.email.toLowerCase().includes(query) ||
             user.company?.name.toLowerCase().includes(query)
         );
@@ -134,10 +134,27 @@ export default function Users() {
 
     const handleDelete = async (id: string | number) => {
         try {
-            await deleteUser(id as number);
-            setMessage("User deleted.");
+            const original = rawUsers.find(u => String(u.id) === String(id));
+            if (!original) {
+                setMessage({ text: "User not found.", type: "error" });
+                return;
+            }
+
+            await editUser({
+                id: Number(id),
+                name: original.name,
+                surname: original.surname,
+                username: original.username,
+                email: original.email,
+                isActive: false,
+                roleId: original.role ? Number(original.role.id) : Number(original.roleId) || 0,
+                companyId: original.company ? Number(original.company.id) : Number(original.companyId) || 0
+            });
+
+            await getUsers();
+            setMessage({ text: "User deleted.", type: "success" });
         } catch (error) {
-            setMessage("Error " + (error instanceof Error ? ` Detail: ${error.message}` : ""));
+            setMessage({ text: "Error " + (error instanceof Error ? ` Detail: ${error.message}` : ""), type: "error" });
         }
     };
 
@@ -150,6 +167,11 @@ export default function Users() {
     const handleFormSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
+        if (passwordForm.password.length < 8) {
+            setAddUserMessage({ text: "Password must be at least 8 characters long.", type: "error" });
+            return;
+        }
+
         try {
             const payload = {
                 ...formData,
@@ -161,12 +183,12 @@ export default function Users() {
             await addUser(payload);
 
             await getUsers();
-            setMessage("User successfully added.");
+            setMessage({ text: "User successfully added.", type: "success" });
             setIsModalOpen(false);
             setFormData({ name: "", surname: "", username: "", email: "", roleId: "", companyId: "" });
             setPasswordForm({ password: "" });
         } catch (error) {
-            setAddUserMessage("Error " + (error instanceof Error ? ` Detail: ${error.message}` : ""));
+            setAddUserMessage({ text: "Error " + (error instanceof Error ? ` Detail: ${error.message}` : ""), type: "error" });
         }
     };
 
@@ -177,9 +199,9 @@ export default function Users() {
             await CompaniesRepository.addCompany({ name: companyFormData.name, cin: companyFormData.cin });
 
             await fatchCompanies();
-            setAddCompanyMessage("Company successfully added.");
+            setAddCompanyMessage({ text: "Company successfully added.", type: "success" });
         } catch (error) {
-            setAddCompanyMessage("Error " + (error instanceof Error ? ` Detail: ${error.message}` : ""));
+            setAddCompanyMessage({ text: "Error " + (error instanceof Error ? ` Detail: ${error.message}` : ""), type: "error" });
         }
         setIsCompanyModalOpen(false);
         setCompanyFormData({ name: "", cin: "" });
@@ -229,8 +251,8 @@ export default function Users() {
             </div>
 
             {message && (
-                <div style={{ marginBottom: '1rem', padding: '10px', backgroundColor: message.includes("Error") ? 'var(--reject)' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
-                    {message}
+                <div style={{ marginBottom: '1rem', padding: '10px', backgroundColor: message.type === "error" ? 'var(--reject)' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
+                    {message.text}
                 </div>)}
 
             <EditableTable<User>
@@ -251,8 +273,8 @@ export default function Users() {
             />
             < Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Create New User" >
                 {addUserMessage && (
-                    <div style={{ marginBottom: '1rem', padding: '10px', backgroundColor: addUserMessage.includes("Error") ? 'var(--reject)' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
-                        {addUserMessage}
+                    <div style={{ marginBottom: '1rem', padding: '10px', backgroundColor: addUserMessage.type === "error" ? 'var(--reject)' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
+                        {addUserMessage.text}
                     </div>)}
 
                 <form onSubmit={handleFormSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -260,22 +282,21 @@ export default function Users() {
                     <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
                         <div style={{ flex: '1 1 calc(50% - 8px)', minWidth: '150px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
                             <label style={{ fontSize: '0.875rem', fontWeight: 500 }}>Name *</label>
-                            <input required type="text" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)' }} />
+                            <input required type="text" maxLength={80} value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)' }} />
                         </div>
                         <div style={{ flex: '1 1 calc(50% - 8px)', minWidth: '150px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
                             <label style={{ fontSize: '0.875rem', fontWeight: 500 }}>Surname *</label>
-                            <input required type="text" value={formData.surname} onChange={e => setFormData({ ...formData, surname: e.target.value })} style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)', width: '100%', boxSizing: 'border-box' }} />
+                            <input required type="text" maxLength={100} value={formData.surname} onChange={e => setFormData({ ...formData, surname: e.target.value })} style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)', width: '100%', boxSizing: 'border-box' }} />
                         </div>
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                         <label style={{ fontSize: '0.875rem', fontWeight: 500 }}>Username *</label>
-                        <input required type="text" value={formData.username} onChange={e => setFormData({ ...formData, username: e.target.value })} style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)', width: '100%', boxSizing: 'border-box' }} />
+                        <input required type="text" maxLength={120} value={formData.username} onChange={e => setFormData({ ...formData, username: e.target.value })} style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)', width: '100%', boxSizing: 'border-box' }} />
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <label style={{ fontSize: '0.875rem', fontWeight: 500 }}>Email *</label>
-                        <input required type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)', width: '100%', boxSizing: 'border-box' }} />
+                        <EmailValidator onChange={e => setFormData({ ...formData, email: e.target.value })} value={formData.email} style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)', width: '100%', boxSizing: 'border-box' }} />
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -327,20 +348,20 @@ export default function Users() {
 
             <Modal isOpen={isCompanyModalOpen} onClose={() => setIsCompanyModalOpen(false)} title="Add New Company">
                 {addCompanyMessage && (
-                    <div style={{ marginBottom: '1rem', padding: '10px', backgroundColor: addCompanyMessage.includes("Error") ? 'var(--reject)' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
-                        {addCompanyMessage}
+                    <div style={{ marginBottom: '1rem', padding: '10px', backgroundColor: addCompanyMessage.type === "error" ? 'var(--reject)' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
+                        {addCompanyMessage.text}
                     </div>)}
 
                 <form onSubmit={handleCompanyFormSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                         <label style={{ fontSize: '0.875rem', fontWeight: 500 }}>Company Name *</label>
-                        <input required type="text" value={companyFormData.name} onChange={e => setCompanyFormData({ ...companyFormData, name: e.target.value })} style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)', width: '100%', boxSizing: 'border-box' }} />
+                        <input required type="text" maxLength={100} value={companyFormData.name} onChange={e => setCompanyFormData({ ...companyFormData, name: e.target.value })} style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)', width: '100%', boxSizing: 'border-box' }} />
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                         <label style={{ fontSize: '0.875rem', fontWeight: 500 }}>CIN *</label>
-                        <input required type="text" value={companyFormData.cin} onChange={e => setCompanyFormData({ ...companyFormData, cin: e.target.value })} style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)', width: '100%', boxSizing: 'border-box' }} />
+                        <input required type="text" maxLength={20} value={companyFormData.cin} onChange={e => setCompanyFormData({ ...companyFormData, cin: e.target.value })} style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)', width: '100%', boxSizing: 'border-box' }} />
                     </div>
 
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--border-color)' }}>

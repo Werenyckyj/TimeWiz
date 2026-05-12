@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useRef } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useAuth } from "../../auth/hooks/useAuth";
 import { useTimesheet } from "../hooks/useTimesheet";
 import { useProjects } from "../../projects/hooks/useProjects";
@@ -40,6 +40,8 @@ const getDaysOfWeek = (year: number, week: number): Date[] => {
     return days;
 };
 
+const globalSyncLock = new Set<string>();
+
 export default function Timesheet() {
     const { user } = useAuth();
     const { timesheets, getTimesheets, editTimesheet, addTimesheet } = useTimesheet();
@@ -55,32 +57,54 @@ export default function Timesheet() {
     const { year, week } = getISOWeekInfo(currentDate);
     const days = useMemo(() => getDaysOfWeek(year, week), [year, week]);
     const [openCommentId, setOpenCommentId] = useState<number | null>(null);
+    const [dataLoadedFor, setDataLoadedFor] = useState<string | null>(null);
 
     useEffect(() => {
         if (!user?.nameid) return;
-        getTimesheets(Number(user.nameid), year, week).catch(err => console.error(err));
-        getUserProjects(Number(user.nameid)).catch(err => console.error(err));
-    }, [user?.nameid, year, week, getTimesheets, getUserProjects]);
 
-    const syncLock = useRef<Set<string>>(new Set());
+        let ignore = false;
+
+        const loadData = async () => {
+            setDataLoadedFor(null);
+            try {
+                await Promise.all([
+                    getTimesheets(Number(user.nameid), year, week),
+                    getUserProjects(Number(user.nameid))
+                ]);
+
+                if (!ignore) {
+                    setDataLoadedFor(`${year}-${week}`);
+                }
+
+                setDataLoadedFor(`${year}-${week}`);
+            } catch (err) {
+                console.error("Error fetching data:", err);
+            }
+        };
+
+        loadData();
+        return () => { ignore = true; };
+    }, [user?.nameid, year, week, getTimesheets, getUserProjects]);
 
     useEffect(() => {
         const syncMissingRows = async () => {
-            if (!user?.nameid) return;
+            if (!user?.nameid || dataLoadedFor !== `${year}-${week}`) return;
+
             const rawTimesheets = Array.isArray((timesheets as TsWeek[])) ? (timesheets as TsWeek[]) : (Array.isArray(timesheets) ? timesheets : []);
             const rawProjects = Array.isArray((projects as Projects)?.data) ? (projects as Projects).data : (Array.isArray(projects) ? projects : []);
 
-            const existingProjectIds = rawTimesheets.map((ts: TsWeek) => ts.project?.id);
+            const currentWeekTimesheets = rawTimesheets.filter(ts => ts.year === year && ts.weekNumber === week);
+            const existingProjectIds = currentWeekTimesheets.map(ts => ts.project?.id);
 
             const missingProjects = rawProjects.filter((p: Project) =>
                 !existingProjectIds.includes(p.id) &&
-                !syncLock.current.has(`${year}-${week}-${p.id}`)
+                !globalSyncLock.has(`${year}-${week}-${p.id}`)
             );
 
             if (missingProjects.length > 0) {
                 let anyAdded = false;
                 for (const p of missingProjects) {
-                    syncLock.current.add(`${year}-${week}-${p.id}`);
+                    globalSyncLock.add(`${year}-${week}-${p.id}`);
 
                     try {
                         await addTimesheet({
@@ -97,6 +121,7 @@ export default function Timesheet() {
                         anyAdded = true;
                     } catch (error) {
                         console.error(`Failed to automatically create timesheet for project ${p.name}`, error);
+                        globalSyncLock.delete(`${year}-${week}-${p.id}`);
                     }
                 }
                 if (anyAdded) {
@@ -106,7 +131,7 @@ export default function Timesheet() {
         };
 
         syncMissingRows();
-    }, [timesheets, projects, user?.nameid, year, week, addTimesheet, getTimesheets, days]);
+    }, [timesheets, projects, user?.nameid, year, week, addTimesheet, getTimesheets, days, dataLoadedFor]);
 
     if (timesheets !== prevTimesheets || week !== prevWeek) {
         setPrevTimesheets(timesheets);
@@ -263,6 +288,22 @@ export default function Timesheet() {
                             <span className="comp-only"> Last week</span>
                         </div>
                     </button>
+                    <input
+                        type="date"
+                        value={toLocalDateString(currentDate)}
+                        onChange={(e) => {
+                            if (e.target.value) setCurrentDate(new Date(e.target.value));
+                        }}
+                        style={{
+                            padding: '7px 12px',
+                            borderRadius: '4px',
+                            border: '1px solid var(--border-color)',
+                            backgroundColor: 'var(--bg-primary)',
+                            color: 'var(--text-primary)',
+                            fontFamily: 'inherit',
+                            cursor: 'pointer'
+                        }}
+                    />
                     <button className="primary-button" onClick={goToToday} style={{ padding: '8px 16px', cursor: 'pointer', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', fontWeight: 'bold', color: 'var(--text-primary)' }}>Today</button>
                     <button className="primary-button" onClick={goToNextWeek} style={{ padding: '8px 12px', cursor: 'pointer', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -288,6 +329,21 @@ export default function Timesheet() {
                         <span className="comp-only"> Last week</span>
                     </div>
                 </button>
+                <input
+                    type="date"
+                    value={toLocalDateString(currentDate)}
+                    onChange={(e) => {
+                        if (e.target.value) setCurrentDate(new Date(e.target.value));
+                    }}
+                    style={{
+                        padding: '7px 12px',
+                        borderRadius: '4px',
+                        border: '1px solid var(--border-color)',
+                        backgroundColor: 'var(--bg-primary)',
+                        color: 'var(--text-primary)',
+                        fontFamily: 'inherit'
+                    }}
+                />
                 <button className="primary-button" onClick={goToToday} style={{ padding: '8px 16px', cursor: 'pointer', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', fontWeight: 'bold', color: 'var(--text-primary)' }}>Today</button>
                 <button className="primary-button" onClick={goToNextWeek} style={{ padding: '8px 12px', cursor: 'pointer', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -307,7 +363,7 @@ export default function Timesheet() {
                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center' }}>
                     <thead style={{ backgroundColor: 'var(--bg-secondary)', borderBottom: '2px solid var(--border-color)' }}>
                         <tr>
-                            <th style={{ padding: '12px', textAlign: 'left', width: '25%' }}>Project</th>
+                            <th style={{ padding: '12px', textAlign: 'left', width: '17%' }}>Project</th>
                             {days.map((d, i) => (
                                 <th key={i} style={{ padding: '12px', width: '9%' }}>
                                     <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
@@ -412,7 +468,7 @@ export default function Timesheet() {
                                             );
                                         })}
 
-                                        <td data-label="∑ Total" style={{ padding: '12px', fontWeight: 'bold', color: 'var(--text-primary)' }}>{rowSum}</td>
+                                        <td data-label="∑ Total" style={{ padding: '12px', fontWeight: 'bold', color: 'var(--text-primary)' }}>{rowSum} h</td>
 
                                         <td data-label="Action" style={{ padding: '12px' }}>
                                             {isLocked ? (
@@ -453,12 +509,12 @@ export default function Timesheet() {
                                 const mobileLabel = `${d.toLocaleDateString("en-US", { weekday: 'short' })}`;
                                 return (
                                     <td key={i} data-label={mobileLabel} style={{ padding: '12px' }}>
-                                        {sum > 0 ? sum : 0}
+                                        {sum > 0 ? sum : 0} h
                                     </td>
                                 );
                             })}
 
-                            <td data-label="Grand Total" style={{ padding: '12px', color: 'var(--text-primary)', backgroundColor: 'var(--bg-secondary)' }}>{grandTotal}</td>
+                            <td data-label="Grand Total" style={{ padding: '12px', color: 'var(--text-primary)', backgroundColor: 'var(--bg-secondary)' }}>{grandTotal} h</td>
                             <td className="comp-only" data-label=""></td>
                         </tr>
                     </tfoot>

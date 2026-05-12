@@ -21,6 +21,7 @@ public class CompanyController(ILogger<CompanyController> logger, ITRepository<C
     {
         var entities = _tRepository.GetAll()
                                 .Include(c => c.Employees)
+                                .OrderBy(c => c.Name.ToLower())
                                 .AsEnumerable();
 
         var responses = _mapper.Map<IEnumerable<CompanyRDto>>(entities).ToList();

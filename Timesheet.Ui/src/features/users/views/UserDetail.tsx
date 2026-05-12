@@ -201,9 +201,16 @@ export default function UserDetail() {
                 return Number(parseFloat(String(entry.hours)).toFixed(3));
             };
 
+            const getDateForTheDay = (targetDayOfWeek: number) => {
+                const entry = ts.tsEntries?.find(e => new Date(e.workDate).getDay() === targetDayOfWeek);
+                if (!entry) return 'N/A';
+                const date = new Date(entry.workDate);
+                return `${String(date.getDate()).padStart(2, '0')}. ${String(date.getMonth() + 1).padStart(2, '0')}.`;
+            }
+
             return {
                 id: ts.id,
-                week: `${ts.year}-W${String(ts.weekNumber).padStart(2, '0')}`,
+                week: `${ts.year}/W${String(ts.weekNumber).padStart(2, '0')} | ${getDateForTheDay(1)} - ${getDateForTheDay(0)}`,
                 year: ts.year,
                 Mo: getHoursForDay(1),
                 Tu: getHoursForDay(2),

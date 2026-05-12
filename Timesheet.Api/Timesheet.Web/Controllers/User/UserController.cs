@@ -47,6 +47,7 @@ public class UserController(ILogger<UserController> logger, ITRepository<User> t
                                 .Include(u => u.Role)
                                 .Include(u => u.UserProjects)
                                 .Include(u => u.Company)
+                                .OrderBy(u => u.Name.ToLower())
                                 .AsEnumerable();
 
         var responses = _mapper.Map<IEnumerable<UserRDto>>(entities).ToList();

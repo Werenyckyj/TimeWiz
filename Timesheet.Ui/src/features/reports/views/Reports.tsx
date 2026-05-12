@@ -117,8 +117,8 @@ const ReportBlock = ({ title, isTeamReport, currentUser, projectsList, usersList
 
     useEffect(() => { handleTimeSpanChange('this'); }, []);
 
-    const detailedData = useMemo(() => {
-        const flatData = reportData.flatMap(ts => {
+    const baseData = useMemo(() => {
+        return reportData.flatMap(ts => {
             const userinfo = usersList.data.find(u => u.id === ts.userId) ?? null;
             const companyinfo = companiesList.data.find(c => c.id === userinfo?.companyId) ?? null;
 
@@ -140,31 +140,65 @@ const ReportBlock = ({ title, isTeamReport, currentUser, projectsList, usersList
                     hours: entry.hours
                 }));
         });
+    }, [reportData, dateFrom, dateTo, usersList, companiesList]);
 
-        if (groupBy === "none") return flatData.sort((a, b) => a.isoDate.localeCompare(b.isoDate));
+    const detailedData = useMemo(() => {
+        let finalData: ReportRow[] = [];
 
-        const groups: Record<string, ReportRow> = {};
+        if (groupBy === "none") {
+            finalData = baseData;
+        } else {
+            const groups: Record<string, ReportRow> = {};
+            baseData.forEach(row => {
+                const groupKey = row[groupBy as keyof ReportRow]?.toString() || "Unknown";
 
-        flatData.forEach(row => {
-            const groupKey = row[groupBy as keyof ReportRow]?.toString() || "Unknown";
+                if (!groups[groupKey]) {
+                    groups[groupKey] = {
+                        ...row,
+                        id: `group-${groupKey}`,
+                        date: groupBy === "date" ? row.date : "---",
+                        projectName: groupBy === "projectName" ? row.projectName : "---",
+                        userName: groupBy === "userName" ? row.userName : "---",
+                        companyName: groupBy === "companyName" ? row.companyName : "---",
+                        status: groupBy === "status" ? row.status : "---",
+                        hours: 0
+                    };
+                }
+                groups[groupKey].hours += row.hours;
+            });
+            finalData = Object.values(groups);
+        }
 
-            if (!groups[groupKey]) {
-                groups[groupKey] = {
-                    ...row,
-                    id: `group-${groupKey}`,
-                    date: groupBy === "date" ? row.date : "---",
-                    projectName: groupBy === "projectName" ? row.projectName : "---",
-                    userName: groupBy === "userName" ? row.userName : "---",
-                    companyName: groupBy === "companyName" ? row.companyName : "---",
-                    status: groupBy === "status" ? row.status : "---",
-                    hours: 0
-                };
+        if (sortField) {
+            return finalData.sort((a, b) => {
+                if (a[sortField] === null) return 1;
+                if (b[sortField] === null) return -1;
+                if (a[sortField] === null && b[sortField] === null) return 0;
+
+                if (typeof a[sortField] === 'number') {
+                    return ((a[sortField] as number) - (b[sortField] as number)) * (order === 'asc' ? 1 : -1);
+                }
+
+                return (a[sortField].toString().localeCompare(b[sortField].toString(), "en", { numeric: true }) * (order === 'asc' ? 1 : -1));
+            });
+        }
+        return finalData.sort((a, b) => {
+            if (a.isoDate && b.isoDate && a.isoDate !== "---" && b.isoDate !== "---") {
+                return a.isoDate.localeCompare(b.isoDate);
             }
-            groups[groupKey].hours += row.hours;
-        });
 
-        return Object.values(groups).sort((a, b) => b.hours - a.hours);
-    }, [reportData, dateFrom, dateTo, usersList, companiesList, groupBy]);
+            if (groupBy !== "none") {
+                const groupKey = groupBy as keyof ReportRow;
+
+                if (a[groupKey] === null) return 1;
+                if (b[groupKey] === null) return -1;
+
+                return a[groupKey].toString().localeCompare(b[groupKey].toString(), "en", { numeric: true });
+            }
+
+            return 0;
+        });
+    }, [groupBy, sortField, order, baseData]);
 
     useEffect(() => { setTableData(detailedData); }, [detailedData]);
 
@@ -175,18 +209,24 @@ const ReportBlock = ({ title, isTeamReport, currentUser, projectsList, usersList
         if (mode === 'this') {
             const dates = getMonthDates(0);
             setDateFrom(dates.dateFrom); setDateTo(dates.dateTo);
+            fetchReport(dates.dateFrom, dates.dateTo);
         } else if (mode === 'last') {
             const dates = getMonthDates(-1);
             setDateFrom(dates.dateFrom); setDateTo(dates.dateTo);
+            fetchReport(dates.dateFrom, dates.dateTo);
         }
     };
 
-    const fetchReport = async () => {
+    const fetchReport = async (overrideDateFrom?: string, overrideDateTo?: string) => {
         setIsLoading(true);
         try {
             const params = new URLSearchParams();
-            if (dateFrom) params.append("dateFrom", dateFrom);
-            if (dateTo) params.append("dateTo", dateTo);
+
+            const finalDateFrom = overrideDateFrom !== undefined ? overrideDateFrom : dateFrom;
+            const finalDateTo = overrideDateTo !== undefined ? overrideDateTo : dateTo;
+
+            if (finalDateFrom) params.append("dateFrom", finalDateFrom);
+            if (finalDateTo) params.append("dateTo", finalDateTo);
 
             selectedProjectIds.forEach(id => params.append("projectIds", id));
             selectedStatuses.forEach(status => params.append("statuses", status));
@@ -229,25 +269,14 @@ const ReportBlock = ({ title, isTeamReport, currentUser, projectsList, usersList
         download_link.style.display = "none";
         document.body.appendChild(download_link);
         download_link.click();
-    };
-
-    const handleSort = (field: keyof ReportRow, sortOrder: 'asc' | 'desc') => {
-        if (field) {
-            const sortedData = [...detailedData].sort((a, b) => {
-                if (a[field] === null) return 1;
-                if (b[field] === null) return -1;
-                if (a[field] === null && b[field] === null) return 0;
-                return (a[field].toString().localeCompare(b[field].toString(), "en", { numeric: true }) * (sortOrder === 'asc' ? 1 : -1));
-            });
-            setTableData(sortedData);
-        }
+        document.body.removeChild(download_link);
+        window.URL.revokeObjectURL(download_link.href);
     };
 
     const handleSortingChange = (accessor: keyof ReportRow) => {
-        const sortOrder = accessor === sortField && order === 'asc' ? 'desc' : 'asc';
+        const newOrder = accessor === sortField && order === 'asc' ? 'desc' : 'asc';
         setSortField(accessor);
-        setOrder(sortOrder);
-        handleSort(accessor, sortOrder);
+        setOrder(newOrder);
     };
 
     const columns: { header: string; accessor: keyof ReportRow; type: "text" | "number" }[] = [
@@ -373,7 +402,7 @@ const ReportBlock = ({ title, isTeamReport, currentUser, projectsList, usersList
                 <div style={{ display: 'flex' }}>
                     <button
                         className="primary-button-2"
-                        onClick={fetchReport}
+                        onClick={() => fetchReport()}
                         disabled={isLoading}
                         style={{
                             padding: '0 24px',
@@ -480,9 +509,16 @@ export default function Reports() {
             <ReportBlock title="My Personal Report" isTeamReport={false} currentUser={user} projectsList={projects} usersList={users} companiesList={companies} />
 
             {canSeeTeamReport && (
-                <div style={{ borderTop: '2px dashed var(--border-color)', paddingTop: '2rem' }}>
+                <>
+                    <div style={{
+                        height: '4px',
+                        background: 'linear-gradient(90deg, transparent 0%, var(--border-color) 15%, var(--border-color) 85%, transparent 100%)',
+                        margin: '4rem 0',
+                        opacity: 1
+                    }} />
+
                     <ReportBlock title="Team & Projects Report" isTeamReport={true} currentUser={user} projectsList={projects} usersList={users} companiesList={companies} />
-                </div>
+                </>
             )}
         </div>
     );

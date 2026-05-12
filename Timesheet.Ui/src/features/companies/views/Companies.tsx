@@ -4,7 +4,7 @@ import { EditableTable, type ColumnDef } from "../../../shared/components/Editab
 import type { Company } from "../types/companies.type";
 
 export default function Companies() {
-    const { companies, getCompanies, deleteCompany, editCompany, addCompany } = useCompanies();
+    const { companies, getCompanies, editCompany, addCompany } = useCompanies();
 
     const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
     const [isAdding, setIsAdding] = useState(false);
@@ -47,15 +47,6 @@ export default function Companies() {
         }
     };
 
-    const handleDelete = async (id: string | number) => {
-        try {
-            await deleteCompany(id as number);
-            setMessage({ text: "Company successfully deleted.", type: "success" });
-        } catch (error) {
-            setMessage({ text: "Error deleting company." + (error instanceof Error ? ` Detail: ${error.message}` : ""), type: "error" });
-        }
-    };
-
     return (
         <div className="main-content"
             style={{ fontFamily: 'sans-serif', margin: '0 auto' }}>
@@ -86,7 +77,6 @@ export default function Companies() {
                 setIsAdding={setIsAdding}
                 onAdd={handleAdd}
                 onEdit={handleEdit}
-                onDelete={handleDelete}
                 entityName="company"
                 nameAccessor="name"
             />
