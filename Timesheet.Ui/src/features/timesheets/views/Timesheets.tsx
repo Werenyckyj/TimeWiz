@@ -54,6 +54,7 @@ export default function Timesheet() {
 
     const { year, week } = getISOWeekInfo(currentDate);
     const days = useMemo(() => getDaysOfWeek(year, week), [year, week]);
+    const [openCommentId, setOpenCommentId] = useState<number | null>(null);
 
     useEffect(() => {
         if (!user?.nameid) return;
@@ -335,12 +336,47 @@ export default function Timesheet() {
                                     <tr key={ts.id} style={{ borderBottom: '1px solid var(--border-color)', backgroundColor: isRejected ? 'var(--bg-secondary)' : 'transparent' }}>
 
                                         <td className="mobile-card-header" data-label="Project" style={{ padding: '12px', textAlign: 'left', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                            {ts.project?.name || "Unknown Project"}
-                                            {isRejected && ts.comment && (
-                                                <span title={`Note from Manager: ${ts.comment}`} style={{ cursor: 'help', color: '#ef4444' }}>
-                                                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                                </span>
-                                            )}
+                                            <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                <span style={{ color: isRejected ? 'var(--reject-timesheet-text)' : 'var(--text-primary)' }}>{ts.project?.name || "Unknown Project"}</span>
+
+                                                {isRejected && ts.comment && (
+                                                    <button
+                                                        onClick={() => setOpenCommentId(openCommentId === ts.id ? null : ts.id)}
+                                                        onBlur={() => setOpenCommentId(null)}
+                                                        title="Click to view manager's note"
+                                                        style={{
+                                                            background: 'none', border: 'none', color: 'var(--text-primary)',
+                                                            cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center',
+                                                            borderRadius: '50%', backgroundColor: openCommentId === ts.id ? 'var(--reject)' : 'transparent',
+                                                            transition: 'background-color 0.2s'
+                                                        }}
+                                                    >
+                                                        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                                    </button>
+                                                )}
+
+                                                {openCommentId === ts.id && (
+                                                    <div style={{
+                                                        position: 'absolute',
+                                                        top: 'calc(100% + 4px)',
+                                                        left: 40,
+                                                        zIndex: 50,
+                                                        minWidth: '220px',
+                                                        maxWidth: '300px',
+                                                        padding: '12px',
+                                                        backgroundColor: 'var(--reject)',
+                                                        border: '1px solid var(--reject-border)',
+                                                        borderRadius: '6px',
+                                                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                                                        color: 'var(--text-primary)',
+                                                        fontSize: '0.85rem',
+                                                        fontWeight: 400
+                                                    }}>
+                                                        <strong style={{ display: 'block', marginBottom: '4px' }}>Manager's Note:</strong>
+                                                        {ts.comment}
+                                                    </div>
+                                                )}
+                                            </div>
                                         </td>
 
                                         {days.map((d, i) => {
