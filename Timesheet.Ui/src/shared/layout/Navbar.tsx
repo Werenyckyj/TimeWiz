@@ -16,7 +16,7 @@ export const Navbar = ({ toggleMenu }: NavbarProps) => {
     const [userInfo, setUserInfo] = useState<User | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isChangePassword, setIsChangePassword] = useState(false);
-    const [message, setMessage] = useState<string>("");
+    const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
     const [oldPassword, setOldPassword] = useState({ password: "" });
     const [newPassword, setNewPassword] = useState({ password: "" });
     const [confirmPassword, setConfirmPassword] = useState({ password: "" });
@@ -43,24 +43,24 @@ export const Navbar = ({ toggleMenu }: NavbarProps) => {
             };
 
             if (payload.newPassword !== confirmPassword.password) {
-                alert("New password and confirmation do not match.");
+                setMessage({ text: "New password and confirm password do not match.", type: 'error' });
                 return;
             }
 
             if (payload.newPassword.length < 8) {
-                alert("New password must be at least 8 characters long.");
+                setMessage({ text: "New password must be at least 8 characters long.", type: 'error' });
                 return;
             }
 
             await UsersRepository.changeUserPassword(payload as ChangeUserPassword);
             setIsChangePassword(false);
-            setMessage("Password changed successfully.");
+            setMessage({ text: "Password changed successfully.", type: 'success' });
             setOldPassword({ password: "" });
             setNewPassword({ password: "" });
             setConfirmPassword({ password: "" });
         } catch (error) {
             console.error("Error updating user information:", error);
-            setMessage("Failed to change password.");
+            setMessage({ text: "Failed to change password.", type: 'error' });
         }
     };
 
@@ -107,7 +107,7 @@ export const Navbar = ({ toggleMenu }: NavbarProps) => {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                         <button
                             className="secondary-button"
-                            onClick={() => { setMessage(""); setIsModalOpen(true); setIsChangePassword(false); }}
+                            onClick={() => { setMessage(null); setIsModalOpen(true); setIsChangePassword(false); }}
                             style={{
                                 padding: '6px 12px',
                                 cursor: 'pointer',
@@ -146,7 +146,7 @@ export const Navbar = ({ toggleMenu }: NavbarProps) => {
                 </div>
 
             </nav>
-            <Modal isOpen={isModalOpen} onClose={() => { setMessage(""); setIsModalOpen(false); }} title="User Information">
+            <Modal isOpen={isModalOpen} onClose={() => { setMessage(null); setIsModalOpen(false); }} title="User Information">
                 <div style={{ display: "flex", flexDirection: "column", gap: "12px", color: 'var(--text-primary)' }}>
                     <div><strong>Name:</strong> {userInfo?.name} {userInfo?.surname}</div>
                     <div><strong>Username:</strong> {userInfo?.username}</div>
@@ -154,7 +154,9 @@ export const Navbar = ({ toggleMenu }: NavbarProps) => {
                     <div><strong>Role:</strong> {userInfo?.role?.name ?? "N/A"}</div>
 
                     {message && (
-                        <div style={{ color: message[0] === 'F' ? '#ef4444' : '#10b981' }}>{message}</div>
+                        <div style={{ padding: '10px', backgroundColor: message.type === 'error' ? 'var(--reject)' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
+                            {message.text}
+                        </div>
                     )}
 
                     <div style={{ width: "100%", marginTop: "8px" }}>
@@ -196,7 +198,7 @@ export const Navbar = ({ toggleMenu }: NavbarProps) => {
                                 type="button"
                                 className="primary-button-2"
                                 onClick={() => {
-                                    setMessage("");
+                                    setMessage(null);
                                     setIsChangePassword(true);
                                 }}
                                 style={{

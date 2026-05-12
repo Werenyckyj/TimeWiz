@@ -57,6 +57,38 @@ api.interceptors.response.use(
                 return Promise.reject(refreshError);
             }
         }
+
+        if (error.response?.status >= 500) {
+            console.error("Critical error:", error.response.data);
+
+            return Promise.reject(new Error("A critical server error occurred. Please try again later."));
+        }
+
+        const data = error.response?.data;
+
+        if (data) {
+            if (typeof data === "string") {
+                return Promise.reject(new Error(data));
+            }
+
+            if (data.errors && typeof data.errors === "object") {
+                const firstErrorKey = Object.keys(data.errors)[0];
+                const firstErrorMessage = data.errors[firstErrorKey][0];
+                return Promise.reject(new Error(firstErrorMessage || data.title || "Validation error"));
+            }
+
+            if (data.detail) {
+                return Promise.reject(new Error(data.detail));
+            }
+            if (data.title) {
+                return Promise.reject(new Error(data.title));
+            }
+
+            if (data.message) {
+                return Promise.reject(new Error(data.message));
+            }
+        }
+
         return Promise.reject(error);
     }
 );

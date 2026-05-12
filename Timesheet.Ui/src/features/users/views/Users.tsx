@@ -19,6 +19,8 @@ export default function Users() {
     const { users, getUsers, editUser, deleteUser, addUser } = useUsers();
     const [isAdding, setIsAdding] = useState(false);
     const [message, setMessage] = useState<string>("");
+    const [addUserMessage, setAddUserMessage] = useState<string>("");
+    const [addCompanyMessage, setAddCompanyMessage] = useState<string>("");
     const [roleOptions, setRoleOptions] = useState<SelectOptions[]>([]);
     const [organizationOptions, setOrganizationOptions] = useState<SelectOptions[]>([]);
 
@@ -93,7 +95,7 @@ export default function Users() {
             await getUsers();
             setMessage("User successfully edited.");
         } catch (error) {
-            setMessage("Error editing user." + (error instanceof Error ? ` Detail: ${error.message}` : ""));
+            setMessage("Error " + (error instanceof Error ? ` Detail: ${error.message}` : ""));
         }
         setPendingUserEdit(null);
     };
@@ -124,7 +126,7 @@ export default function Users() {
             await deleteUser(id as number);
             setMessage("User deleted.");
         } catch (error) {
-            setMessage("Error deleting user." + (error instanceof Error ? ` Detail: ${error.message}` : ""));
+            setMessage("Error " + (error instanceof Error ? ` Detail: ${error.message}` : ""));
         }
     };
 
@@ -153,7 +155,7 @@ export default function Users() {
             setFormData({ name: "", surname: "", username: "", email: "", roleId: "", companyId: "" });
             setPasswordForm({ password: "" });
         } catch (error) {
-            setMessage("Error adding user." + (error instanceof Error ? ` Detail: ${error.message}` : ""));
+            setAddUserMessage("Error " + (error instanceof Error ? ` Detail: ${error.message}` : ""));
         }
     };
 
@@ -164,9 +166,9 @@ export default function Users() {
             await CompaniesRepository.addCompany({ name: companyFormData.name, cin: companyFormData.cin });
 
             await fatchCompanies();
-            setMessage("Company successfully added.");
+            setAddCompanyMessage("Company successfully added.");
         } catch (error) {
-            setMessage("Error adding company." + (error instanceof Error ? ` Detail: ${error.message}` : ""));
+            setAddCompanyMessage("Error " + (error instanceof Error ? ` Detail: ${error.message}` : ""));
         }
         setIsCompanyModalOpen(false);
         setCompanyFormData({ name: "", cin: "" });
@@ -222,6 +224,11 @@ export default function Users() {
                 entityName="user"
             />
             < Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Create New User" >
+                {addUserMessage && (
+                    <div style={{ marginBottom: '1rem', padding: '10px', backgroundColor: addUserMessage.includes("Error") ? 'var(--reject)' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
+                        {addUserMessage}
+                    </div>)}
+
                 <form onSubmit={handleFormSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
                     <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
@@ -293,6 +300,11 @@ export default function Users() {
             </Modal >
 
             <Modal isOpen={isCompanyModalOpen} onClose={() => setIsCompanyModalOpen(false)} title="Add New Company">
+                {addCompanyMessage && (
+                    <div style={{ marginBottom: '1rem', padding: '10px', backgroundColor: addCompanyMessage.includes("Error") ? 'var(--reject)' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
+                        {addCompanyMessage}
+                    </div>)}
+
                 <form onSubmit={handleCompanyFormSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>

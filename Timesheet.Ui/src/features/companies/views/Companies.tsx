@@ -6,7 +6,7 @@ import type { Company } from "../types/companies.type";
 export default function Companies() {
     const { companies, getCompanies, deleteCompany, editCompany, addCompany } = useCompanies();
 
-    const [message, setMessage] = useState<string>("");
+    const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
     const [isAdding, setIsAdding] = useState(false);
 
     useEffect(() => {
@@ -21,28 +21,38 @@ export default function Companies() {
 
     const handleAdd = async (draft: Partial<Company>) => {
         try {
+            if (!draft.name || !draft.cin) {
+                setMessage({ text: "Name and CIN are required.", type: "error" });
+                return;
+            }
+
             await addCompany(draft as Company);
-            setMessage("Company successfully added.");
+            setMessage({ text: "Company successfully added.", type: "success" });
         } catch (error) {
-            setMessage("Error adding company." + (error instanceof Error ? ` Detail: ${error.message}` : ""));
+            setMessage({ text: "Error adding company." + (error instanceof Error ? ` Detail: ${error.message}` : ""), type: "error" });
         }
     };
 
     const handleEdit = async (draft: Company) => {
         try {
+            if (!draft.name || !draft.cin) {
+                setMessage({ text: "Name and CIN are required.", type: "error" });
+                return;
+            }
+
             await editCompany(draft);
-            setMessage("Company successfully updated.");
+            setMessage({ text: "Company successfully updated.", type: "success" });
         } catch (error) {
-            setMessage("Error updating company." + (error instanceof Error ? ` Detail: ${error.message}` : ""));
+            setMessage({ text: "Error updating company." + (error instanceof Error ? ` Detail: ${error.message}` : ""), type: "error" });
         }
     };
 
     const handleDelete = async (id: string | number) => {
         try {
             await deleteCompany(id as number);
-            setMessage("Company successfully deleted.");
+            setMessage({ text: "Company successfully deleted.", type: "success" });
         } catch (error) {
-            setMessage("Error deleting company." + (error instanceof Error ? ` Detail: ${error.message}` : ""));
+            setMessage({ text: "Error deleting company." + (error instanceof Error ? ` Detail: ${error.message}` : ""), type: "error" });
         }
     };
 
@@ -64,8 +74,8 @@ export default function Companies() {
             </div>
 
             {message && (
-                <div style={{ marginBottom: '1rem', padding: '10px', backgroundColor: message.includes("Error") ? 'var(--reject)' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
-                    {message}
+                <div style={{ marginBottom: '1rem', padding: '10px', backgroundColor: message.type === "error" ? 'var(--reject)' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
+                    {message.text}
                 </div>
             )}
 
