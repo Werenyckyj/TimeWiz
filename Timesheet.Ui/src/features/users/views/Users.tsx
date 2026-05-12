@@ -30,6 +30,7 @@ export default function Users() {
 
     const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
     const [pendingUserEdit, setPendingUserEdit] = useState<User | null>(null);
+    const [searchQuery, setSearchQuery] = useState("");
 
     const [formData, setFormData] = useState({
         name: "", surname: "", username: "", email: "", roleId: "", companyId: ""
@@ -121,6 +122,16 @@ export default function Users() {
         ? rawUsers.filter(user => user.isActive)
         : rawUsers;
 
+    const filteredUsers = displayedUsers.filter(user => {
+        const query = searchQuery.toLowerCase();
+        return (
+            user.name.toLowerCase().includes(query) ||
+            user.surname.toLowerCase().includes(query) ||
+            user.email.toLowerCase().includes(query) ||
+            user.company?.name.toLowerCase().includes(query)
+        );
+    });
+
     const handleDelete = async (id: string | number) => {
         try {
             await deleteUser(id as number);
@@ -130,7 +141,7 @@ export default function Users() {
         }
     };
 
-    const tableData = displayedUsers.map(user => ({
+    const tableData = filteredUsers.map(user => ({
         ...user,
         roleId: user.role ? user.role.id : user.roleId,
         companyId: user.company ? user.company.id : user.companyId
@@ -174,13 +185,27 @@ export default function Users() {
         setCompanyFormData({ name: "", cin: "" });
     }
 
+
     return (
         <div className="main-content"
             style={{ fontFamily: 'sans-serif', margin: '0 auto' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                <h2 style={{ marginBottom: '1.5rem' }}>Users</h2>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '1.5rem', gap: '16px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '8px', flex: '1 1 250px', minWidth: '0' }}>
+
+                    <h2 style={{ marginBottom: '0.5rem' }}>Users</h2>
+
+
+                    <input
+                        type="text"
+                        placeholder="Search users by name, email, or company..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        style={{ padding: '10px', borderRadius: '6px', border: '1px solid var(--border-color)', width: '400px', maxWidth: '100%', boxSizing: 'border-box' }}
+                    />
+                </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
+
                     {(!isAdding && user?.role === 'Admin') && (
                         <button
                             className="primary-button-2"
@@ -191,7 +216,7 @@ export default function Users() {
                         </button>
                     )}
 
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.9rem', color: 'var(--text-secondary)', cursor: 'pointer' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.9rem', color: 'var(--text-secondary)', cursor: 'pointer', whiteSpace: 'nowrap' }}>
                         <input
                             type="checkbox"
                             checked={showActiveOnly}
@@ -199,6 +224,7 @@ export default function Users() {
                         />
                         Show active only
                     </label>
+
                 </div>
             </div>
 
