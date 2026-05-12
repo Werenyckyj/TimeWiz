@@ -225,7 +225,7 @@ export default function Projects() {
                                         <div className="manage-project-users-button-group">
                                             {isMember && (
                                                 <button
-                                                    className={isManager ? "primary-button-2" : "secondary-button"}
+                                                    className={isManager ? "primary-button-2" : "primary-button"}
                                                     onClick={() => toggleManager(user, isManager)}
                                                     style={{
                                                         padding: '6px 12px',
@@ -233,9 +233,9 @@ export default function Projects() {
                                                         cursor: 'pointer',
                                                         fontWeight: 500,
                                                         fontSize: '0.85rem',
-                                                        border: isManager ? '1px solid var(--primary-button-border)' : '1px solid var(--border-color)',
+                                                        border: isManager ? '1px solid var(--primary-button-border)' : '1px solid var(--primary-button-border)',
                                                         backgroundColor: isManager ? 'var(--primary-button)' : 'var(--bg-secondary)',
-                                                        color: isManager ? 'white' : 'var(--text-secondary)',
+                                                        color: isManager ? 'white' : 'var(--text-primary)',
                                                         margin: '4px'
                                                     }}
                                                 >
