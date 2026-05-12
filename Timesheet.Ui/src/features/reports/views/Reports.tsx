@@ -430,7 +430,7 @@ const ReportBlock = ({ title, isTeamReport, currentUser, projectsList, usersList
                             {columns.map(col => {
                                 if (!isTeamReport && (col.accessor === 'userName' || col.accessor === 'companyName')) return null;
                                 return (
-                                    <th className="secondary-button" key={col.accessor} style={{ padding: '12px', color: 'var(--text-primary)', borderBottom: '1px solid var(--border-color)', cursor: 'pointer' }} onClick={() => handleSortingChange(col.accessor)}>
+                                    <th className="secondary-button" key={col.accessor} style={{ padding: '12px', color: 'var(--text-primary)', borderBottom: '1px solid var(--border-color)', cursor: 'pointer', whiteSpace: 'nowrap' }} onClick={() => handleSortingChange(col.accessor)}>
                                         {col.header}
                                     </th>
                                 )
@@ -446,6 +446,8 @@ const ReportBlock = ({ title, isTeamReport, currentUser, projectsList, usersList
                                     {columns.map(({ accessor }) => {
                                         const tData = data[accessor];
                                         if (!isTeamReport && (accessor === 'userName' || accessor === 'companyName')) return null;
+                                        if (accessor === 'date' || accessor === 'status')
+                                            return <td key={accessor} style={{ padding: '12px', color: 'var(--text-primary)', borderBottom: '1px solid var(--border-color)', whiteSpace: 'nowrap' }}>{tData !== null ? tData : "N/A"}</td>
                                         return <td key={accessor} style={{ padding: '12px', color: 'var(--text-primary)', borderBottom: '1px solid var(--border-color)' }}>{tData !== null ? tData : "N/A"}</td>
                                     })}
                                 </tr>
@@ -453,8 +455,8 @@ const ReportBlock = ({ title, isTeamReport, currentUser, projectsList, usersList
                         )}
                         {detailedData.length > 0 && (
                             <tr style={{ backgroundColor: 'var(--bg-secondary)', borderTop: '2px solid var(--border-color)' }}>
-                                <td colSpan={isTeamReport ? 4 : 3} style={{ padding: '12px', color: 'var(--text-primary)', textAlign: 'right', fontWeight: 'bold' }}>Total Hours in period:</td>
-                                <td style={{ padding: '12px', color: 'var(--text-primary)', fontWeight: 'bold' }}>{detailedData.reduce((sum, row) => sum + row.hours, 0)}h</td>
+                                <td colSpan={isTeamReport ? 4 : 3} style={{ padding: '12px', color: 'var(--text-primary)', textAlign: 'right', fontWeight: 'bold', whiteSpace: 'nowrap' }}>Total Hours in period:</td>
+                                <td style={{ padding: '12px', color: 'var(--text-primary)', fontWeight: 'bold', whiteSpace: 'nowrap' }}>{detailedData.reduce((sum, row) => sum + row.hours, 0)}h</td>
                             </tr>
                         )}
                     </tbody>

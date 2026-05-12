@@ -59,7 +59,7 @@ export default function Login() {
                                     Forgot Password?
                                 </Link>                            </div>
                             {message && (
-                                <div style={{ marginBottom: '1rem', padding: '10px', backgroundColor: message.includes("Error") ? 'var(--reject)' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
+                                <div style={{ marginBottom: '1rem', overflowWrap: 'break-word', padding: '10px', backgroundColor: message.includes("Error") ? 'var(--reject)' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
                                     {message}
                                 </div>
                             )}
