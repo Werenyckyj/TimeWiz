@@ -141,12 +141,13 @@ public class AuthService(UnitOfWork unitOfWork, IMapper mapper, ILogger<AuthServ
         }
     }
 
-    public UserRDto Register(RegisterWDto dto)
+    public UserRDto Register(RegisterWDto dto, out string message)
     {
         var existingUser = _unitOfWork.UserRepository.GetByUsername(dto.Username);
         if (existingUser != null)
         {
             _logger.LogWarning($"User already exists with username: {dto.Username}");
+            message = "User already exists.";
             return null!;
         }
 
@@ -154,6 +155,7 @@ public class AuthService(UnitOfWork unitOfWork, IMapper mapper, ILogger<AuthServ
         if (role == null)
         {
             _logger.LogWarning($"Role not found with ID: {dto.RoleId}");
+            message = "Role not found.";
             return null!;
         }
 
@@ -161,6 +163,7 @@ public class AuthService(UnitOfWork unitOfWork, IMapper mapper, ILogger<AuthServ
         if (company == null && dto.RoleId == 4)
         {
             _logger.LogWarning($"Company not found with ID: {dto.CompanyId}");
+            message = "Company not found.";
             return null!;
         }
 
@@ -184,11 +187,13 @@ public class AuthService(UnitOfWork unitOfWork, IMapper mapper, ILogger<AuthServ
         if (createdUser == null)
         {
             _logger.LogError($"Failed to create user with username: {dto.Username}");
+            message = "Failed to create user.";
             return null!;
         }
 
         _unitOfWork.SaveChanges();
         _logger.LogInformation($"User created successfully with username: {dto.Username}");
+        message = "User created successfully.";
         return _mapper.Map<UserRDto>(createdUser.Entity);
     }
 

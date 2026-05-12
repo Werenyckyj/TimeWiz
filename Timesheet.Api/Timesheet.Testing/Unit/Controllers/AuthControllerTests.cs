@@ -21,7 +21,7 @@ public class AuthControllerTests : TestBase
     public AuthControllerTests()
     {
         var authServiceMock = new Mock<IAuthService>();
-        authServiceMock.Setup(s => s.Register(It.Is<RegisterWDto>(dto => dto.Username == "newuser" && dto.Password == "Password123!" && dto.Name == "John" && dto.Surname == "Doe" && dto.Email == "john.doe@example.com" && dto.RoleId == 1 && dto.CompanyId == 1))).Returns(
+        authServiceMock.Setup(s => s.Register(It.Is<RegisterWDto>(dto => dto.Username == "newuser" && dto.Password == "Password123!" && dto.Name == "John" && dto.Surname == "Doe" && dto.Email == "john.doe@example.com" && dto.RoleId == 1 && dto.CompanyId == 1), out It.Ref<string>.IsAny)).Returns(
             new UserRDto
             {
                 Id = 1,

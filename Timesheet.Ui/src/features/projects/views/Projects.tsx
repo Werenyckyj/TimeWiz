@@ -273,7 +273,10 @@ export default function Projects() {
                             <span>Total assigned: <strong>{projectMembers.length}</strong></span>
                             <span>Managers: <strong>{projectManagers.length}</strong></span>
                         </div>
-                        <button className="success-button" onClick={() => setIsMembersModalOpen(false)} style={{ padding: '8px 16px', backgroundColor: 'var(--success-2)', border: 'none', borderRadius: '4px', cursor: 'pointer', color: 'var(--text-primary)', fontWeight: 500 }}>
+                        <button className="success-button" onClick={() => {
+                            setIsMembersModalOpen(false);
+                            setMessage("Project members updated successfully.");
+                        }} style={{ padding: '8px 16px', backgroundColor: 'var(--success-2)', border: 'none', borderRadius: '4px', cursor: 'pointer', color: 'var(--text-primary)', fontWeight: 500 }}>
                             Done
                         </button>
                     </div>
