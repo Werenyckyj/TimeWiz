@@ -15,7 +15,7 @@ import EmailValidator from "../../../shared/components/EmailValidator";
 export default function Users() {
     const navigate = useNavigate();
     const { user } = useAuth();
-    const { users, getUsers, editUser, deleteUser, addUser } = useUsers();
+    const { users, getUsers, editUser, addUser } = useUsers();
     const [isAdding, setIsAdding] = useState(false);
     const [message, setMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
     const [addUserMessage, setAddUserMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
@@ -23,7 +23,7 @@ export default function Users() {
     const [roleOptions, setRoleOptions] = useState<SelectOptions[]>([]);
     const [organizationOptions, setOrganizationOptions] = useState<SelectOptions[]>([]);
 
-    const [showActiveOnly, setShowActiveOnly] = useState(false);
+    const [showActiveOnly, setShowActiveOnly] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isCompanyModalOpen, setIsCompanyModalOpen] = useState(false);
 
@@ -134,7 +134,24 @@ export default function Users() {
 
     const handleDelete = async (id: string | number) => {
         try {
-            await deleteUser(id as number);
+            const original = rawUsers.find(u => String(u.id) === String(id));
+            if (!original) {
+                setMessage({ text: "User not found.", type: "error" });
+                return;
+            }
+
+            await editUser({
+                id: Number(id),
+                name: original.name,
+                surname: original.surname,
+                username: original.username,
+                email: original.email,
+                isActive: false,
+                roleId: original.role ? Number(original.role.id) : Number(original.roleId) || 0,
+                companyId: original.company ? Number(original.company.id) : Number(original.companyId) || 0
+            });
+
+            await getUsers();
             setMessage({ text: "User deleted.", type: "success" });
         } catch (error) {
             setMessage({ text: "Error " + (error instanceof Error ? ` Detail: ${error.message}` : ""), type: "error" });

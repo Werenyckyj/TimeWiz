@@ -9,10 +9,10 @@ import { Modal } from "../../../shared/components/Modal";
 import { useAuth } from "../../auth/hooks/useAuth";
 
 export default function Projects() {
-    const { projects, getProjects, editProject, deleteProject, addProject } = useProjects();
+    const { projects, getProjects, editProject, addProject } = useProjects();
     const [isAdding, setIsAdding] = useState(false);
     const [message, setMessage] = useState<string>("");
-    const [showActiveOnly, setShowActiveOnly] = useState(false);
+    const [showActiveOnly, setShowActiveOnly] = useState(true);
     const [isMembersModalOpen, setIsMembersModalOpen] = useState(false);
     const [selectedProject, setSelectedProject] = useState<Project | null>(null);
     const [allUsers, setAllUsers] = useState<User[]>([]);
@@ -75,7 +75,15 @@ export default function Projects() {
 
     const handleDelete = async (id: string | number) => {
         try {
-            await deleteProject(id as number);
+            const originalProject = rawProjects.find(p => p.id === Number(id));
+            if (!originalProject) {
+                setMessage("Error: Project not found.");
+                return;
+            }
+
+            await editProject({ id: originalProject.id, name: originalProject.name, code: originalProject.code, isActive: false } as Project);
+
+
             setMessage("Project successfully deleted.");
         } catch (error) {
             setMessage("Error deleting project." + (error instanceof Error ? ` Detail: ${error.message}` : ""));
