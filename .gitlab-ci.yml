@@ -33,13 +33,15 @@ build-production-docker:
   stage: build
   image: docker:24.0.5
   services:
-    - docker:24.0.5-dind
+    - name: docker:24.0.5-dind
+      alias: docker
   variables:
-    DOCKER_HOST: tcp://docker:2375
-    DOCKER_TLS_CERTDIR: ""
+    DOCKER_HOST: tcp://docker:2376
+    DOCKER_TLS_CERTDIR: "/certs"
+    DOCKER_DRIVER: overlay2
   script:
     - echo "Verifying production Docker image builds..."
-    - echo "DB_USER=test DB_PASSWORD=test DB_NAME=test DB_PORT=5432" > ./Timesheet.Api/.env
+    - echo "DB_USER=test DB_PASSWORD=test DB_NAME=test DB_PORT=5432" > .env
     - docker compose -f docker-compose.prod.yaml build
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
