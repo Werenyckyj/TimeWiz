@@ -22,6 +22,14 @@ services:
     container_name: timesheet_backend
     volumes:
       - ./Timesheet.Api:/src
+      - /src/Timesheet.Web/obj/
+      - /src/Timesheet.Web/bin/
+      - /src/Timesheet.Core/obj/
+      - /src/Timesheet.Core/bin/
+      - /src/Timesheet.Data/obj/
+      - /src/Timesheet.Data/bin/
+      - /src/Timesheet.Testing/obj/
+      - /src/Timesheet.Testing/bin/
     working_dir: /src/Timesheet.Web
     command: dotnet watch run --urls http://0.0.0.0:8080
     env_file:
@@ -30,8 +38,8 @@ services:
       - DOTNET_USE_POLLING_FILE_WATCHER=1
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=${DB_NAME};Username=${DB_USER};Password=${DB_PASSWORD}
-    ports:
-      - "5000:8080"
+    expose:
+      - "8080"
     depends_on:
       - db
     restart: unless-stopped
@@ -47,12 +55,30 @@ services:
       - /app/node_modules
     command: npm run dev -- --host 0.0.0.0
     environment:
-      - VITE_API_URL=http://localhost:5000/api
-    ports:
-      - "5173:5173"
+      - VITE_API_URL=https://192.168.0.108/api
+    expose:
+      - "5173"
     depends_on:
       - backend
     restart: unless-stopped
 
+  caddy:
+    image: caddy:2-alpine
+    container_name: timesheet_proxy
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443" 
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - frontend
+      - backend
+
+
 volumes:
   postgres_data:
+  caddy_data:
+  caddy_config:

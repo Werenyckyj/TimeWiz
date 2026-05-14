@@ -9,10 +9,10 @@ import { Modal } from "../../../shared/components/Modal";
 import { useAuth } from "../../auth/hooks/useAuth";
 
 export default function Projects() {
-    const { projects, getProjects, editProject, deleteProject, addProject } = useProjects();
+    const { projects, getProjects, editProject, addProject } = useProjects();
     const [isAdding, setIsAdding] = useState(false);
     const [message, setMessage] = useState<string>("");
-    const [showActiveOnly, setShowActiveOnly] = useState(false);
+    const [showActiveOnly, setShowActiveOnly] = useState(true);
     const [isMembersModalOpen, setIsMembersModalOpen] = useState(false);
     const [selectedProject, setSelectedProject] = useState<Project | null>(null);
     const [allUsers, setAllUsers] = useState<User[]>([]);
@@ -31,11 +31,21 @@ export default function Projects() {
     };
 
     const columns: ColumnDef<Project>[] = [
-        { header: "Code", accessor: "code", isRequired: true, type: "text", maxLength: 100 },
-        { header: "Name", accessor: "name", isRequired: true, type: "text", maxLength: 100 },
-        { header: "Is Active", accessor: "isActive", type: "checkbox", renderCell: (row) => row.isActive ? "✔️" : "❌" },
+        { header: "Code", accessor: "code", isRequired: true, type: "text", maxLength: 40 },
+        { header: "Name", accessor: "name", isRequired: true, type: "text", maxLength: 180 },
+        {
+            header: "Is Active", accessor: "isActive", type: "checkbox", renderCell: (row) => (
+                <label className="custom-checkbox-container" style={{ margin: 0, cursor: 'default' }}>
+                    <input
+                        type="checkbox"
+                        checked={row.isActive}
+                        readOnly
+                    />
+                    <span className="checkmark"></span>
+                </label>)
+        },
         { header: "Valid From", accessor: "validFrom", type: "date", renderCell: (row) => formatDate(row.validFrom) },
-        { header: "Valid To", accessor: "validTo", type: "date", renderCell: (row) => formatDate(row.validTo) },
+        { header: "Valid To", accessor: "validTo", type: "date", renderCell: (row) => (formatDate(row.validTo)) },
     ];
 
     const handleAdd = async (draft: Partial<Project>) => {
@@ -75,7 +85,15 @@ export default function Projects() {
 
     const handleDelete = async (id: string | number) => {
         try {
-            await deleteProject(id as number);
+            const originalProject = rawProjects.find(p => p.id === Number(id));
+            if (!originalProject) {
+                setMessage("Error: Project not found.");
+                return;
+            }
+
+            await editProject({ id: originalProject.id, name: originalProject.name, code: originalProject.code, isActive: false } as Project);
+
+
             setMessage("Project successfully deleted.");
         } catch (error) {
             setMessage("Error deleting project." + (error instanceof Error ? ` Detail: ${error.message}` : ""));
@@ -163,18 +181,19 @@ export default function Projects() {
                         </button>
                     )}
 
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.9rem', color: 'var(--text-secondary)', cursor: 'pointer' }}>
+                    <label className="custom-checkbox-container" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.9rem', color: 'var(--text-primary)', cursor: 'pointer' }}>
                         <input
                             type="checkbox"
                             checked={showActiveOnly}
                             onChange={(e) => setShowActiveOnly(e.target.checked)}
                         />
+                        <span className="checkmark"></span>
                         Show active only
                     </label>
                 </div>
             </div>
             {message && (
-                <div style={{ marginBottom: '1rem', padding: '10px', backgroundColor: message.includes("Error") ? 'var(--reject)' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
+                <div style={{ marginBottom: '1rem', overflowWrap: 'break-word', padding: '10px', backgroundColor: message.includes("Error") ? 'var(--reject)' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
                     {message}
                 </div>
             )}
@@ -190,6 +209,8 @@ export default function Projects() {
                 extraRowActions={(row) => [
                     { label: "Edit members", onClick: () => handleEditMembers(row) }
                 ]}
+                entityName="project"
+                nameAccessor="name"
             />
 
             <Modal
@@ -219,13 +240,13 @@ export default function Projects() {
                                     <div key={user.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', borderBottom: '1px solid var(--border-color)', backgroundColor: isMember ? 'var(--bg-secondary)' : 'transparent' }}>
 
                                         <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                            <span style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{user.name} {user.surname}</span>
-                                            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{user.email}</span>
+                                            <span style={{ fontWeight: 500, color: 'var(--text-primary)', whiteSpace: 'normal', overflowWrap: 'anywhere' }}>{user.name} {user.surname}</span>
+                                            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', whiteSpace: 'normal', overflowWrap: 'anywhere' }}>{user.email}</span>
                                         </div>
                                         <div className="manage-project-users-button-group">
                                             {isMember && (
                                                 <button
-                                                    className={isManager ? "primary-button-2" : "secondary-button"}
+                                                    className={isManager ? "primary-button-2" : "primary-button"}
                                                     onClick={() => toggleManager(user, isManager)}
                                                     style={{
                                                         padding: '6px 12px',
@@ -233,9 +254,9 @@ export default function Projects() {
                                                         cursor: 'pointer',
                                                         fontWeight: 500,
                                                         fontSize: '0.85rem',
-                                                        border: isManager ? '1px solid var(--primary-button-border)' : '1px solid var(--border-color)',
+                                                        border: isManager ? '1px solid var(--primary-button-border)' : '1px solid var(--primary-button-border)',
                                                         backgroundColor: isManager ? 'var(--primary-button)' : 'var(--bg-secondary)',
-                                                        color: isManager ? 'white' : 'var(--text-secondary)',
+                                                        color: isManager ? 'white' : 'var(--text-primary)',
                                                         margin: '4px'
                                                     }}
                                                 >
@@ -267,8 +288,14 @@ export default function Projects() {
                     </div>
 
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-                        <span>Total assigned: <strong>{projectMembers.length}</strong>, Managers: <strong>{projectManagers.length}</strong></span>
-                        <button className="secondary-button" onClick={() => setIsMembersModalOpen(false)} style={{ padding: '8px 16px', backgroundColor: 'var(--bg-secondary)', border: 'none', borderRadius: '4px', cursor: 'pointer', color: 'var(--text-secondary)', fontWeight: 500 }}>
+                        <div style={{ display: 'flex', gap: '4px', flexDirection: 'column' }}>
+                            <span>Total assigned: <strong>{projectMembers.length}</strong></span>
+                            <span>Managers: <strong>{projectManagers.length}</strong></span>
+                        </div>
+                        <button className="success-button" onClick={() => {
+                            setIsMembersModalOpen(false);
+                            setMessage("Project members updated successfully.");
+                        }} style={{ padding: '8px 16px', backgroundColor: 'var(--success-2)', border: 'none', borderRadius: '4px', cursor: 'pointer', color: 'var(--text-primary)', fontWeight: 500 }}>
                             Done
                         </button>
                     </div>

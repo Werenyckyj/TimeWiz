@@ -72,6 +72,18 @@ export default function UserDetail() {
         fetchData();
     }, [id, userId]);
 
+    const sanitizeHours = (val: string | number | undefined): number => {
+        if (val === null || val === undefined || val === '') return 0;
+
+        const safeVal = String(val).replace(',', '.');
+        let parsed = parseFloat(safeVal);
+
+        if (isNaN(parsed)) return 0;
+        if (parsed > 24) parsed = 24;
+        if (parsed < 0) parsed = 0;
+
+        return Number(parsed.toFixed(3));
+    };
 
     const handleLoadMore = async (projectId: number) => {
         const currentData = userProjectTimesheets[projectId];
@@ -117,13 +129,13 @@ export default function UserDetail() {
 
             const updatedEntries: TsEntry[] = [];
             const daysMap = [
-                { dayNum: 1, val: parseFloat(String(row.Mo)) || 0 },
-                { dayNum: 2, val: parseFloat(String(row.Tu)) || 0 },
-                { dayNum: 3, val: parseFloat(String(row.We)) || 0 },
-                { dayNum: 4, val: parseFloat(String(row.Th)) || 0 },
-                { dayNum: 5, val: parseFloat(String(row.Fr)) || 0 },
-                { dayNum: 6, val: parseFloat(String(row.Sa)) || 0 },
-                { dayNum: 0, val: parseFloat(String(row.Su)) || 0 },
+                { dayNum: 1, val: sanitizeHours(row.Mo) },
+                { dayNum: 2, val: sanitizeHours(row.Tu) },
+                { dayNum: 3, val: sanitizeHours(row.We) },
+                { dayNum: 4, val: sanitizeHours(row.Th) },
+                { dayNum: 5, val: sanitizeHours(row.Fr) },
+                { dayNum: 6, val: sanitizeHours(row.Sa) },
+                { dayNum: 0, val: sanitizeHours(row.Su) },
             ];
 
             for (const { dayNum, val } of daysMap) {
@@ -171,7 +183,7 @@ export default function UserDetail() {
     }
 
     const columns: ColumnDef<RawTsWeek>[] = [
-        { header: 'Week', accessor: 'week', type: 'readonly' },
+        { header: 'Week', accessor: 'week', type: 'readonly', nowrap: true },
         { header: 'Mon', accessor: 'Mo', type: 'number' },
         { header: 'Tue', accessor: 'Tu', type: 'number' },
         { header: 'Wen', accessor: 'We', type: 'number' },
@@ -185,12 +197,20 @@ export default function UserDetail() {
         return timesheets.map(ts => {
             const getHoursForDay = (targetDayOfWeek: number) => {
                 const entry = ts.tsEntries?.find(e => new Date(e.workDate).getDay() === targetDayOfWeek);
-                return entry ? entry.hours : 0;
+                if (!entry || entry.hours === undefined || entry.hours === null) return 0;
+                return Number(parseFloat(String(entry.hours)).toFixed(3));
             };
+
+            const getDateForTheDay = (targetDayOfWeek: number) => {
+                const entry = ts.tsEntries?.find(e => new Date(e.workDate).getDay() === targetDayOfWeek);
+                if (!entry) return 'N/A';
+                const date = new Date(entry.workDate);
+                return `${String(date.getDate()).padStart(2, '0')}. ${String(date.getMonth() + 1).padStart(2, '0')}.`;
+            }
 
             return {
                 id: ts.id,
-                week: `${ts.year}-W${String(ts.weekNumber).padStart(2, '0')}`,
+                week: `${ts.year}/W${String(ts.weekNumber).padStart(2, '0')} | ${getDateForTheDay(1)} - ${getDateForTheDay(0)}`,
                 year: ts.year,
                 Mo: getHoursForDay(1),
                 Tu: getHoursForDay(2),
@@ -207,10 +227,10 @@ export default function UserDetail() {
         <div className="main-content"
             style={{ fontFamily: 'sans-serif', margin: '0 auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
-                <h2 style={{ margin: 0, color: 'var(--text-primary)' }}>{user?.name} {user?.surname}</h2>
+                <h2 style={{ margin: 0, color: 'var(--text-primary)', whiteSpace: 'normal', overflowWrap: 'anywhere' }}>{user?.name} {user?.surname}</h2>
             </div>
             {message && (
-                <div style={{ marginBottom: '1rem', padding: '10px', backgroundColor: message.includes("Error") ? 'var(--reject)' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
+                <div style={{ marginBottom: '1rem', overflowWrap: 'break-word', padding: '10px', backgroundColor: message.includes("Error") ? 'var(--reject)' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
                     {message}
                 </div>
             )}
@@ -223,7 +243,7 @@ export default function UserDetail() {
 
                     return (
                         <div key={project.id} style={{ marginBottom: '2rem' }}>
-                            <h3 style={{ color: 'var(--text-primary)', marginBottom: '1rem' }}>{project.name}</h3>
+                            <h3 style={{ color: 'var(--text-primary)', marginBottom: '1rem', overflowWrap: 'break-word' }}>{project.name}</h3>
                             {timesheetData ? (
                                 <div style={{ display: 'flex', flexDirection: 'column' }}>
 

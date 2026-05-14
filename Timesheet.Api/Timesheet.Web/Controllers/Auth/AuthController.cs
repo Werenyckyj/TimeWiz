@@ -29,8 +29,8 @@ public class AuthController(IAuthService authService, IMapper mapper, UnitOfWork
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public IActionResult Register([FromBody] RegisterWDto dto)
     {
-        var result = _authService.Register(dto);
-        return result == null ? BadRequest("Failed to create user.") : Ok(result);
+        var result = _authService.Register(dto, out string message);
+        return result == null ? BadRequest(message) : Ok(result);
     }
 
     [HttpPost("login")]

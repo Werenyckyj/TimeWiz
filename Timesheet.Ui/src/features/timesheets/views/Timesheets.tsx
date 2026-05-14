@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useRef } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useAuth } from "../../auth/hooks/useAuth";
 import { useTimesheet } from "../hooks/useTimesheet";
 import { useProjects } from "../../projects/hooks/useProjects";
@@ -40,6 +40,8 @@ const getDaysOfWeek = (year: number, week: number): Date[] => {
     return days;
 };
 
+const globalSyncLock = new Set<string>();
+
 export default function Timesheet() {
     const { user } = useAuth();
     const { timesheets, getTimesheets, editTimesheet, addTimesheet } = useTimesheet();
@@ -54,32 +56,55 @@ export default function Timesheet() {
 
     const { year, week } = getISOWeekInfo(currentDate);
     const days = useMemo(() => getDaysOfWeek(year, week), [year, week]);
+    const [openCommentId, setOpenCommentId] = useState<number | null>(null);
+    const [dataLoadedFor, setDataLoadedFor] = useState<string | null>(null);
 
     useEffect(() => {
         if (!user?.nameid) return;
-        getTimesheets(Number(user.nameid), year, week).catch(err => console.error(err));
-        getUserProjects(Number(user.nameid)).catch(err => console.error(err));
-    }, [user?.nameid, year, week, getTimesheets, getUserProjects]);
 
-    const syncLock = useRef<Set<string>>(new Set());
+        let ignore = false;
+
+        const loadData = async () => {
+            setDataLoadedFor(null);
+            try {
+                await Promise.all([
+                    getTimesheets(Number(user.nameid), year, week),
+                    getUserProjects(Number(user.nameid))
+                ]);
+
+                if (!ignore) {
+                    setDataLoadedFor(`${year}-${week}`);
+                }
+
+                setDataLoadedFor(`${year}-${week}`);
+            } catch (err) {
+                console.error("Error fetching data:", err);
+            }
+        };
+
+        loadData();
+        return () => { ignore = true; };
+    }, [user?.nameid, year, week, getTimesheets, getUserProjects]);
 
     useEffect(() => {
         const syncMissingRows = async () => {
-            if (!user?.nameid) return;
+            if (!user?.nameid || dataLoadedFor !== `${year}-${week}`) return;
+
             const rawTimesheets = Array.isArray((timesheets as TsWeek[])) ? (timesheets as TsWeek[]) : (Array.isArray(timesheets) ? timesheets : []);
             const rawProjects = Array.isArray((projects as Projects)?.data) ? (projects as Projects).data : (Array.isArray(projects) ? projects : []);
 
-            const existingProjectIds = rawTimesheets.map((ts: TsWeek) => ts.project?.id);
+            const currentWeekTimesheets = rawTimesheets.filter(ts => ts.year === year && ts.weekNumber === week);
+            const existingProjectIds = currentWeekTimesheets.map(ts => ts.project?.id);
 
             const missingProjects = rawProjects.filter((p: Project) =>
                 !existingProjectIds.includes(p.id) &&
-                !syncLock.current.has(`${year}-${week}-${p.id}`)
+                !globalSyncLock.has(`${year}-${week}-${p.id}`)
             );
 
             if (missingProjects.length > 0) {
                 let anyAdded = false;
                 for (const p of missingProjects) {
-                    syncLock.current.add(`${year}-${week}-${p.id}`);
+                    globalSyncLock.add(`${year}-${week}-${p.id}`);
 
                     try {
                         await addTimesheet({
@@ -96,6 +121,7 @@ export default function Timesheet() {
                         anyAdded = true;
                     } catch (error) {
                         console.error(`Failed to automatically create timesheet for project ${p.name}`, error);
+                        globalSyncLock.delete(`${year}-${week}-${p.id}`);
                     }
                 }
                 if (anyAdded) {
@@ -105,7 +131,7 @@ export default function Timesheet() {
         };
 
         syncMissingRows();
-    }, [timesheets, projects, user?.nameid, year, week, addTimesheet, getTimesheets, days]);
+    }, [timesheets, projects, user?.nameid, year, week, addTimesheet, getTimesheets, days, dataLoadedFor]);
 
     if (timesheets !== prevTimesheets || week !== prevWeek) {
         setPrevTimesheets(timesheets);
@@ -128,15 +154,18 @@ export default function Timesheet() {
     const handleHoursChange = (tsId: number, dateIso: string, val: string) => {
         if (!/^[0-9.,]*$/.test(val)) return;
 
-        const safeVal = val.replace(',', '.');
+        let safeVal = val.replace(',', '.');
         const parts = safeVal.split('.');
         if (parts.length > 2) return;
 
-        let finalValue: number | string = safeVal;
+        if (/^0[0-9]/.test(safeVal)) {
+            safeVal = safeVal.replace(/^0/, '');
+        }
 
-        if (safeVal !== "" && !safeVal.endsWith('.')) {
+        if (safeVal !== "" && safeVal !== ".") {
             const parsedHours = parseFloat(safeVal);
-            finalValue = isNaN(parsedHours) ? 0 : parsedHours;
+            if (parsedHours > 24) safeVal = "24";
+            if (parsedHours < 0) safeVal = "0";
         }
 
         setDrafts(prev => prev.map(ts => {
@@ -145,9 +174,9 @@ export default function Timesheet() {
             const existingIdx = newEntries.findIndex(e => toLocalDateString(new Date(e.workDate)) === dateIso);
 
             if (existingIdx >= 0) {
-                (newEntries[existingIdx] as { hours: number | string }).hours = finalValue;
+                (newEntries[existingIdx] as { hours: number | string }).hours = safeVal;
             } else {
-                newEntries.push({ id: 0, tsWeekId: ts.id, workDate: new Date(dateIso) as Date, hours: finalValue as unknown as number, notes: "" });
+                newEntries.push({ id: 0, tsWeekId: ts.id, workDate: new Date(dateIso) as Date, hours: safeVal as unknown as number, notes: "" });
             }
             return { ...ts, tsEntries: newEntries };
         }));
@@ -207,14 +236,41 @@ export default function Timesheet() {
         }
     };
 
+    const handleRevertToDraft = async (ts: TsWeek) => {
+        try {
+            setMessage("Reverting to draft...");
+            await editTimesheet(ts.id, {
+                projectId: ts.project.id,
+                userId: ts.userId,
+                year: ts.year,
+                weekNumber: ts.weekNumber,
+                comment: ts.comment,
+                status: "Draft", // Vracíme zpět do stavu Draft
+                tsEntries: ts.tsEntries,
+                daysInWeek: ts.tsEntries.length,
+                startDate: ts.tsEntries.length > 0
+                    ? toLocalDateString(new Date(ts.tsEntries[0].workDate))
+                    : toLocalDateString(new Date(ts.year, 0, 1))
+            });
+            setMessage(`Timesheet for ${ts.project.name} is back in Draft and can be edited.`);
+
+            await getTimesheets(Number(user?.nameid), year, week);
+        } catch (error) {
+            setMessage("Error reverting timesheet: " + (error instanceof Error ? error.message : "Unknown error"));
+        }
+    };
+
     const colSums = days.map(d => {
         const dateIso = toLocalDateString(d);
-        return drafts.reduce((acc, ts) => {
+        const sumRaw = drafts.reduce((acc, ts) => {
             const entry = ts.tsEntries?.find(e => toLocalDateString(new Date(e.workDate)) === dateIso);
-            return acc + (entry?.hours || 0);
+            const hours = parseFloat(entry?.hours as unknown as string) || 0;
+            return acc + hours;
         }, 0);
+        return Number(sumRaw.toFixed(3));
     });
-    const grandTotal = colSums.reduce((acc, val) => acc + val, 0);
+
+    const grandTotal = Number(colSums.reduce((acc, val) => acc + val, 0).toFixed(3));
 
     return (
         <div className="main-content">
@@ -232,6 +288,22 @@ export default function Timesheet() {
                             <span className="comp-only"> Last week</span>
                         </div>
                     </button>
+                    <input
+                        type="date"
+                        value={toLocalDateString(currentDate)}
+                        onChange={(e) => {
+                            if (e.target.value) setCurrentDate(new Date(e.target.value));
+                        }}
+                        style={{
+                            padding: '7px 12px',
+                            borderRadius: '4px',
+                            border: '1px solid var(--border-color)',
+                            backgroundColor: 'var(--bg-primary)',
+                            color: 'var(--text-primary)',
+                            fontFamily: 'inherit',
+                            cursor: 'pointer'
+                        }}
+                    />
                     <button className="primary-button" onClick={goToToday} style={{ padding: '8px 16px', cursor: 'pointer', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', fontWeight: 'bold', color: 'var(--text-primary)' }}>Today</button>
                     <button className="primary-button" onClick={goToNextWeek} style={{ padding: '8px 12px', cursor: 'pointer', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -257,6 +329,21 @@ export default function Timesheet() {
                         <span className="comp-only"> Last week</span>
                     </div>
                 </button>
+                <input
+                    type="date"
+                    value={toLocalDateString(currentDate)}
+                    onChange={(e) => {
+                        if (e.target.value) setCurrentDate(new Date(e.target.value));
+                    }}
+                    style={{
+                        padding: '7px 12px',
+                        borderRadius: '4px',
+                        border: '1px solid var(--border-color)',
+                        backgroundColor: 'var(--bg-primary)',
+                        color: 'var(--text-primary)',
+                        fontFamily: 'inherit'
+                    }}
+                />
                 <button className="primary-button" onClick={goToToday} style={{ padding: '8px 16px', cursor: 'pointer', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', fontWeight: 'bold', color: 'var(--text-primary)' }}>Today</button>
                 <button className="primary-button" onClick={goToNextWeek} style={{ padding: '8px 12px', cursor: 'pointer', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -267,16 +354,17 @@ export default function Timesheet() {
             </div>
 
             {message && (
-                <div style={{ marginBottom: '1rem', padding: '10px', backgroundColor: message.includes("Error") ? 'var(--reject)' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
+                <div style={{ marginBottom: '1rem', padding: '10px', overflowWrap: 'break-word', backgroundColor: message.includes("Error") ? 'var(--reject)' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
                     {message}
                 </div>
-            )}
+            )
+            }
 
             <div style={{ border: '1px solid var(--border-color)', borderRadius: '8px', overflow: 'hidden', backgroundColor: 'var(--bg-primary)' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center' }}>
                     <thead style={{ backgroundColor: 'var(--bg-secondary)', borderBottom: '2px solid var(--border-color)' }}>
                         <tr>
-                            <th style={{ padding: '12px', textAlign: 'left', width: '25%' }}>Project</th>
+                            <th style={{ padding: '12px', textAlign: 'left', width: '17%' }}>Project</th>
                             {days.map((d, i) => (
                                 <th key={i} style={{ padding: '12px', width: '9%' }}>
                                     <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
@@ -298,18 +386,54 @@ export default function Timesheet() {
                             drafts.map(ts => {
                                 const isLocked = ts.status === "Submitted" || ts.status === "Approved";
                                 const isRejected = ts.status === "Rejected";
-                                const rowSum = ts.tsEntries?.reduce((acc, e) => acc + (e.hours || 0), 0) || 0;
+                                const rowSumRaw = ts.tsEntries?.reduce((acc, e) => acc + (parseFloat(e.hours as unknown as string) || 0), 0) || 0;
+                                const rowSum = Number(rowSumRaw.toFixed(2));
 
                                 return (
                                     <tr key={ts.id} style={{ borderBottom: '1px solid var(--border-color)', backgroundColor: isRejected ? 'var(--bg-secondary)' : 'transparent' }}>
 
                                         <td className="mobile-card-header" data-label="Project" style={{ padding: '12px', textAlign: 'left', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                            {ts.project?.name || "Unknown Project"}
-                                            {isRejected && ts.comment && (
-                                                <span title={`Note from Manager: ${ts.comment}`} style={{ cursor: 'help', color: '#ef4444' }}>
-                                                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                                </span>
-                                            )}
+                                            <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                <span style={{ color: isRejected ? 'var(--reject-timesheet-text)' : 'var(--text-primary)' }}>{ts.project?.name || "Unknown Project"}</span>
+
+                                                {isRejected && ts.comment && (
+                                                    <button
+                                                        onClick={() => setOpenCommentId(openCommentId === ts.id ? null : ts.id)}
+                                                        onBlur={() => setOpenCommentId(null)}
+                                                        title="Click to view manager's note"
+                                                        style={{
+                                                            background: 'none', border: 'none', color: 'var(--text-primary)',
+                                                            cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center',
+                                                            borderRadius: '50%', backgroundColor: openCommentId === ts.id ? 'var(--reject)' : 'transparent',
+                                                            transition: 'background-color 0.2s'
+                                                        }}
+                                                    >
+                                                        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                                    </button>
+                                                )}
+
+                                                {openCommentId === ts.id && (
+                                                    <div style={{
+                                                        position: 'absolute',
+                                                        top: 'calc(100% + 4px)',
+                                                        left: 40,
+                                                        zIndex: 50,
+                                                        minWidth: '220px',
+                                                        maxWidth: '300px',
+                                                        padding: '12px',
+                                                        backgroundColor: 'var(--reject)',
+                                                        border: '1px solid var(--reject-border)',
+                                                        borderRadius: '6px',
+                                                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                                                        color: 'var(--text-primary)',
+                                                        fontSize: '0.85rem',
+                                                        fontWeight: 400
+                                                    }}>
+                                                        <strong style={{ display: 'block', marginBottom: '4px' }}>Manager's Note:</strong>
+                                                        {ts.comment}
+                                                    </div>
+                                                )}
+                                            </div>
                                         </td>
 
                                         {days.map((d, i) => {
@@ -324,16 +448,20 @@ export default function Timesheet() {
                                                     <input
                                                         type="text"
                                                         min="0" max="24" step="any"
-                                                        onFocus={(e) => { if (val === 0) e.target.value = ''; }}
-                                                        onBlur={(e) => { if (val === 0) e.target.value = '0'; }}
+                                                        onFocus={(e) => { if (val === 0 || String(val) === '0') e.target.value = ''; }}
+                                                        onBlur={() => {
+                                                            let currentVal = parseFloat(val as unknown as string);
+                                                            if (isNaN(currentVal)) currentVal = 0;
+                                                            handleHoursChange(ts.id, dateIso, currentVal.toString());
+                                                        }}
                                                         value={val}
                                                         onChange={(e) => handleHoursChange(ts.id, dateIso, e.target.value)}
                                                         disabled={isLocked}
-                                                        maxLength={5}
+                                                        maxLength={6}
                                                         style={{
                                                             width: '100%', padding: '6px', textAlign: 'center', boxSizing: 'border-box',
                                                             border: '1px solid var(--border-color)', borderRadius: '4px',
-                                                            backgroundColor: isLocked ? 'var(--bg-secondary)' : 'var(--bg-primary)',
+                                                            backgroundColor: isLocked ? 'var(--bg-primary)' : 'var(--bg-secondary)',
                                                             color: isLocked ? 'var(--text-secondary)' : 'var(--text-primary)'
                                                         }}
                                                     />
@@ -341,20 +469,30 @@ export default function Timesheet() {
                                             );
                                         })}
 
-                                        <td data-label="∑ Total" style={{ padding: '12px', fontWeight: 'bold', color: 'var(--text-primary)' }}>{rowSum}</td>
+                                        <td data-label="∑ Total" style={{ padding: '12px', fontWeight: 'bold', color: 'var(--text-primary)' }}>{rowSum} h</td>
 
                                         <td data-label="Action" style={{ padding: '12px' }}>
                                             {isLocked ? (
-                                                <span style={{ fontSize: '0.85rem', color: ts.status === "Approved" ? '#10b981' : 'var(--primary-button-hover)', fontWeight: 'bold' }}>
-                                                    {ts.status}
-                                                </span>
+                                                ts.status === "Approved" ? (
+                                                    <span style={{ fontSize: '0.85rem', color: '#10b981', fontWeight: 'bold' }}>
+                                                        {ts.status}
+                                                    </span>
+                                                ) : (
+                                                    <button
+                                                        className="reject-button"
+                                                        onClick={() => handleRevertToDraft(ts)}
+                                                        style={{ padding: '6px 12px', backgroundColor: 'var(--reject)', color: 'var(--text-primary)', border: '1px solid var(--reject-border)', borderRadius: '4px', cursor: 'pointer', fontSize: '0.85rem' }}
+                                                    >
+                                                        Edit
+                                                    </button>
+                                                )
                                             ) : (
                                                 <button
-                                                    className="secondary-button"
+                                                    className="success-button"
                                                     onClick={() => handleSubmitRow(ts)}
-                                                    style={{ padding: '6px 12px', backgroundColor: 'var(--bg-secondary)', color: 'var(--text-color)', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.85rem' }}
+                                                    style={{ padding: '6px 12px', backgroundColor: 'var(--success-2)', color: 'white', border: '1px solid var(--success-2-border)', borderRadius: '4px', cursor: 'pointer', fontSize: '0.85rem' }}
                                                 >
-                                                    Send
+                                                    Submit
                                                 </button>
                                             )}
                                         </td>
@@ -372,17 +510,17 @@ export default function Timesheet() {
                                 const mobileLabel = `${d.toLocaleDateString("en-US", { weekday: 'short' })}`;
                                 return (
                                     <td key={i} data-label={mobileLabel} style={{ padding: '12px' }}>
-                                        {sum > 0 ? sum : 0}
+                                        {sum > 0 ? sum : 0} h
                                     </td>
                                 );
                             })}
 
-                            <td data-label="Grand Total" style={{ padding: '12px', color: 'var(--text-primary)', backgroundColor: 'var(--bg-secondary)' }}>{grandTotal}</td>
+                            <td data-label="Grand Total" style={{ padding: '12px', color: 'var(--text-primary)', backgroundColor: 'var(--bg-secondary)' }}>{grandTotal} h</td>
                             <td className="comp-only" data-label=""></td>
                         </tr>
                     </tfoot>
                 </table>
             </div>
-        </div>
+        </div >
     );
 }

@@ -4,9 +4,9 @@ import { EditableTable, type ColumnDef } from "../../../shared/components/Editab
 import type { Company } from "../types/companies.type";
 
 export default function Companies() {
-    const { companies, getCompanies, deleteCompany, editCompany, addCompany } = useCompanies();
+    const { companies, getCompanies, editCompany, addCompany } = useCompanies();
 
-    const [message, setMessage] = useState<string>("");
+    const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
     const [isAdding, setIsAdding] = useState(false);
 
     useEffect(() => {
@@ -16,34 +16,34 @@ export default function Companies() {
     const columns: ColumnDef<Company>[] = [
         { header: "Name", accessor: "name", type: "text", maxLength: 100 },
         { header: "Workers", accessor: "employees", type: "readonly", renderCell: (row) => row.employees && row.employees.length > 0 ? row.employees.length : "No workers" },
-        { header: "CIN", accessor: "cin", type: "text", maxLength: 20 },
+        { header: "CIN", accessor: "cin", type: "text", maxLength: 20, nowrap: true },
     ];
 
     const handleAdd = async (draft: Partial<Company>) => {
         try {
+            if (!draft.name || !draft.cin) {
+                setMessage({ text: "Name and CIN are required.", type: "error" });
+                return;
+            }
+
             await addCompany(draft as Company);
-            setMessage("Company successfully added.");
+            setMessage({ text: "Company successfully added.", type: "success" });
         } catch (error) {
-            setMessage("Error adding company." + (error instanceof Error ? ` Detail: ${error.message}` : ""));
+            setMessage({ text: "Error adding company." + (error instanceof Error ? ` Detail: ${error.message}` : ""), type: "error" });
         }
     };
 
     const handleEdit = async (draft: Company) => {
         try {
-            await editCompany(draft);
-            setMessage("Company successfully updated.");
-        } catch (error) {
-            setMessage("Error updating company." + (error instanceof Error ? ` Detail: ${error.message}` : ""));
-        }
-    };
+            if (!draft.name || !draft.cin) {
+                setMessage({ text: "Name and CIN are required.", type: "error" });
+                return;
+            }
 
-    const handleDelete = async (id: string | number) => {
-        if (!window.confirm("Are you sure you want to delete this company?")) return;
-        try {
-            await deleteCompany(id as number);
-            setMessage("Company successfully deleted.");
+            await editCompany(draft);
+            setMessage({ text: "Company successfully updated.", type: "success" });
         } catch (error) {
-            setMessage("Error deleting company." + (error instanceof Error ? ` Detail: ${error.message}` : ""));
+            setMessage({ text: "Error updating company." + (error instanceof Error ? ` Detail: ${error.message}` : ""), type: "error" });
         }
     };
 
@@ -65,8 +65,8 @@ export default function Companies() {
             </div>
 
             {message && (
-                <div style={{ marginBottom: '1rem', padding: '10px', backgroundColor: message.includes("Error") ? 'var(--reject)' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
-                    {message}
+                <div style={{ marginBottom: '1rem', overflowWrap: 'break-word', padding: '10px', backgroundColor: message.type === "error" ? 'var(--reject)' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
+                    {message.text}
                 </div>
             )}
 
@@ -77,7 +77,8 @@ export default function Companies() {
                 setIsAdding={setIsAdding}
                 onAdd={handleAdd}
                 onEdit={handleEdit}
-                onDelete={handleDelete}
+                entityName="company"
+                nameAccessor="name"
             />
         </div>
     );

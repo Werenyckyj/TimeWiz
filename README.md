@@ -1,4 +1,10 @@
 # Timesheet App
+[![License](https://img.shields.io/badge/License-Apache_2.0-yellowgreen.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Pipeline status](https://gitlab.fit.cvut.cz/werenvoj/timesheet-app/badges/main/pipeline.svg)](https://gitlab.fit.cvut.cz/werenvoj/timesheet-app/-/commits/main)
+[![.NET 9](https://img.shields.io/badge/.NET-9.0-512BD4?style=flat&logo=dotnet)](https://dotnet.microsoft.com/)
+[![React](https://img.shields.io/badge/React-20232A?style=flat&logo=react&logoColor=61DAFB)](https://reactjs.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=flat&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![Docker](https://img.shields.io/badge/Docker-2CA5E0?style=flat&logo=docker&logoColor=white)](https://www.docker.com/)
 
 A simple Time Tracking and Timesheet Approval application.
 

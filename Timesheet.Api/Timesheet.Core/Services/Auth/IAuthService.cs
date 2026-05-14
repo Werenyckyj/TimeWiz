@@ -12,7 +12,7 @@ public interface IAuthService
     /// </summary>
     /// <param name="dto"></param>
     /// <returns></returns>
-    UserRDto? Register(RegisterWDto dto);
+    UserRDto? Register(RegisterWDto dto, out string message);
 
     /// <summary>
     /// Authenticates a user based on the provided credentials.

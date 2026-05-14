@@ -8,6 +8,7 @@ import { useProjects } from "../../projects/hooks/useProjects";
 import { Modal } from "../../../shared/components/Modal";
 import { useAuth } from "../../auth/hooks/useAuth";
 import { ProjectMembersRepository } from "../../projects/services/ProjectMembersRepository";
+import { ConfirmationModal } from "../../../shared/components/ConfirmationModal";
 
 const toLocalDateString = (date: Date) => {
     const y = date.getFullYear();
@@ -44,6 +45,7 @@ export default function Approval() {
     const [timesheetToReject, setTimesheetToReject] = useState<TsWeek | null>(null);
     const [rejectComment, setRejectComment] = useState("");
     const { user } = useAuth();
+    const [openModalForId, setOpenModalForId] = useState<string | number | null>(null);
 
     useEffect(() => {
         const fetchInitialData = async () => {
@@ -176,7 +178,7 @@ export default function Approval() {
             type: "readonly",
             renderCell: (row) => {
                 const user = users.find(u => u.id === row.userId);
-                return user ? <strong>{user.name} {user.surname}</strong> : "Unknown";
+                return user ? `${user.name} ${user.surname}` : "Unknown";
             }
         },
         {
@@ -199,7 +201,7 @@ export default function Approval() {
                 { header: `${formatDate(days[4])} (Fri)`, accessor: "id", renderCell: (row: TsWeek) => renderDayCell(row, 4) },
                 { header: `${formatDate(days[5])} (Sat)`, accessor: "id", renderCell: (row: TsWeek) => renderDayCell(row, 5) },
                 { header: `${formatDate(days[6])} (Sun)`, accessor: "id", renderCell: (row: TsWeek) => renderDayCell(row, 6) },
-            ] as ColumnDef<TsWeek>[];
+            ] as unknown as ColumnDef<TsWeek>[];
         })(),
         {
             header: "Total",
@@ -218,7 +220,7 @@ export default function Approval() {
                 <div style={{ display: 'flex', gap: '8px' }}>
                     <button
                         className="success-button"
-                        onClick={() => handleStatusChange(row, "Approved")}
+                        onClick={() => setOpenModalForId(row.id)}
                         style={{ padding: '6px 12px', backgroundColor: 'var(--success-2)', color: 'white', border: '1px solid var(--success-border)', borderRadius: '4px', cursor: 'pointer', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '4px' }}
                     >
                         Approve
@@ -247,7 +249,7 @@ export default function Approval() {
             </div>
 
             {message && (
-                <div style={{ marginBottom: '1rem', padding: '10px', backgroundColor: message.includes("Error") ? 'var(--reject)' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
+                <div style={{ marginBottom: '1rem', overflowWrap: 'break-word', padding: '10px', backgroundColor: message.includes("Error") ? 'var(--reject)' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
                     {message}
                 </div>
             )}
@@ -259,7 +261,7 @@ export default function Approval() {
             ) : (
                 Object.values(groupedPending).map(group => (
                     <div key={group.projectName} style={{ marginBottom: '3rem' }}>
-                        <h3 style={{ borderBottom: '2px solid var(--border-color)', paddingBottom: '8px', color: 'var(--text-primary)' }}>
+                        <h3 style={{ borderBottom: '2px solid var(--border-color)', paddingBottom: '8px', color: 'var(--text-primary)', overflowWrap: 'break-word' }}>
                             Project: {group.projectName}
                         </h3>
 
@@ -272,7 +274,12 @@ export default function Approval() {
                     </div>
                 ))
             )}
-            <Modal isOpen={isRejectModalOpen} onClose={() => setIsRejectModalOpen(false)} title="Reject Timesheet">
+            <Modal
+                isOpen={isRejectModalOpen}
+                onClose={() => setIsRejectModalOpen(false)}
+                title={`Reject ${timesheetToReject ? `${pending.find(t => t.id === timesheetToReject.id)?.project.name}` : 'Unknown'} timesheet for ${timesheetToReject ? `${users.find(u => u.id === timesheetToReject.userId)?.name} ${users.find(u => u.id === timesheetToReject.userId)?.surname}` : 'Unknown Employee'} - Week ${timesheetToReject ? timesheetToReject.weekNumber : '--'}/${timesheetToReject ? timesheetToReject.year : '----'}`}
+                maxWidth="500px"
+            >
                 <form onSubmit={handleRejectSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                         <label style={{ fontSize: '0.875rem', fontWeight: 500 }}>Reason for Rejection *</label>
@@ -280,6 +287,7 @@ export default function Approval() {
                             required
                             value={rejectComment}
                             onChange={(e) => setRejectComment(e.target.value)}
+                            maxLength={1024}
                             style={{
                                 padding: '8px',
                                 borderRadius: '4px',
@@ -305,13 +313,35 @@ export default function Approval() {
                         <button
                             className="reject-button"
                             type="submit"
-                            style={{ padding: '8px 16px', backgroundColor: 'var(--reject)', color: 'reject-text', border: '1px solid var(--reject-border)', borderRadius: '4px', cursor: 'pointer', fontWeight: 500 }}
+                            style={{ padding: '8px 16px', backgroundColor: 'var(--reject)', color: 'var(--reject-text)', border: '1px solid var(--reject-border)', borderRadius: '4px', cursor: 'pointer', fontWeight: 500 }}
                         >
                             Reject Timesheet
                         </button>
                     </div>
                 </form>
             </Modal>
+            <ConfirmationModal
+                isOpen={openModalForId !== null}
+                onClose={() => setOpenModalForId(null)}
+                title={`Approve timesheet ${openModalForId !== null
+                    ? String(pending.find(r => r.id === openModalForId)?.project.name || 'Unknown')
+                    : 'Unknown'
+                    } for user ${openModalForId !== null
+                        ? String(users.find(u => u.id === pending.find(r => r.id === openModalForId)?.userId)?.name || 'Unknown')
+                        : 'Unknown'
+                    }`}
+                message={`Are you sure you want to approve timesheet ${openModalForId !== null
+                    ? String(pending.find(r => r.id === openModalForId)?.project.name || 'Unknown')
+                    : 'Unknown'
+                    }?`}
+                onConfirm={async () => {
+                    const row = pending.find(r => r.id === openModalForId);
+                    if (!row) return;
+
+                    await handleStatusChange(row, "Approved");
+                    setOpenModalForId(null);
+                }}
+            />
         </div>
     );
 };

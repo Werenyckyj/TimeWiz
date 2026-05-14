@@ -61,7 +61,7 @@ public class AuthServiceTests : TestBase
         var registerDto = GetBasicRegisterDto();
 
         // Act
-        var result = _authService.Register(registerDto);
+        var result = _authService.Register(registerDto, out string message);
 
         // Assert
         Assert.NotNull(result);
@@ -95,8 +95,8 @@ public class AuthServiceTests : TestBase
         };
 
         // Act
-        var result1 = _authService.Register(registerDto1);
-        var result2 = _authService.Register(registerDto2);
+        var result1 = _authService.Register(registerDto1, out string message1);
+        var result2 = _authService.Register(registerDto2, out string message2);
 
         // Assert
         Assert.NotNull(result1);
@@ -120,7 +120,7 @@ public class AuthServiceTests : TestBase
         };
 
         // Act
-        var result1 = _authService.Register(testUser);
+        var result1 = _authService.Register(testUser, out string message1);
 
         // Assert
         Assert.Null(result1);
@@ -137,12 +137,12 @@ public class AuthServiceTests : TestBase
             Name = "Test",
             Surname = "User1",
             Password = "password123",
-            RoleId = 1,
+            RoleId = 4,
             CompanyId = 999
         };
 
         // Act
-        var result1 = _authService.Register(testUser);
+        var result1 = _authService.Register(testUser, out string message1);
 
         // Assert
         Assert.Null(result1);
@@ -153,7 +153,7 @@ public class AuthServiceTests : TestBase
     {
         // Arrange
         var registerDto = GetBasicRegisterDto();
-        _authService.Register(registerDto);
+        _authService.Register(registerDto, out string message);
 
         // Act
         var authResult = _authService.Authenticate(new LogInWDto { Username = registerDto.Username, Password = registerDto.Password });
@@ -182,7 +182,7 @@ public class AuthServiceTests : TestBase
     {
         // Arrange
         var registerDto = GetBasicRegisterDto();
-        _authService.Register(registerDto);
+        _authService.Register(registerDto, out string message);
 
         // Act
         var authResult = _authService.Authenticate(new LogInWDto { Username = registerDto.Username, Password = "wrongpassword" });
@@ -196,7 +196,7 @@ public class AuthServiceTests : TestBase
     {
         // Arrange
         var registerDto = GetBasicRegisterDto();
-        _authService.Register(registerDto);
+        _authService.Register(registerDto, out string message);
         var user = _unitOfWork.UserRepository.GetByUsername(registerDto.Username);
         user!.IsActive = false;
         _unitOfWork.UserRepository.Update(user);
@@ -214,7 +214,7 @@ public class AuthServiceTests : TestBase
     {
         // Arrange
         var registerDto = GetBasicRegisterDto();
-        _authService.Register(registerDto);
+        _authService.Register(registerDto, out string message);
         var authResult = _authService.Authenticate(new LogInWDto { Username = registerDto.Username, Password = registerDto.Password });
 
         // Act
@@ -251,7 +251,7 @@ public class AuthServiceTests : TestBase
     {
         // Arrange
         var registerDto = GetBasicRegisterDto();
-        _authService.Register(registerDto);
+        _authService.Register(registerDto, out string message);
         var authResult = _authService.Authenticate(new LogInWDto { Username = registerDto.Username, Password = registerDto.Password });
 
         // Act
@@ -266,7 +266,7 @@ public class AuthServiceTests : TestBase
     {
         // Arrange
         var registerDto = GetBasicRegisterDto();
-        _authService.Register(registerDto);
+        _authService.Register(registerDto, out string message);
         var authResult = _authService.Authenticate(new LogInWDto { Username = registerDto.Username, Password = registerDto.Password });
 
         // Act
@@ -291,7 +291,7 @@ public class AuthServiceTests : TestBase
     {
         // Arrange
         var registerDto = GetBasicRegisterDto();
-        _authService.Register(registerDto);
+        _authService.Register(registerDto, out string message);
 
         // Act
         var resetToken = _authService.ForgotPassword(registerDto.Email);
@@ -320,7 +320,7 @@ public class AuthServiceTests : TestBase
     {
         // Arrange
         var registerDto = GetBasicRegisterDto();
-        _authService.Register(registerDto);
+        _authService.Register(registerDto, out string message);
         var resetToken = _authService.ForgotPassword(registerDto.Email);
 
         var resetPasswordDto = new ResetPasswordDto
@@ -331,7 +331,7 @@ public class AuthServiceTests : TestBase
         };
 
         // Act
-        var resetResult = _authService.ResetPassword(resetPasswordDto, out var message);
+        var resetResult = _authService.ResetPassword(resetPasswordDto, out message);
 
         // Assert
         Assert.True(resetResult);
@@ -367,7 +367,7 @@ public class AuthServiceTests : TestBase
     {
         // Arrange
         var registerDto = GetBasicRegisterDto();
-        _authService.Register(registerDto);
+        _authService.Register(registerDto, out string message);
 
         var resetPasswordDto = new ResetPasswordDto
         {
@@ -377,7 +377,7 @@ public class AuthServiceTests : TestBase
         };
 
         // Act
-        var resetResult = _authService.ResetPassword(resetPasswordDto, out var message);
+        var resetResult = _authService.ResetPassword(resetPasswordDto, out message);
 
         // Assert
         Assert.False(resetResult);

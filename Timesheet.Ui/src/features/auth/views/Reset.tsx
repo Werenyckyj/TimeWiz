@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { AuthRepository } from "../services/AuthRepository";
+import { PasswordField } from "../../../shared/components/PassworField";
 
 export default function Reset() {
     const [searchParams] = useSearchParams();
@@ -73,7 +74,7 @@ export default function Reset() {
                         <h2 style={{ textAlign: 'center', marginBottom: '1.5rem' }}>Create New Password</h2>
 
                         {message && (
-                            <div style={{ marginBottom: '1rem', padding: '10px', backgroundColor: message.text.includes("Error") ? 'var(--reject)' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
+                            <div style={{ marginBottom: '1rem', overflowWrap: 'break-word', padding: '10px', backgroundColor: message.type === 'error' ? 'var(--reject)' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
                                 {message.text}
                             </div>
                         )}
@@ -93,32 +94,26 @@ export default function Reset() {
 
                                 <div className="mb-3">
                                     <label htmlFor="newPassword" className="form-label" style={{ fontWeight: '500' }}>New Password</label>
-                                    <input
-                                        type="password"
-                                        className="form-control"
-                                        id="newPassword"
-                                        value={newPassword}
-                                        onChange={(e) => setNewPassword(e.target.value)}
-                                        required
-                                        disabled={isLoading}
-                                        minLength={8}
-                                        style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', borderColor: 'var(--border-color)' }}
-                                    />
+                                    <PasswordField formData={{ password: newPassword }} setFormData={(val) => {
+                                        if (typeof val === 'function') {
+                                            const res = (val as (prev: { password: string }) => { password: string })({ password: newPassword });
+                                            setNewPassword(res.password);
+                                        } else {
+                                            setNewPassword(val.password);
+                                        }
+                                    }} />
                                 </div>
 
                                 <div className="mb-4">
                                     <label htmlFor="confirmPassword" className="form-label" style={{ fontWeight: '500' }}>Confirm Password</label>
-                                    <input
-                                        type="password"
-                                        className="form-control"
-                                        id="confirmPassword"
-                                        value={confirmPassword}
-                                        onChange={(e) => setConfirmPassword(e.target.value)}
-                                        required
-                                        disabled={isLoading}
-                                        minLength={6}
-                                        style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', borderColor: 'var(--border-color)' }}
-                                    />
+                                    <PasswordField formData={{ password: confirmPassword }} setFormData={(val) => {
+                                        if (typeof val === 'function') {
+                                            const res = (val as (prev: { password: string }) => { password: string })({ password: confirmPassword });
+                                            setConfirmPassword(res.password);
+                                        } else {
+                                            setConfirmPassword(val.password);
+                                        }
+                                    }} />
                                 </div>
 
                                 <button

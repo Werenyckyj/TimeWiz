@@ -5,9 +5,10 @@ interface ModalProps {
     onClose: () => void;
     title: string;
     children: ReactNode;
+    maxWidth?: string;
 }
 
-export function Modal({ isOpen, onClose, title, children }: ModalProps) {
+export function Modal({ isOpen, onClose, title, children, maxWidth }: ModalProps) {
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key === "Escape") onClose();
@@ -24,11 +25,11 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
             onMouseDown={onClose}
         >
             <div
-                style={{ backgroundColor: 'var(--bg-primary)', borderRadius: '8px', width: '100%', maxWidth: '600px', maxHeight: '90vh', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)', margin: '10px' }}
+                style={{ backgroundColor: 'var(--bg-primary)', borderRadius: '8px', width: '100%', maxWidth: maxWidth || '600px', maxHeight: '90vh', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)', margin: '10px' }}
                 onMouseDown={(e) => e.stopPropagation()}
             >
-                <div style={{ padding: '16px 24px', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <h3 style={{ margin: 0, color: 'var(--text-primary)', fontSize: '1.25rem' }}>{title}</h3>
+                <div style={{ padding: '16px 24px', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'start', overflowWrap: 'break-word' }}>
+                    <h3 style={{ margin: 0, color: 'var(--text-primary)', fontSize: '1.25rem', flex: 1, minWidth: 0, whiteSpace: 'normal', overflowWrap: 'anywhere' }}>{title}</h3>
                     <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: 'var(--text-secondary)', lineHeight: 1 }}>&times;</button>
                 </div>
 

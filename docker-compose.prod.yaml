@@ -24,8 +24,8 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=${DB_NAME};Username=${DB_USER};Password=${DB_PASSWORD}
-    ports:
-      - "5000:8080"
+    expose:
+      - "8080"
     depends_on:
       - db
     restart: always
@@ -37,12 +37,29 @@ services:
     container_name: timesheet_frontend 
     environment:
         # SET THE API URL TO THE BACKEND SERVICE
-      - VITE_API_URL=http://localhost:5000/api 
-    ports:
-      - "80:80"
+      - VITE_API_URL=https://localhost/api 
+    expose:
+      - "5173"
     depends_on:
       - backend
     restart: always
 
+  caddy:
+    image: caddy:2-alpine
+    container_name: timesheet_proxy
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443" 
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - frontend
+      - backend
+
 volumes:
   postgres_data:
+  caddy_data:
+  caddy_config:

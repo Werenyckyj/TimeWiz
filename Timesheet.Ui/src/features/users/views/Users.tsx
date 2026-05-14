@@ -8,30 +8,37 @@ import { Modal } from "../../../shared/components/Modal";
 import { CompaniesRepository } from "../../companies/services/CompaniesRepository"
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/hooks/useAuth";
-
-
+import { PasswordField } from "../../../shared/components/PassworField";
+import { ConfirmationModal } from "../../../shared/components/ConfirmationModal";
+import EmailValidator from "../../../shared/components/EmailValidator";
 
 export default function Users() {
     const navigate = useNavigate();
     const { user } = useAuth();
-    const { users, getUsers, editUser, deleteUser, addUser } = useUsers();
+    const { users, getUsers, editUser, addUser } = useUsers();
     const [isAdding, setIsAdding] = useState(false);
-    const [message, setMessage] = useState<string>("");
+    const [message, setMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
+    const [addUserMessage, setAddUserMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
+    const [addCompanyMessage, setAddCompanyMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
     const [roleOptions, setRoleOptions] = useState<SelectOptions[]>([]);
     const [organizationOptions, setOrganizationOptions] = useState<SelectOptions[]>([]);
 
-    const [showActiveOnly, setShowActiveOnly] = useState(false);
+    const [showActiveOnly, setShowActiveOnly] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [showPassword, setShowPassword] = useState(false);
     const [isCompanyModalOpen, setIsCompanyModalOpen] = useState(false);
 
+    const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
+    const [pendingUserEdit, setPendingUserEdit] = useState<User | null>(null);
+    const [searchQuery, setSearchQuery] = useState("");
+
     const [formData, setFormData] = useState({
-        name: "", surname: "", username: "", email: "", password: "", roleId: "", companyId: ""
+        name: "", surname: "", username: "", email: "", roleId: "", companyId: ""
     });
+    const [passwordForm, setPasswordForm] = useState({ password: "" });
 
     const [companyFormData, setCompanyFormData] = useState({ name: "", cin: "" });
 
-    const fatchCompanies = async () => {
+    const fetchCompanies = async () => {
         const fetchedCompanies = await CompaniesRepository.getCompanies();
         const oOptions = fetchedCompanies.data.map(company => ({
             value: company.id,
@@ -52,7 +59,7 @@ export default function Users() {
                 }));
                 setRoleOptions(options);
 
-                await fatchCompanies();
+                await fetchCompanies();
 
             } catch (error) {
                 console.error("Nepodařilo se načíst role nebo organizace", error);
@@ -63,16 +70,27 @@ export default function Users() {
     }, [getUsers]);
 
     const columns: ColumnDef<User>[] = [
-        { header: "Name", accessor: "name", type: "text", maxLength: 100 },
-        { header: "Surname", accessor: "surname", type: "text", maxLength: 100 },
-        { header: "Username", accessor: "username", type: "text", maxLength: 100 },
-        { header: "Email", accessor: "email", type: "text", maxLength: 100 },
-        { header: "Is Active", accessor: "isActive", type: "checkbox", renderCell: (row) => row.isActive ? "✔️" : "❌" },
-        { header: "Role", accessor: "roleId", type: "select", options: roleOptions, renderCell: (row) => row.role ? row.role.name : "No role" },
+        { header: "Name", accessor: "name", type: "text", maxLength: 80, nowrapHeader: true },
+        { header: "Surname", accessor: "surname", type: "text", maxLength: 100, nowrapHeader: true },
+        { header: "Username", accessor: "username", type: "text", maxLength: 120 },
+        { header: "Email", accessor: "email", type: "text", maxLength: 180, nowrapHeader: true },
+        {
+            header: "Is Active", accessor: "isActive", nowrapHeader: true, type: "checkbox", renderCell: (row) => (
+                <label className="custom-checkbox-container" style={{ margin: 0, cursor: 'default' }}>
+                    <input
+                        type="checkbox"
+                        checked={row.isActive}
+                        readOnly
+                    />
+                    <span className="checkmark"></span>
+                </label>
+            )
+        },
+        { header: "Role", accessor: "roleId", type: "select", options: roleOptions, renderCell: (row) => row.role ? row.role.name : "No role", nowrap: true },
         { header: "Company", accessor: "companyId", type: "select", options: organizationOptions, renderCell: (row) => row.company ? row.company.name : "No company" },
     ];
 
-    const handleEdit = async (draft: User) => {
+    const executeEdit = async (draft: User) => {
         try {
             await editUser({
                 id: draft.id,
@@ -86,10 +104,33 @@ export default function Users() {
             });
 
             await getUsers();
-            setMessage("User successfully edited.");
+            setMessage({ text: "User successfully edited.", type: "success" });
         } catch (error) {
-            setMessage("Error editing user." + (error instanceof Error ? ` Detail: ${error.message}` : ""));
+            setMessage({ text: "Error " + (error instanceof Error ? ` Detail: ${error.message}` : ""), type: "error" });
         }
+        setPendingUserEdit(null);
+    };
+
+    const handleEdit = async (draft: User) => {
+        const originalUser = rawUsers.find(u => u.id === draft.id);
+        const originalRoleId = originalUser?.role ? originalUser.role.id : originalUser?.roleId;
+
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if (draft.email && !emailRegex.test(draft.email)) {
+            setMessage({ text: "Please enter a valid email address.", type: "error" });
+            return;
+        }
+
+        if (originalRoleId && String(originalRoleId) !== String(draft.roleId)) {
+
+            if (String(draft.id) === String(user?.nameid)) {
+                setPendingUserEdit(draft);
+                setIsRoleModalOpen(true);
+                return;
+            }
+        }
+
+        await executeEdit(draft);
     };
 
     const rawUsers = Array.isArray(users?.data) ? users.data : [];
@@ -97,17 +138,44 @@ export default function Users() {
         ? rawUsers.filter(user => user.isActive)
         : rawUsers;
 
+    const filteredUsers = displayedUsers.filter(user => {
+        const query = searchQuery.toLowerCase();
+        return (
+            user.name.toLowerCase().includes(query) ||
+            user.surname.toLowerCase().includes(query) ||
+            (user.name.toLowerCase() + ' ' + user.surname.toLowerCase()).includes(query) ||
+            user.email.toLowerCase().includes(query) ||
+            user.company?.name.toLowerCase().includes(query)
+        );
+    });
+
     const handleDelete = async (id: string | number) => {
-        if (!window.confirm("Are you sure you want to delete this user?")) return;
         try {
-            await deleteUser(id as number);
-            setMessage("User deleted.");
+            const original = rawUsers.find(u => String(u.id) === String(id));
+            if (!original) {
+                setMessage({ text: "User not found.", type: "error" });
+                return;
+            }
+
+            await editUser({
+                id: Number(id),
+                name: original.name,
+                surname: original.surname,
+                username: original.username,
+                email: original.email,
+                isActive: false,
+                roleId: original.role ? Number(original.role.id) : Number(original.roleId) || 0,
+                companyId: original.company ? Number(original.company.id) : Number(original.companyId) || 0
+            });
+
+            await getUsers();
+            setMessage({ text: "User deleted.", type: "success" });
         } catch (error) {
-            setMessage("Error deleting user." + (error instanceof Error ? ` Detail: ${error.message}` : ""));
+            setMessage({ text: "Error " + (error instanceof Error ? ` Detail: ${error.message}` : ""), type: "error" });
         }
     };
 
-    const tableData = displayedUsers.map(user => ({
+    const tableData = filteredUsers.map(user => ({
         ...user,
         roleId: user.role ? user.role.id : user.roleId,
         companyId: user.company ? user.company.id : user.companyId
@@ -116,9 +184,21 @@ export default function Users() {
     const handleFormSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
+        if (passwordForm.password.length < 8) {
+            setAddUserMessage({ text: "Password must be at least 8 characters long.", type: "error" });
+            return;
+        }
+
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if (formData.email && !emailRegex.test(formData.email)) {
+            setAddUserMessage({ text: "Please enter a valid email address.", type: "error" });
+            return;
+        }
+
         try {
             const payload = {
                 ...formData,
+                password: passwordForm.password,
                 roleId: formData.roleId ? Number(formData.roleId) : 0,
                 companyId: formData.companyId ? Number(formData.companyId) : 0
             };
@@ -126,11 +206,12 @@ export default function Users() {
             await addUser(payload);
 
             await getUsers();
-            setMessage("User successfully added.");
+            setMessage({ text: "User successfully added.", type: "success" });
             setIsModalOpen(false);
-            setFormData({ name: "", surname: "", username: "", email: "", password: "", roleId: "", companyId: "" });
+            setFormData({ name: "", surname: "", username: "", email: "", roleId: "", companyId: "" });
+            setPasswordForm({ password: "" });
         } catch (error) {
-            setMessage("Error adding user." + (error instanceof Error ? ` Detail: ${error.message}` : ""));
+            setAddUserMessage({ text: "Error " + (error instanceof Error ? ` Detail: ${error.message}` : ""), type: "error" });
         }
     };
 
@@ -140,22 +221,36 @@ export default function Users() {
         try {
             await CompaniesRepository.addCompany({ name: companyFormData.name, cin: companyFormData.cin });
 
-            await fatchCompanies();
-            setMessage("Company successfully added.");
+            await fetchCompanies();
+            setAddCompanyMessage({ text: "Company successfully added.", type: "success" });
         } catch (error) {
-            setMessage("Error adding company." + (error instanceof Error ? ` Detail: ${error.message}` : ""));
+            setAddCompanyMessage({ text: "Error " + (error instanceof Error ? ` Detail: ${error.message}` : ""), type: "error" });
         }
         setIsCompanyModalOpen(false);
         setCompanyFormData({ name: "", cin: "" });
     }
 
+
     return (
         <div className="main-content"
             style={{ fontFamily: 'sans-serif', margin: '0 auto' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                <h2 style={{ marginBottom: '1.5rem' }}>Users</h2>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '1.5rem', gap: '16px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '8px', flex: '1 1 250px', minWidth: '0' }}>
+
+                    <h2 style={{ marginBottom: '0.5rem' }}>Users</h2>
+
+
+                    <input
+                        type="text"
+                        placeholder="Search users by name, email, or company..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        style={{ padding: '10px', borderRadius: '6px', border: '1px solid var(--border-color)', width: '400px', maxWidth: '100%', boxSizing: 'border-box' }}
+                    />
+                </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
+
                     {(!isAdding && user?.role === 'Admin') && (
                         <button
                             className="primary-button-2"
@@ -166,20 +261,22 @@ export default function Users() {
                         </button>
                     )}
 
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.9rem', color: 'var(--text-secondary)', cursor: 'pointer' }}>
+                    <label className="custom-checkbox-container" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.9rem', color: 'var(--text-secondary)', cursor: 'pointer', whiteSpace: 'nowrap' }}>
                         <input
                             type="checkbox"
                             checked={showActiveOnly}
                             onChange={(e) => setShowActiveOnly(e.target.checked)}
                         />
+                        <span className="checkmark"></span>
                         Show active only
                     </label>
+
                 </div>
             </div>
 
             {message && (
-                <div style={{ marginBottom: '1rem', padding: '10px', backgroundColor: message.includes("Error") ? 'var(--reject)' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
-                    {message}
+                <div style={{ marginBottom: '1rem', overflowWrap: 'break-word', padding: '10px', backgroundColor: message.type === "error" ? 'var(--reject)' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
+                    {message.text}
                 </div>)}
 
             <EditableTable<User>
@@ -195,66 +292,41 @@ export default function Users() {
                         label: "View Details", onClick: () => navigate(`/users/${row.id}`)
                     }
                 ]}
+                nameAccessor="name"
+                entityName="user"
             />
             < Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Create New User" >
+                {addUserMessage && (
+                    <div style={{ marginBottom: '1rem', overflowWrap: 'break-word', padding: '10px', backgroundColor: addUserMessage.type === "error" ? 'var(--reject)' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
+                        {addUserMessage.text}
+                    </div>)}
+
                 <form onSubmit={handleFormSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
                     <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
                         <div style={{ flex: '1 1 calc(50% - 8px)', minWidth: '150px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
                             <label style={{ fontSize: '0.875rem', fontWeight: 500 }}>Name *</label>
-                            <input required type="text" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)' }} />
+                            <input required type="text" maxLength={80} value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)' }} />
                         </div>
                         <div style={{ flex: '1 1 calc(50% - 8px)', minWidth: '150px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
                             <label style={{ fontSize: '0.875rem', fontWeight: 500 }}>Surname *</label>
-                            <input required type="text" value={formData.surname} onChange={e => setFormData({ ...formData, surname: e.target.value })} style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)', width: '100%', boxSizing: 'border-box' }} />
+                            <input required type="text" maxLength={100} value={formData.surname} onChange={e => setFormData({ ...formData, surname: e.target.value })} style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)', width: '100%', boxSizing: 'border-box' }} />
                         </div>
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                         <label style={{ fontSize: '0.875rem', fontWeight: 500 }}>Username *</label>
-                        <input required type="text" value={formData.username} onChange={e => setFormData({ ...formData, username: e.target.value })} style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)', width: '100%', boxSizing: 'border-box' }} />
+                        <input required type="text" maxLength={120} value={formData.username} onChange={e => setFormData({ ...formData, username: e.target.value })} style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)', width: '100%', boxSizing: 'border-box' }} />
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <label style={{ fontSize: '0.875rem', fontWeight: 500 }}>Email *</label>
-                        <input required type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)', width: '100%', boxSizing: 'border-box' }} />
+                        <EmailValidator onChange={e => setFormData({ ...formData, email: e.target.value })} value={formData.email} style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)', width: '100%', boxSizing: 'border-box' }} />
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                         <label style={{ fontSize: '0.875rem', fontWeight: 500 }}>Password *</label>
 
-                        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                            <input
-                                required
-                                type={showPassword ? "text" : "password"}
-                                value={formData.password}
-                                onChange={e => setFormData({ ...formData, password: e.target.value })}
-                                style={{ padding: '8px', paddingRight: '36px', borderRadius: '4px', border: '1px solid var(--border-color)', width: '100%', boxSizing: 'border-box', backgroundColor: 'var(--bg-secondary)' }}
-                            />
-
-                            <button
-                                type="button"
-                                className="button-secondary"
-                                onClick={() => setShowPassword(!showPassword)}
-                                style={{
-                                    position: 'absolute', right: '8px',
-                                    background: 'none', border: 'none',
-                                    cursor: 'pointer', color: 'var(--text-secondary)',
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px'
-                                }}
-                            >
-                                {showPassword ? (
-                                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                    </svg>
-                                ) : (
-                                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-                                    </svg>
-                                )}
-                            </button>
-                        </div>
+                        <PasswordField formData={passwordForm} setFormData={setPasswordForm} />
                     </div>
 
                     <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
@@ -274,7 +346,7 @@ export default function Users() {
                                 <select value={formData.companyId} onChange={e => setFormData({ ...formData, companyId: e.target.value })} style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)', width: '100%', boxSizing: 'border-box' }}>
                                     <option value="">-- Select --</option>
                                     {organizationOptions.map(opt => (
-                                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                        <option key={opt.value} value={opt.value}>{opt.label.length > 20 ? opt.label.substring(0, 20) + '...' : opt.label}</option>
                                     ))}
                                 </select>
                             </div>
@@ -299,16 +371,21 @@ export default function Users() {
             </Modal >
 
             <Modal isOpen={isCompanyModalOpen} onClose={() => setIsCompanyModalOpen(false)} title="Add New Company">
+                {addCompanyMessage && (
+                    <div style={{ marginBottom: '1rem', padding: '10px', overflowWrap: 'break-word', backgroundColor: addCompanyMessage.type === "error" ? 'var(--reject)' : 'var(--success)', color: 'var(--text-primary)', borderRadius: '4px' }}>
+                        {addCompanyMessage.text}
+                    </div>)}
+
                 <form onSubmit={handleCompanyFormSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                         <label style={{ fontSize: '0.875rem', fontWeight: 500 }}>Company Name *</label>
-                        <input required type="text" value={companyFormData.name} onChange={e => setCompanyFormData({ ...companyFormData, name: e.target.value })} style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)', width: '100%', boxSizing: 'border-box' }} />
+                        <input required type="text" maxLength={100} value={companyFormData.name} onChange={e => setCompanyFormData({ ...companyFormData, name: e.target.value })} style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)', width: '100%', boxSizing: 'border-box' }} />
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                         <label style={{ fontSize: '0.875rem', fontWeight: 500 }}>CIN *</label>
-                        <input required type="text" value={companyFormData.cin} onChange={e => setCompanyFormData({ ...companyFormData, cin: e.target.value })} style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)', width: '100%', boxSizing: 'border-box' }} />
+                        <input required type="text" maxLength={20} value={companyFormData.cin} onChange={e => setCompanyFormData({ ...companyFormData, cin: e.target.value })} style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)', width: '100%', boxSizing: 'border-box' }} />
                     </div>
 
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--border-color)' }}>
@@ -317,6 +394,22 @@ export default function Users() {
                     </div>
                 </form>
             </Modal>
+
+            <ConfirmationModal
+                isOpen={isRoleModalOpen}
+                onClose={() => {
+                    setIsRoleModalOpen(false);
+                    setPendingUserEdit(null);
+                }}
+                title="Confirm Role Change"
+                message="Changing your role will immediately log you out of the system. Are you sure you want to proceed?"
+                onConfirm={() => {
+                    if (pendingUserEdit) {
+                        executeEdit(pendingUserEdit);
+                    }
+                    setIsRoleModalOpen(false);
+                }}
+            />
         </div >
     );
 }
