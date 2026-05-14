@@ -16,7 +16,7 @@ export default function Companies() {
     const columns: ColumnDef<Company>[] = [
         { header: "Name", accessor: "name", type: "text", maxLength: 100 },
         { header: "Workers", accessor: "employees", type: "readonly", renderCell: (row) => row.employees && row.employees.length > 0 ? row.employees.length : "No workers" },
-        { header: "CIN", accessor: "cin", type: "text", maxLength: 20 },
+        { header: "CIN", accessor: "cin", type: "text", maxLength: 20, nowrap: true },
     ];
 
     const handleAdd = async (draft: Partial<Company>) => {

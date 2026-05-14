@@ -461,7 +461,7 @@ export default function Timesheet() {
                                                         style={{
                                                             width: '100%', padding: '6px', textAlign: 'center', boxSizing: 'border-box',
                                                             border: '1px solid var(--border-color)', borderRadius: '4px',
-                                                            backgroundColor: isLocked ? 'var(--bg-secondary)' : 'var(--bg-primary)',
+                                                            backgroundColor: isLocked ? 'var(--bg-primary)' : 'var(--bg-secondary)',
                                                             color: isLocked ? 'var(--text-secondary)' : 'var(--text-primary)'
                                                         }}
                                                     />
@@ -481,7 +481,7 @@ export default function Timesheet() {
                                                     <button
                                                         className="reject-button"
                                                         onClick={() => handleRevertToDraft(ts)}
-                                                        style={{ padding: '6px 12px', backgroundColor: 'var(--reject)', color: 'var(--text-primary)', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.85rem' }}
+                                                        style={{ padding: '6px 12px', backgroundColor: 'var(--reject)', color: 'var(--text-primary)', border: '1px solid var(--reject-border)', borderRadius: '4px', cursor: 'pointer', fontSize: '0.85rem' }}
                                                     >
                                                         Edit
                                                     </button>
@@ -490,7 +490,7 @@ export default function Timesheet() {
                                                 <button
                                                     className="success-button"
                                                     onClick={() => handleSubmitRow(ts)}
-                                                    style={{ padding: '6px 12px', backgroundColor: 'var(--success-2)', color: 'var(--text-primary)', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.85rem' }}
+                                                    style={{ padding: '6px 12px', backgroundColor: 'var(--success-2)', color: 'white', border: '1px solid var(--success-2-border)', borderRadius: '4px', cursor: 'pointer', fontSize: '0.85rem' }}
                                                 >
                                                     Submit
                                                 </button>
