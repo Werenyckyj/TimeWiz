@@ -40,7 +40,7 @@ build-production-docker:
   script:
     - echo "Verifying production Docker image builds..."
     - echo "DB_USER=test DB_PASSWORD=test DB_NAME=test DB_PORT=5432" > ./Timesheet.Api/.env
-    - docker compose -f docker-compose.prod.yml build
+    - docker compose -f docker-compose.prod.yaml build
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
 
