@@ -147,13 +147,13 @@ export function EditableTable<T extends { id: string | number }>({
                                             type="checkbox"
                                             checked={!!draft[col.accessor]}
                                             onChange={e => handleDraftChange(col.accessor, e.target.checked as T[typeof col.accessor])}
-                                            style={{ width: '20px', height: '20px', cursor: 'pointer', backgroundColor: 'var(--bg-primary)', borderColor: 'var(--border-color)' }}
+                                            style={{ width: '20px', height: '20px', cursor: 'pointer', backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-color)' }}
                                         />
                                     ) : col.type === 'select' ? (
                                         <select
                                             value={(draft[col.accessor] as string | number) || ""}
                                             onChange={e => handleDraftChange(col.accessor, e.target.value as T[typeof col.accessor])}
-                                            style={{ width: '100%', padding: '6px', boxSizing: 'border-box', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', borderRadius: '4px' }}
+                                            style={{ width: '100%', padding: '6px', boxSizing: 'border-box', backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', borderRadius: '4px' }}
                                         >
                                             <option value="">-- Select --</option>
                                             {col.options?.map(opt => (
@@ -172,7 +172,7 @@ export function EditableTable<T extends { id: string | number }>({
                                             }
                                             onChange={e => handleDraftChange(col.accessor, e.target.value as T[typeof col.accessor])}
                                             maxLength={col.maxLength}
-                                            style={{ width: '100%', padding: '6px', boxSizing: 'border-box', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', borderRadius: '4px' }}
+                                            style={{ width: '100%', padding: '6px', boxSizing: 'border-box', backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', borderRadius: '4px' }}
                                         />
                                     )}
                                 </td>
@@ -218,6 +218,7 @@ export function EditableTable<T extends { id: string | number }>({
                                                         type="checkbox"
                                                         checked={!!draft[col.accessor]}
                                                         onChange={e => handleDraftChange(col.accessor, e.target.checked as T[typeof col.accessor])}
+                                                        style={{ backgroundColor: 'var(--bg-secondary)' }}
                                                     />
                                                     <span className="checkmark"></span>
                                                 </label>
@@ -226,7 +227,7 @@ export function EditableTable<T extends { id: string | number }>({
                                                     required={col.isRequired}
                                                     value={(draft[col.accessor] as string | number) || ""}
                                                     onChange={e => handleDraftChange(col.accessor, e.target.value as T[typeof col.accessor])}
-                                                    style={{ width: '100%', padding: '6px', boxSizing: 'border-box', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', borderRadius: '4px' }}
+                                                    style={{ width: '100%', padding: '6px', boxSizing: 'border-box', backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', borderRadius: '4px' }}
                                                 >
                                                     <option value="">-- Select --</option>
                                                     {col.options?.map(opt => (
@@ -246,7 +247,7 @@ export function EditableTable<T extends { id: string | number }>({
                                                     }
                                                     maxLength={col.maxLength}
                                                     onChange={e => handleDraftChange(col.accessor, e.target.value as T[typeof col.accessor])}
-                                                    style={{ width: '100%', padding: '6px', boxSizing: 'border-box', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', borderRadius: '4px' }}
+                                                    style={{ width: '100%', padding: '6px', boxSizing: 'border-box', backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', borderRadius: '4px' }}
                                                 />
                                             )
                                         ) : (

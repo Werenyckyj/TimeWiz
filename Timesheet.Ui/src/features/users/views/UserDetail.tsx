@@ -183,7 +183,7 @@ export default function UserDetail() {
     }
 
     const columns: ColumnDef<RawTsWeek>[] = [
-        { header: 'Week', accessor: 'week', type: 'readonly' },
+        { header: 'Week', accessor: 'week', type: 'readonly', nowrap: true },
         { header: 'Mon', accessor: 'Mo', type: 'number' },
         { header: 'Tue', accessor: 'Tu', type: 'number' },
         { header: 'Wen', accessor: 'We', type: 'number' },

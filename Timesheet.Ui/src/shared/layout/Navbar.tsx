@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "../../features/auth/hooks/useAuth";
 import { UsersRepository } from "../../features/users/services/UsersRepository";
 import type { ChangeUserPassword, User } from "../../features/users/types/users.type";
@@ -22,15 +22,16 @@ export const Navbar = ({ toggleMenu }: NavbarProps) => {
     const [confirmPassword, setConfirmPassword] = useState({ password: "" });
     const { theme, toggleTheme } = useTheme();
 
-    useEffect(() => {
-        const loadUserInfo = async () => {
-            if (!user) return;
-            const loadedUserInfo = await UsersRepository.getUser(Number(user.nameid));
-            setUserInfo(loadedUserInfo);
-        };
-
-        loadUserInfo();
+    const loadUserInfo = useCallback(async () => {
+        if (!user) return;
+        const loadedUserInfo = await UsersRepository.getUser(Number(user.nameid));
+        setUserInfo(loadedUserInfo);
     }, [user]);
+
+    useEffect(() => {
+        const timer = setTimeout(() => { void loadUserInfo(); }, 0);
+        return () => clearTimeout(timer);
+    }, [loadUserInfo]);
 
     const handleChangePassword = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -107,7 +108,7 @@ export const Navbar = ({ toggleMenu }: NavbarProps) => {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                         <button
                             className="secondary-button"
-                            onClick={() => { setMessage(null); setIsModalOpen(true); setIsChangePassword(false); }}
+                            onClick={() => { setMessage(null); setIsModalOpen(true); setIsChangePassword(false); loadUserInfo(); }}
                             style={{
                                 padding: '6px 12px',
                                 cursor: 'pointer',

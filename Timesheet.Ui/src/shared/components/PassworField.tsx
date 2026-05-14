@@ -9,7 +9,7 @@ export function PasswordField({ formData, setFormData }: { formData: { password:
             type={showPassword ? "text" : "password"}
             value={formData.password}
             onChange={e => setFormData({ ...formData, password: e.target.value })}
-            style={{ padding: '8px', paddingRight: '36px', borderRadius: '4px', border: '1px solid var(--border-color)', width: '100%', boxSizing: 'border-box' }}
+            style={{ padding: '8px', paddingRight: '36px', borderRadius: '4px', border: '1px solid var(--border-color)', width: '100%', boxSizing: 'border-box', backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
         />
 
         <button
