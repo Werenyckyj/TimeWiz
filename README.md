@@ -21,7 +21,7 @@ A simple Time Tracking and Timesheet Approval application.
 Clone the repo and create your environment file:
 
 ```bash
-git clone https://github.com/your-username/timesheet-app.git
+git clone https://github.com/Werenyckyj/timesheet-app.git
 cd timesheet-app/Timesheet.Api
 cp .env.example .env
 ```
