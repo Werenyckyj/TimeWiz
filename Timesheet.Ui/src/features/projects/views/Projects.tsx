@@ -158,9 +158,11 @@ export default function Projects() {
     const filteredUsers = allUsers.filter(user => {
         const query = searchQuery.toLowerCase();
         return (
-            user.name.toLowerCase().includes(query) ||
-            user.surname.toLowerCase().includes(query) ||
-            user.email.toLowerCase().includes(query)
+            user.isActive && (
+                user.name.toLowerCase().includes(query) ||
+                user.surname.toLowerCase().includes(query) ||
+                user.email.toLowerCase().includes(query)
+            )
         );
     });
 

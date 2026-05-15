@@ -98,7 +98,8 @@ export default function Timesheet() {
 
             const missingProjects = rawProjects.filter((p: Project) =>
                 !existingProjectIds.includes(p.id) &&
-                !globalSyncLock.has(`${year}-${week}-${p.id}`)
+                !globalSyncLock.has(`${year}-${week}-${p.id}`) &&
+                p.isActive
             );
 
             if (missingProjects.length > 0) {
@@ -481,7 +482,7 @@ export default function Timesheet() {
                                                     <button
                                                         className="reject-button"
                                                         onClick={() => handleRevertToDraft(ts)}
-                                                        style={{ padding: '6px 12px', backgroundColor: 'var(--reject)', color: 'var(--text-primary)', border: '1px solid var(--reject-border)', borderRadius: '4px', cursor: 'pointer', fontSize: '0.85rem' }}
+                                                        style={{ padding: '6px 12px', backgroundColor: 'var(--reject)', color: 'var(--reject-text)', border: '1px solid var(--reject-border)', borderRadius: '4px', cursor: 'pointer', fontSize: '0.85rem' }}
                                                     >
                                                         Edit
                                                     </button>
