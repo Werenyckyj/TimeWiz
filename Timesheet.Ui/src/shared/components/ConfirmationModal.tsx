@@ -25,7 +25,7 @@ export function ConfirmationModal({
                         cursor: "pointer",
                         backgroundColor: 'var(--reject)',
                         border: '1px solid var(--reject-border)',
-                        color: 'white',
+                        color: 'var(--text-primary)',
                         borderRadius: "6px",
                         fontWeight: "bold",
                     }}
@@ -41,7 +41,7 @@ export function ConfirmationModal({
                     style={{
                         padding: "8px 12px",
                         cursor: "pointer",
-                        backgroundColor: 'var(--success)',
+                        backgroundColor: 'var(--success-2)',
                         border: '1px solid var(--success-border)',
                         color: 'white',
                         borderRadius: "6px",
