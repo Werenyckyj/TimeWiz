@@ -1,8 +1,8 @@
 {
-    default_sni 192.168.0.108
+    default_sni localhost
 }
 
-https://192.168.0.108 {
+localhost, https://192.168.0.108 {
     tls internal
     reverse_proxy /api/* backend:8080
     reverse_proxy frontend:5173
