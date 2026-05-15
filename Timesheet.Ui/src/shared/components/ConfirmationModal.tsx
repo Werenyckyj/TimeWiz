@@ -25,7 +25,7 @@ export function ConfirmationModal({
                         cursor: "pointer",
                         backgroundColor: 'var(--reject)',
                         border: '1px solid var(--reject-border)',
-                        color: 'var(--text-primary)',
+                        color: 'var(--reject-text)',
                         borderRadius: "6px",
                         fontWeight: "bold",
                     }}
