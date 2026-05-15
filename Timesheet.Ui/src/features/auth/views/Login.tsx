@@ -37,17 +37,17 @@ export default function Login() {
     };
 
     return (
-        <div style={{ padding: '2rem', fontFamily: 'sans-serif', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
+        <div style={{ padding: '2rem', fontFamily: 'sans-serif', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', backgroundColor: 'var(--bg-secondary)' }}>
             <div className="container">
                 <div className="row">
                     <div className="col">
                     </div>
-                    <div className="col border border-secondary-subtle gap-3 rounded-4 p-2" style={{ minWidth: '270px', backgroundColor: 'var(--bg-secondary)' }}>
+                    <div className="col border border-secondary-subtle gap-3 rounded-4 p-2" style={{ minWidth: '270px', backgroundColor: 'var(--bg-primary)' }}>
                         <h2 className="text-center">Login to Timesheet</h2>
                         <form onSubmit={handleLogin}>
                             <div className="mb-3">
                                 <label htmlFor="usernameInput" className="form-label">Username</label>
-                                <input type="text" className="form-control" id="usernameInput" value={username} onChange={(e) => setUsername(e.target.value)} aria-describedby="emailHelp" />
+                                <input type="text" className="form-control" style={{ backgroundColor: 'var(--bg-secondary)' }} id="usernameInput" value={username} onChange={(e) => setUsername(e.target.value)} aria-describedby="emailHelp" />
                             </div>
                             <div className="mb-3">
                                 <label htmlFor="passwordInput" className="form-label">Password</label>
