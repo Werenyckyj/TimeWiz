@@ -22,13 +22,17 @@ Clone the repo and create your environment file:
 
 ```bash
 git clone https://github.com/Werenyckyj/timesheet-app.git
-cd timesheet-app/Timesheet.Api
+cd TimeWiz/Timesheet.Api
 cp .env.example .env
 ```
 
 (Edit the `.env` file to set your database password, JWT secret, etc.)
 
 ### 2. Local Development (Hot-Reload)
+Before you can run this application locally, you must have the following software installed and running on your machine:
+
+* *[Docker](https://docs.docker.com/get-docker/)* (Docker Engine / Docker Desktop)
+* *[Docker Compose](https://docs.docker.com/compose/install/)*
 
 The default `docker-compose.yml` is configured for development. It mounts your local code into the containers, enabling instant updates via dotnet watch and Vite HMR.
 
@@ -37,7 +41,7 @@ cd ..
 docker compose --env-file ./Timesheet.Api/.env up --build
 ```
 
-Frontend UI: http://localhost:5173
+Frontend UI: http://localhost (Exposed directly on port 80)
 
 Backend Swagger API: http://localhost:5000/swagger
 
